@@ -25,10 +25,20 @@ main
 ```bash
 git clone https://github.com/rayyanahmed25i3127/socialstack.devs.git
 cd socialstack.devs
+
+# frontend
+cd frontend
 pnpm install
+cd ..
+
+# backend
+cd backend
+npm install
+cp .env.example .env   # fill in your own keys
+cd ..
 ```
 
-If this is your first `pnpm install` and you see a warning about ignored build scripts, run:
+If this is your first `pnpm install` in `frontend/` and you see a warning about ignored build scripts, run:
 ```bash
 pnpm approve-builds
 ```
@@ -90,9 +100,10 @@ Keep it short and descriptive. Prefix with a type if it helps:
 
 ## Project Setup Reference
 
-- Package manager: **pnpm** (not npm or yarn — mixing lockfiles breaks installs)
-- Run dev server: `pnpm dev`
-- Build for production: `pnpm build`
-- Preview production build: `pnpm preview`
+- Frontend package manager: **pnpm** (not npm or yarn — mixing lockfiles breaks installs)
+- Backend package manager: **npm**
+- Run frontend dev server: `cd frontend && pnpm dev`
+- Build frontend for production: `cd frontend && pnpm build`
+- Run backend dev server: `cd backend && npm run dev`
 
-See `README.md` for the full tech stack and project structure.
+See `README.md` for the full tech stack and repo structure.

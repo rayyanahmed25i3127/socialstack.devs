@@ -1,14 +1,17 @@
 # Social Stack
 
-Social Stack is a digital agency offering web development, UI/UX design, social media, and app development services. This repo contains the codebase for our agency website.
+Social Stack is a digital agency offering web development, UI/UX design, social media, and app development services. This repo contains the codebase for our agency website — both frontend and backend.
 
-# Team
+## Repo Structure
 
-Muhammad Rayyan Ahmed
-Fatima Akhtar
-Maryam Yousaf
-Muznna Majid
-Anas Zahid
+```
+socialstack.devs/
+├── frontend/     # React + Vite + Tailwind website
+├── backend/      # Node.js/Express API
+├── README.md
+├── CONTRIBUTING.md
+└── .gitignore
+```
 
 ## Tech Stack
 
@@ -19,33 +22,18 @@ Anas Zahid
 | Styling | Tailwind CSS v4.1.12 (via `@tailwindcss/vite`) |
 | Animation | Motion (Framer Motion) v12.23.24 |
 | Icons | lucide-react v0.487.0 |
+| Backend | Node.js + Express |
+| Database | Supabase |
+| Email | Resend |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
 | Package Manager | pnpm |
 | Language | TypeScript file extensions (`.tsx`/`.ts`), written in plain JS style — no strict type annotations |
 | Component Library | None (custom-built components only) |
 
 ### Note on Tailwind v4
 
-This project uses Tailwind's new v4 architecture. There is **no `tailwind.config.js`** — configuration lives in CSS via `@theme` blocks inside `src/styles/tailwind.css`. If you're used to v3, don't look for a JS config file; it doesn't exist here.
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── App.tsx                  # Main app component
-│   └── components/
-│       └── figma/
-│           └── ImageWithFallback.tsx
-├── imports/                     # Figma-exported components (dark/light theme SVGs, etc.)
-│   ├── DFaQs-1/
-│   └── LightFaQs/
-├── styles/
-│   ├── index.css                # Entry point, imports the rest
-│   ├── tailwind.css             # Tailwind v4 config + tw-animate-css
-│   ├── theme.css
-│   └── fonts.css
-└── main.tsx                     # React entry point
-```
+The frontend uses Tailwind's new v4 architecture. There is **no `tailwind.config.js`** — configuration lives in CSS via `@theme` blocks inside `frontend/src/styles/tailwind.css`. If you're used to v3, don't look for a JS config file; it doesn't exist here.
 
 ## Getting Started
 
@@ -53,11 +41,10 @@ src/
 - [Node.js](https://nodejs.org) (LTS version)
 - [pnpm](https://pnpm.io/installation) — install with `npm install -g pnpm` if you don't have it
 
-### Setup
+### Frontend
 
 ```bash
-git clone https://github.com/<your-username>/social-stack.git
-cd social-stack
+cd frontend
 pnpm install
 ```
 
@@ -67,34 +54,32 @@ pnpm approve-builds
 ```
 and approve `@tailwindcss/oxide` and `esbuild`. This is required for Tailwind to compile correctly.
 
-### Development
+```bash
+pnpm dev       # start local dev server
+pnpm build     # production build, outputs to frontend/dist
+pnpm preview   # preview the production build locally
+```
+
+### Backend
 
 ```bash
-pnpm dev
+cd backend
+npm install
+cp .env.example .env   # fill in your own keys, never commit .env
+npm run dev             # start with auto-restart on changes
 ```
-Starts the local dev server (Vite will print the local URL, usually `http://localhost:5173`).
 
-### Production Build
+Health check: `GET http://localhost:5000/api/health`
 
-```bash
-pnpm build
-```
-Outputs a production build to `dist/`.
+## Branching & Contributing
 
-```bash
-pnpm preview
-```
-Preview the production build locally before deploying.
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for our branch structure, workflow, and commit conventions.
 
-## Branching
+## Team
 
-- `main` — stable/production
-- `develop` — integration branch
-- `feature/<name>` — individual work, branched off `develop`
-
-Open a PR into `develop` when a feature is ready; `main` is protected and only updated via reviewed merges.
+Muhammad Rayyan Ahmed, Fatima Akhtar, Maryam Yousaf, Muznna Majid, Anas Zahid — Software Engineering students at NUCES-FAST.
 
 ## Known Notes
 
-- The dark/light mode SVG background image is currently ~2MB and duplicated across two folders (`imports/DFaQs-1` and `imports/LightFaQs`). This should be compressed/optimized before production launch.
+- The dark/light mode SVG background image in `frontend/src/imports/` is currently ~2MB and duplicated across two folders. This should be compressed/optimized before production launch.
 - No component library is used by design — all UI is hand-built with Tailwind + Motion.
