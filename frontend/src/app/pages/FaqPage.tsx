@@ -172,8 +172,17 @@ function FaqAccordion({ theme = "dark" }) {
       {faqs.map((faq, index) => {
         const isOpen = openIndex === index;
         return (
-          <motion.div
+            <div
             key={index}
+            className={`rounded-[18px] ${isLight ? "bg-[#e6f2dd]" : "bg-[#222d31]"}`}
+            style={{
+              position: "sticky",
+              top: 100 + index * 14,
+              zIndex: 10 + index,
+            }}
+          >
+          
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -218,6 +227,7 @@ function FaqAccordion({ theme = "dark" }) {
               </AnimatePresence>
             </button>
           </motion.div>
+          </div>
         );
       })}
     </section>
@@ -393,8 +403,7 @@ function FaqDivider({ theme = "dark" }) {
           viewBox={isLight ? "0 0 847.642 94" : "0 0 560.846 94"}
           preserveAspectRatio="none"
         >
-          <path d={isLight ? svgPaths.p38a6ba00 : svgPaths.p381f2700} fill={isLight ? "#7D9444" : "#B7DD67"} fillOpacity={isLight ? "0.9" : "0.8"} />
-        </svg>
+<path d={isLight ? lightSvgPaths.p38a6ba00 : darkSvgPaths.p381f2700} fill={isLight ? "#7D9444" : "#B7DD67"} fillOpacity={isLight ? "0.9" : "0.8"} />        </svg>
         <p className={`relative font-['Caveat_Brush'] text-[#273338] ${isLight ? "text-2xl md:text-[45px]" : "text-2xl md:text-[34px]"} leading-[32px] text-center z-10 px-4 whitespace-nowrap`}>
           FREQUENTLY ASKED QUESTIONS
         </p>
