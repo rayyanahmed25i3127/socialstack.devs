@@ -1,26 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X } from "lucide-react";
 
-// ─── Assets ─────────────────────────────────────────────────────────────────
-import imgIconPlaceholder from "../../imports/Nav/ca7a4b5d9052afe7cb23b96175cc5d547c211686.png";
-import navSvgPaths from "../../imports/Nav/svg-bwxa6ajcay";
+import { Header } from "./Header";
+import { Footer } from "./Footer";
 
+// ─── Assets (still used directly by this page's Hero / FAQ divider) ────────
 import imgStack from "../../imports/DFaQs-1/7d701444326e8df96a25df0b6c45d1370c34d2ea.png";
 import darkSvgPaths from "../../imports/DFaQs-1/svg-hylx692lcq";
 
-import imgLightLogo from "../../imports/LightFaQs/7827342e88d818352b12b7398ddea508cdbb3d6c.png";
 import imgLightStack from "../../imports/LightFaQs/7d701444326e8df96a25df0b6c45d1370c34d2ea.png";
-import imgLightFooterLogo from "../../imports/LightFaQs/ca7a4b5d9052afe7cb23b96175cc5d547c211686.png";
-import imgLightGmail from "../../imports/LightFaQs/6b4ec495fae1c48f0f0ded0d4de376f6d0e25992.png";
-import imgLightInstagram from "../../imports/LightFaQs/0a53286268279a29ea6db753d8d408bb499874ac.png";
-import imgLightLinkedin from "../../imports/LightFaQs/5ac66073681efe5925013d8e779ef7ae2781251e.png";
 import lightSvgPaths from "../../imports/LightFaQs/svg-7o19qwhi4o";
-
-import imgGmailPngBlack from "../../imports/DFooter-1/bb41079225c7e7e337a305986d06c16975f4fb87.png";
-import imgInstagramPngBlack from "../../imports/DFooter-1/4df4f05f97b46091b25e33867b09dde1cfa65a65.png";
-import imgLinkedinIconVectorPngBlack from "../../imports/DFooter-1/f061b0dccdf43cbb885fbbf475aa5115a5fee706.png";
-import imgLogoRecolored1 from "../../imports/DFooter-1/eef17f758a83029ddf8e98fae373f5efc3059691.png";
 
 // ─── FAQ data ───────────────────────────────────────────────────────────────
 
@@ -54,79 +43,6 @@ const faqs = [
     a: "Not at all. You tell us what you're trying to achieve; we'll handle the jargon, the code, and everything in between."
   }
 ];
-
-// ─── Nav (TEMPORARY — Rayyan is building the shared Navbar/Footer separately.
-// This local version keeps the page fully working/testable in the meantime.
-// Safe to delete this component and swap in the shared one once it lands —
-// it isn't reused anywhere else in this file besides <FAQsPage>. ────────────
-
-function SunIcon({ theme = "dark" }) {
-  const stroke = theme === "light" ? "#273338" : "#B7DD67";
-  return (
-    <svg className="w-[14px] h-[14px]" fill="none" viewBox="0 0 14 14">
-      <g clipPath="url(#sun-clip)">
-        {[navSvgPaths.p24da2380, "M7 1.16667V2.33333", "M7 11.6667V12.8333", navSvgPaths.p37111300, navSvgPaths.p9000440, "M1.16667 7H2.33333", "M11.6667 7H12.8333", navSvgPaths.p9ee27e0, navSvgPaths.pe9da980].map((d, i) => (
-          <path key={i} d={d} stroke={stroke} strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.16667" />
-        ))}
-      </g>
-      <defs><clipPath id="sun-clip"><rect fill="white" height="14" width="14" /></clipPath></defs>
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return <svg className="w-[14px] h-[14px]" fill="none" viewBox="0 0 14 14"><path d={navSvgPaths.p3283c680} stroke="#E6F2DD" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.16667" /></svg>;
-}
-
-function ThemeToggle({ theme, onThemeChange }) {
-  const isLight = theme === "light";
-  return (
-    <button type="button" onClick={() => onThemeChange(isLight ? "dark" : "light")} className={`${isLight ? "bg-[rgba(111,127,60,0.9)]" : "bg-[#2e3936]"} h-[34px] relative rounded-full shrink-0 w-[68px] cursor-pointer select-none transition-colors`} aria-label="Toggle theme">
-      <div aria-hidden className={`absolute border-[0.783px] ${isLight ? "border-[rgba(39,51,56,0.18)]" : "border-[rgba(200,231,123,0.2)]"} border-solid inset-0 pointer-events-none rounded-full`} />
-      <motion.div className={`${isLight ? "bg-[#e6f2dd]" : "bg-[#c8e77b]"} absolute rounded-full size-[26px] top-[3.78px]`} animate={{ left: isLight ? 3.78 : 38.22 }} transition={{ duration: 0.22, ease: "easeInOut" }} />
-      <div className="absolute flex items-center justify-center left-[4.78px] size-[26px] top-[4px]"><SunIcon theme={theme} /></div>
-      <div className="absolute flex items-center justify-center left-[34.78px] size-[26px] top-[4px]"><MoonIcon /></div>
-    </button>
-  );
-}
-
-const navLinks = ["Services", "About us", "FAQs"];
-
-function Nav({ theme = "dark", onThemeChange = () => {} }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const isLight = theme === "light";
-
-  return (
-    <header className={`w-full relative z-50 transition-colors ${isLight ? "bg-[#e6f2dd]" : "bg-[#222d31]"}`}>
-      <div className="w-full relative flex items-center px-6 md:px-20 py-4 md:py-6">
-        <div className="w-[70px] h-[70px] md:w-[85px] md:h-[85px] flex-shrink-0">
-          <img src={isLight ? imgLightLogo : imgIconPlaceholder} alt="SocialStack" className="w-full h-full object-contain" />
-        </div>
-        <nav className="hidden lg:flex gap-12 items-center absolute left-1/2 -translate-x-1/2">
-          {navLinks.map((link) => <a key={link} href="#" className={`font-['Manrope'] font-semibold ${isLight ? "text-[rgba(111,127,60,0.9)]" : "text-[#e6f2dd]"} text-[20px] leading-normal hover:opacity-70 transition-opacity whitespace-nowrap`}>{link}</a>)}
-        </nav>
-        <div className="flex items-center gap-4 md:gap-6 ml-auto">
-          <ThemeToggle theme={theme} onThemeChange={onThemeChange} />
-          <button className={`${isLight ? "bg-[rgba(111,127,60,0.9)]" : "bg-[#c6e7bc]"} rounded-full px-5 py-3 md:py-4 font-['Manrope'] font-bold text-[#273338] text-[14px] md:text-[15px] hover:opacity-90 transition-opacity whitespace-nowrap relative overflow-hidden`}>
-            <span className="relative z-10">Contact</span>
-          </button>
-          <button className={`lg:hidden ${isLight ? "text-[rgba(111,127,60,0.9)]" : "text-[#e6f2dd]"} hover:opacity-70 transition-opacity`} onClick={() => setMobileOpen((v) => !v)} aria-label="Toggle menu">
-            {mobileOpen ? <X size={26} /> : <Menu size={26} />}
-          </button>
-        </div>
-      </div>
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: "easeInOut" }} className={`lg:hidden overflow-hidden ${isLight ? "bg-[#dbeacb] border-t border-[rgba(111,127,60,0.18)]" : "bg-[#2e3936] border-t border-[rgba(200,231,123,0.15)]"}`}>
-            <nav className="flex flex-col px-6 py-4 gap-4">
-              {navLinks.map((link) => <a key={link} href="#" className={`font-['Manrope'] font-semibold ${isLight ? "text-[rgba(111,127,60,0.9)]" : "text-[#e6f2dd]"} text-[20px] leading-normal py-2 hover:opacity-70 transition-opacity`} onClick={() => setMobileOpen(false)}>{link}</a>)}
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
-  );
-}
 
 // ─── FAQ accordion ──────────────────────────────────────────────────────────
 
@@ -412,53 +328,6 @@ function FaqDivider({ theme = "dark" }) {
   );
 }
 
-// ─── Footer (TEMPORARY — same note as Nav above: Rayyan's shared Footer will
-// replace this. Kept here so the page renders complete/testable for now. ────
-
-function Footer({ theme = "dark" }) {
-  const isLight = theme === "light";
-  const textClass = isLight ? "text-[rgba(183,221,103,0.8)]" : "text-black";
-  return (
-    <footer className={`w-full ${isLight ? "bg-[#3e4f4a]" : "bg-[rgba(183,221,103,0.8)]"} relative px-6 py-10 md:px-14 md:py-16 flex flex-col mt-10`}>
-      <div className="max-w-[1370px] w-full mx-auto flex flex-col lg:flex-row justify-between gap-10">
-
-        {/* Left Section - Logo & Bio */}
-        <div className="flex flex-col gap-6 max-w-2xl">
-          <div className="flex items-center gap-4">
-            <img src={isLight ? imgLightFooterLogo : imgLogoRecolored1} alt="SocialStack Logo" className="w-[80px] h-[100px] object-contain" />
-            <h2 className={`font-['Caveat_Brush'] ${isLight ? "text-[rgba(183,221,103,0.8)]" : "text-[#222d31]"} text-[32px] md:text-[40px] m-0`}>SocialStack</h2>
-          </div>
-          <p className={`font-['Outfit'] font-light ${textClass} text-[20px] md:text-[32px] leading-snug`}>
-            We provide ease in all your tech needs. Contact us today for a quote or reach out to learn more about our services.
-          </p>
-          <div className="flex gap-6 mt-4">
-            <a href="#" className="hover:scale-110 transition-transform"><img src={isLight ? imgLightGmail : imgGmailPngBlack} alt="Gmail" className="w-[40px] h-[40px] md:w-[50px] md:h-[50px] object-cover" /></a>
-            <a href="#" className="hover:scale-110 transition-transform"><img src={isLight ? imgLightInstagram : imgInstagramPngBlack} alt="Instagram" className="w-[40px] h-[40px] md:w-[50px] md:h-[50px] object-cover" /></a>
-            <a href="#" className="hover:scale-110 transition-transform"><img src={isLight ? imgLightLinkedin : imgLinkedinIconVectorPngBlack} alt="LinkedIn" className="w-[40px] h-[40px] md:w-[50px] md:h-[50px] object-cover" /></a>
-          </div>
-          <p className={`font-['Outfit'] font-medium ${textClass} text-[24px] md:text-[36px] mt-2 lg:mt-0 lg:absolute lg:left-1/2 lg:top-[342px] lg:-translate-x-1/2 lg:whitespace-nowrap`}>
-            ss.socialstack@gmail.com
-          </p>
-        </div>
-
-        {/* Right Section - Links */}
-        <div className="flex flex-col gap-4 lg:pt-10 lg:pr-20">
-          <a href="#" className={`font-['Outfit'] font-light ${textClass} text-[20px] md:text-[24px] hover:underline`}>About Us</a>
-          <a href="#" className={`font-['Outfit'] font-light ${textClass} text-[20px] md:text-[24px] hover:underline`}>Our Services</a>
-          <a href="#" className={`font-['Outfit'] font-light ${textClass} text-[20px] md:text-[24px] hover:underline`}>FAQs</a>
-          <a href="#" className={`font-['Outfit'] font-light ${textClass} text-[20px] md:text-[24px] hover:underline`}>Contact Us</a>
-        </div>
-      </div>
-
-      {/* Bottom Bar */}
-      <div className="max-w-[1370px] w-full mx-auto mt-16 pt-6 border-t-[3px] border-[rgba(39,51,56,0.2)] flex flex-col md:flex-row justify-between gap-4">
-        <p className={`font-['Outfit'] font-extralight ${textClass} text-[18px] md:text-[24px]`}>© 2026 SocialStack</p>
-        <p className={`font-['Outfit'] font-extralight ${textClass} text-[18px] md:text-[24px]`}>All rights reserved</p>
-      </div>
-    </footer>
-  );
-}
-
 // ─── FAQs Page ──────────────────────────────────────────────────────────────
 
 export default function FaqPage() {
@@ -467,7 +336,7 @@ export default function FaqPage() {
 
   return (
     <main className={`min-h-screen flex flex-col transition-colors duration-300 ${isLight ? "bg-[#e6f2dd] text-[#273338]" : "bg-[#222d31] text-white"}`}>
-      <Nav theme={theme} onThemeChange={setTheme} />
+      <Header theme={theme} onThemeChange={setTheme} />
       <Hero theme={theme} />
       <FaqDivider theme={theme} />
       <FaqAccordion theme={theme} />
