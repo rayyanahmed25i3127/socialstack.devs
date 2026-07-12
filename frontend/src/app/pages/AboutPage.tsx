@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties, type Key } from "react";
 import { Sun, Moon, ChevronLeft, ChevronRight, ExternalLink, Github } from "lucide-react";
 import { motion, AnimatePresence, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 import Vector from "../../imports/Vector";
@@ -477,6 +477,7 @@ function FooterSocialButton({
   href: string;
   dark: boolean;
   index: number;
+   key?: Key; 
 }) {
   const style = {
     "--social-front": dark ? "#273338" : "rgba(183,221,103,0.85)",
