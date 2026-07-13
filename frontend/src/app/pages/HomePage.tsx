@@ -2,7 +2,7 @@
 // HomePage - Modified to remove hero icons, unify theme spacing, and add animations
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 import { Header } from "./Header";
@@ -181,31 +181,6 @@ function WhatWeDo_Frame1() {
   );
 }
 
-function WhatWeDo_WebDev() {
-  return (
-    <motion.div
-      className="bg-[#253236] relative rounded-[18px] shrink-0 w-[300px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="web dev"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <WhatWeDo_Frame1 />
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[56px] justify-center leading-[0] relative shrink-0 text-[#f4f4ef] text-[30px] text-center tracking-[-1.2px] w-[245px]">
-          <p className="leading-[88px]">Web development</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Medium',sans-serif] font-medium h-[37px] justify-center leading-[0] relative shrink-0 text-[#f4f4ef] text-[15px] tracking-[-0.6px] w-[275px]">
-          <p className="leading-[88px]">Fast, scalable websites build for growth</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#b7dd67] text-[18px] text-center tracking-[-0.72px] w-[114px] group-hover:underline transition-colors duration-300">
-          <p className="leading-[88px]">Learn more...</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function WhatWeDo_Frame2() {
   return (
@@ -215,31 +190,6 @@ function WhatWeDo_Frame2() {
   );
 }
 
-function WhatWeDo_WebDev1() {
-  return (
-    <motion.div
-      className="bg-[#253236] relative rounded-[18px] shrink-0 w-[300px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="web dev"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <WhatWeDo_Frame2 />
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[56px] justify-center leading-[0] relative shrink-0 text-[#f4f4ef] text-[30px] text-center tracking-[-1.2px] w-[245px]">
-          <p className="leading-[88px]">Ads and Branding</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Medium',sans-serif] font-medium h-[55px] justify-center leading-[0] relative shrink-0 text-[#f4f4ef] text-[15px] text-center tracking-[-0.6px] w-[275px]">
-          <p className="leading-[28px]">Identity that stands out, campaigns that convert</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#b7dd67] text-[18px] text-center tracking-[-0.72px] w-[112px] group-hover:underline transition-colors duration-300">
-          <p className="leading-[88px]">Learn more...</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function WhatWeDo_Frame3() {
   return (
@@ -249,31 +199,6 @@ function WhatWeDo_Frame3() {
   );
 }
 
-function WhatWeDo_WebDev2() {
-  return (
-    <motion.div
-      className="bg-[#253236] relative rounded-[18px] shrink-0 w-[300px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="web dev"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <WhatWeDo_Frame3 />
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[56px] justify-center leading-[0] relative shrink-0 text-[#f4f4ef] text-[30px] text-center tracking-[-1.2px] w-[245px]">
-          <p className="leading-[88px]">UI UX Design</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Medium',sans-serif] font-medium h-[37px] justify-center leading-[0] relative shrink-0 text-[#f4f4ef] text-[15px] tracking-[-0.6px] w-[275px]">
-          <p className="leading-[88px]">Interfaces that are intuitive and beautiful</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#b7dd67] text-[18px] text-center tracking-[-0.72px] w-[116px] group-hover:underline transition-colors duration-300">
-          <p className="leading-[88px]">Learn more...</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function WhatWeDo_Frame4() {
   return (
@@ -283,50 +208,8 @@ function WhatWeDo_Frame4() {
   );
 }
 
-function WhatWeDo_WebDev3() {
-  return (
-    <motion.div
-      className="bg-[#253236] h-[296px] relative rounded-[18px] shrink-0 w-[300px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="web dev"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <WhatWeDo_Frame4 />
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[56px] justify-center leading-[0] min-w-full relative shrink-0 text-[#f4f4ef] text-[30px] text-center tracking-[-1.2px] w-[min-content]">
-          <p className="leading-[28px]">SMM</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Medium',sans-serif] font-medium h-[55px] justify-center leading-[0] relative shrink-0 text-[#f4f4ef] text-[15px] text-center tracking-[-0.6px] w-[226px]">
-          <p className="leading-[28px]">Content that gets people talking about your brand</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#b7dd67] text-[18px] text-center tracking-[-0.72px] w-[111px] group-hover:underline transition-colors duration-300">
-          <p className="leading-[88px]">Learn more...</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
-function WhatWeDo_Services() {
-  return (
-    <div className="content-stretch flex flex-wrap gap-[20px] items-start justify-center px-[10px] py-[10px] relative shrink-0 w-full" data-name="Services">
-      <WhatWeDo_WebDev />
-      <WhatWeDo_WebDev1 />
-      <WhatWeDo_WebDev2 />
-      <WhatWeDo_WebDev3 />
-    </div>
-  );
-}
 
-function WhatWeDo_Frame() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-      <WhatWeDo_Services />
-    </div>
-  );
-}
 
 // ─── Why Social Stack (dark theme) ─────────────────────────────────────────
 function Why_Brush() {
@@ -378,25 +261,6 @@ function Why_Frame1() {
   );
 }
 
-function Why_OneRoof() {
-  return (
-    <motion.div
-      className="bg-[#253236] relative rounded-[18px] shrink-0 w-[394px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="one roof"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col gap-[10px] items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <Why_Frame1 />
-        <div className="[word-break:break-word] flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[75px] justify-center leading-[0] not-italic relative shrink-0 text-[#f4f4ef] text-[15px] tracking-[-0.6px] w-[337px]">
-          <p className="leading-[32px]">One team for design, development, branding, and marketing. No juggling multiple freelancers.</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function Why_Stickynote1() {
   return (
@@ -435,25 +299,6 @@ function Why_Frame4() {
   );
 }
 
-function Why_FastCom() {
-  return (
-    <motion.div
-      className="bg-[#253236] relative rounded-[18px] shrink-0 w-[394px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="fast com"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col gap-[10px] items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <Why_Frame4 />
-        <div className="[word-break:break-word] flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[75px] justify-center leading-[0] not-italic relative shrink-0 text-[#f4f4ef] text-[15px] tracking-[-0.6px] w-[337px]">
-          <p className="leading-[32px]">No disappearing acts. Just clear updates and quick replies throughout your project.</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function Why_Stickynote2() {
   return (
@@ -492,43 +337,8 @@ function Why_Frame7() {
   );
 }
 
-function Why_Growth() {
-  return (
-    <motion.div
-      className="bg-[#253236] h-[214px] relative rounded-[18px] shrink-0 w-[394px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="growth"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col gap-[10px] items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <Why_Frame7 />
-        <div className="[word-break:break-word] flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[88px] justify-center leading-[0] not-italic relative shrink-0 text-[#f4f4ef] text-[15px] tracking-[-0.6px] w-[337px]">
-          <p className="leading-[32px]">We build with tomorrow in mind, so your website can grow as your business does.</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
-function Why_Quality() {
-  return (
-    <div className="content-stretch flex flex-wrap items-start justify-center gap-[24px] px-[10px] py-[10px] relative shrink-0 w-full" data-name="quality">
-      <Why_OneRoof />
-      <Why_FastCom />
-      <Why_Growth />
-    </div>
-  );
-}
 
-function Why_Frame() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-      <Why_Quality />
-    </div>
-  );
-}
 
 // ─── How Social Stack (dark theme) ─────────────────────────────────────────
 function How_Brush() {
@@ -1015,31 +825,6 @@ function LHero_Frame3() {
   );
 }
 
-function LHero_WebDev() {
-  return (
-    <motion.div
-      className="bg-[rgba(111,127,60,0.15)] relative rounded-[18px] shrink-0 w-[300px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="web dev"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <LHero_Frame3 />
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[56px] justify-center leading-[0] relative shrink-0 text-[#2f372d] text-[30px] text-center tracking-[-1.2px] w-[245px]">
-          <p className="leading-[88px]">Web development</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Medium',sans-serif] font-medium h-[37px] justify-center leading-[0] relative shrink-0 text-[#2f372d] text-[15px] tracking-[-0.6px] w-[275px]">
-          <p className="leading-[88px]">Fast, scalable websites build for growth</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#6f7f3c] text-[18px] text-center tracking-[-0.72px] w-[114px] group-hover:underline transition-colors duration-300">
-          <p className="leading-[88px]">Learn more...</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function LHero_Frame4() {
   return (
@@ -1049,31 +834,6 @@ function LHero_Frame4() {
   );
 }
 
-function LHero_WebDev1() {
-  return (
-    <motion.div
-      className="bg-[rgba(111,127,60,0.15)] relative rounded-[18px] shrink-0 w-[300px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="web dev"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <LHero_Frame4 />
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[56px] justify-center leading-[0] relative shrink-0 text-[#2f372d] text-[30px] text-center tracking-[-1.2px] w-[245px]">
-          <p className="leading-[88px]">Ads and Branding</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Medium',sans-serif] font-medium h-[55px] justify-center leading-[0] relative shrink-0 text-[#2f372d] text-[15px] text-center tracking-[-0.6px] w-[275px]">
-          <p className="leading-[28px]">Identity that stands out, campaigns that convert</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#6f7f3c] text-[18px] text-center tracking-[-0.72px] w-[112px] group-hover:underline transition-colors duration-300">
-          <p className="leading-[88px]">Learn more...</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function LHero_Frame5() {
   return (
@@ -1083,31 +843,6 @@ function LHero_Frame5() {
   );
 }
 
-function LHero_WebDev2() {
-  return (
-    <motion.div
-      className="bg-[rgba(111,127,60,0.15)] relative rounded-[18px] shrink-0 w-[300px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="web dev"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <LHero_Frame5 />
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[56px] justify-center leading-[0] relative shrink-0 text-[#2f372d] text-[30px] text-center tracking-[-1.2px] w-[245px]">
-          <p className="leading-[88px]">UI UX Design</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Medium',sans-serif] font-medium h-[37px] justify-center leading-[0] relative shrink-0 text-[#2f372d] text-[15px] tracking-[-0.6px] w-[275px]">
-          <p className="leading-[88px]">Interfaces that are intuitive and beautiful</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#6f7f3c] text-[18px] text-center tracking-[-0.72px] w-[116px] group-hover:underline transition-colors duration-300">
-          <p className="leading-[88px]">Learn more...</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function LHero_Frame6() {
   return (
@@ -1117,50 +852,8 @@ function LHero_Frame6() {
   );
 }
 
-function LHero_WebDev3() {
-  return (
-    <motion.div
-      className="bg-[rgba(111,127,60,0.15)] h-[296px] relative rounded-[18px] shrink-0 w-[300px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="web dev"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <LHero_Frame6 />
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[56px] justify-center leading-[0] min-w-full relative shrink-0 text-[#2f372d] text-[30px] text-center tracking-[-1.2px] w-[min-content]">
-          <p className="leading-[28px]">SMM</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Medium',sans-serif] font-medium h-[55px] justify-center leading-[0] relative shrink-0 text-[#2f372d] text-[15px] text-center tracking-[-0.6px] w-[226px]">
-          <p className="leading-[28px]">Content that connects and grows communities</p>
-        </div>
-        <div className="[word-break:break-word] flex flex-col font-['Manrope:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#6f7f3c] text-[18px] text-center tracking-[-0.72px] w-[111px] group-hover:underline transition-colors duration-300">
-          <p className="leading-[88px]">Learn more...</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
-function LHero_Services() {
-  return (
-    <div className="content-stretch flex flex-wrap gap-[20px] items-start justify-center px-[10px] py-[10px] relative shrink-0 w-full" data-name="Services">
-      <LHero_WebDev />
-      <LHero_WebDev1 />
-      <LHero_WebDev2 />
-      <LHero_WebDev3 />
-    </div>
-  );
-}
 
-function LHero_Frame2() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-      <LHero_Services />
-    </div>
-  );
-}
 
 function LHero_Brush1() {
   return (
@@ -1212,25 +905,6 @@ function LHero_Frame8() {
   );
 }
 
-function LHero_OneRoof() {
-  return (
-    <motion.div
-      className="bg-[rgba(111,127,60,0.15)] relative rounded-[18px] shrink-0 w-[394px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="one roof"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col gap-[10px] items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <LHero_Frame8 />
-        <div className="[word-break:break-word] flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[75px] justify-center leading-[0] not-italic relative shrink-0 text-[#2f372d] text-[15px] tracking-[-0.6px] w-[337px]">
-          <p className="leading-[32px]">One team for design, development, branding, and marketing. No juggling multiple freelancers.</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function LHero_Stickynote1() {
   return (
@@ -1269,25 +943,6 @@ function LHero_Frame11() {
   );
 }
 
-function LHero_FastCom() {
-  return (
-    <motion.div
-      className="bg-[rgba(111,127,60,0.15)] relative rounded-[18px] shrink-0 w-[394px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="fast com"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col gap-[10px] items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <LHero_Frame11 />
-        <div className="[word-break:break-word] flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[75px] justify-center leading-[0] not-italic relative shrink-0 text-[#2f372d] text-[15px] tracking-[-0.6px] w-[337px]">
-          <p className="leading-[32px]">No disappearing acts. Just clear updates and quick replies throughout your project.</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
 function LHero_Stickynote2() {
   return (
@@ -1326,43 +981,8 @@ function LHero_Frame14() {
   );
 }
 
-function LHero_Growth() {
-  return (
-    <motion.div
-      className="bg-[rgba(111,127,60,0.15)] h-[214px] relative rounded-[18px] shrink-0 w-[394px] group cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="growth"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="content-stretch flex flex-col gap-[10px] items-start overflow-clip px-[20px] py-[10px] relative rounded-[inherit] size-full">
-        <LHero_Frame14 />
-        <div className="[word-break:break-word] flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[88px] justify-center leading-[0] not-italic relative shrink-0 text-[#2f372d] text-[15px] tracking-[-0.6px] w-[337px]">
-          <p className="leading-[32px]">We build with tomorrow in mind, so your website can grow as your business does.</p>
-        </div>
-      </div>
-      <div aria-hidden className="absolute border border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)] border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300" />
-    </motion.div>
-  );
-}
 
-function LHero_Quality() {
-  return (
-    <div className="content-stretch flex flex-wrap items-start justify-center gap-[24px] px-[10px] py-[10px] relative shrink-0 w-full" data-name="quality">
-      <LHero_OneRoof />
-      <LHero_FastCom />
-      <LHero_Growth />
-    </div>
-  );
-}
 
-function LHero_Frame7() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full">
-      <LHero_Quality />
-    </div>
-  );
-}
 
 function LHero_Brush2() {
   return (
@@ -1710,6 +1330,160 @@ function BrushDoodle({ d, width, height, left, top, color = "#F4F4EF" }) {
 }
 
 // ─── ScaleFrame ───────────────────────────────────────────────────────────────
+function NumberBadge({ n, rotate }) {
+  return (
+    <div
+      className={`shrink-0 size-[48px] rounded-[4px] bg-[rgba(183,221,103,0.8)] shadow-[0px_4px_10px_0px_rgba(183,221,103,0.12)] flex items-center justify-center ${rotate}`}
+    >
+      <span className="font-['Manrope:Medium',sans-serif] font-medium text-[20px] text-black">{n}.</span>
+    </div>
+  );
+}
+
+function ServiceCard({ icon, title, desc, isLight }) {
+  return (
+    <motion.div
+      whileHover={{ y: -6, scale: 1.04 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.25, ease: "easeInOut" }}
+      className={`group relative rounded-[18px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] w-full h-full px-5 py-6 flex flex-col items-center text-center gap-3 justify-center transition-colors duration-300 shadow-xl ${
+        isLight ? "bg-[rgba(111,127,60,0.15)]" : "bg-[#253236]"
+      }`}
+    >
+      {icon}
+      <h3 className={`font-['Manrope:Bold',sans-serif] font-bold text-2xl tracking-[-1px] ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
+        {title}
+      </h3>
+      {desc && (
+        <p className={`font-['Manrope:Medium',sans-serif] font-medium text-sm ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
+          {desc}
+        </p>
+      )}
+      <p className={`font-['Manrope:Bold',sans-serif] font-bold text-lg group-hover:underline transition-colors duration-300 ${isLight ? "text-[#6f7f3c]" : "text-[#b7dd67]"}`}>
+        Learn more...
+      </p>
+      <div
+        aria-hidden
+        className={`absolute border border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300 ${
+          isLight ? "border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)]" : "border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)]"
+        }`}
+      />
+    </motion.div>
+  );
+}
+
+function WhyCard({ badge, title, desc, isLight }) {
+  return (
+    <motion.div
+      whileHover={{ y: -6, scale: 1.04 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.25, ease: "easeInOut" }}
+      className={`group relative rounded-[18px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] w-full h-full px-5 py-5 flex flex-col justify-center gap-3 transition-colors duration-300 shadow-xl ${
+        isLight ? "bg-[rgba(111,127,60,0.15)]" : "bg-[#253236]"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        {badge}
+        <h3 className={`font-['Manrope:Bold',sans-serif] font-bold text-xl sm:text-2xl tracking-[-1px] ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
+          {title}
+        </h3>
+      </div>
+      <p className={`font-['Inter:Medium',sans-serif] text-sm ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
+        {desc}
+      </p>
+      <div
+        aria-hidden
+        className={`absolute border border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300 ${
+          isLight ? "border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)]" : "border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)]"
+        }`}
+      />
+    </motion.div>
+  );
+}
+
+function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
+  const [active, setActive] = useState(0);
+  const total = items.length;
+
+  const go = useCallback(
+    (dir) => setActive((a) => (a + dir + total) % total),
+    [total]
+  );
+
+  return (
+    <div className="w-full flex flex-col items-center gap-7">
+      <div
+        tabIndex={0}
+        role="group"
+        aria-roledescription="carousel"
+        aria-label="Cards — use the left and right arrow keys to navigate"
+        onKeyDown={(e) => {
+          if (e.key === "ArrowRight") {
+            e.preventDefault();
+            go(1);
+          } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            go(-1);
+          }
+        }}
+        className="relative w-full max-w-[1280px] overflow-hidden outline-none rounded-2xl focus-visible:ring-2 focus-visible:ring-[#b7dd67]"
+        style={{ height: minHeight }}
+      >
+        {items.map((item, i) => {
+          let offset = i - active;
+          if (offset > total / 2) offset -= total;
+          if (offset < -total / 2) offset -= -total;
+          const abs = Math.abs(offset);
+          const isActive = offset === 0;
+          return (
+            <motion.div
+              key={i}
+              className="absolute left-1/2 top-1/2 px-2"
+              style={{ zIndex: total - abs, width: cardWidth }}
+              initial={false}
+              animate={{
+                x: `calc(-50% + ${offset * cardWidth * 0.7}px)`,
+                y: "-50%",
+                scale: isActive ? 1 : Math.max(0.8, 1 - abs * 0.12),
+                opacity: abs > 2 ? 0 : isActive ? 1 : Math.max(0.35, 1 - abs * 0.32),
+              }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => !isActive && setActive(i)}
+            >
+              {item}
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Pagination dots */}
+      <div className="flex items-center justify-center gap-2">
+        {items.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setActive(i)}
+            aria-label={`Go to card ${i + 1}`}
+            aria-current={i === active}
+            className="h-2.5 rounded-full transition-all duration-300 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
+            style={{
+              width: i === active ? 26 : 10,
+              background:
+                i === active
+                  ? isLight
+                    ? "#6f7f3c"
+                    : "#b7dd67"
+                  : isLight
+                    ? "rgba(111,127,60,0.3)"
+                    : "rgba(230,242,221,0.3)",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ScaleFrame({ children, width, height, mobileWidth = null, mobileHeight = null, mobileBreakpoint = 768, className = "" }) {
   const frameRef = useRef(null);
   const [scale, setScale] = useState(1);
@@ -1783,17 +1557,39 @@ function DarkPageContent() {
         </motion.div>
       </ScaleFrame>
 
-      <ScaleFrame width={1278} height={331} mobileWidth={650} mobileHeight={660}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full flex flex-col items-center overflow-hidden"
-        >
-          <WhatWeDo_Frame />
-        </motion.div>
-      </ScaleFrame>
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10">
+        <CardCarousel
+          isLight={false}
+          cardWidth={300}
+          minHeight={380}
+          items={[
+            <ServiceCard
+              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame28} />}
+              title="Web development"
+              desc="Fast, scalable websites build for growth"
+              isLight={false}
+            />,
+            <ServiceCard
+              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame29} />}
+              title="Ads and Branding"
+              desc="Identity that stands out, campaigns that convert"
+              isLight={false}
+            />,
+            <ServiceCard
+              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame30} />}
+              title="UI UX Design"
+              desc="Interfaces that are intuitive and beautiful"
+              isLight={false}
+            />,
+            <ServiceCard
+              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame31} />}
+              title="SMM"
+              desc="Content that gets people talking about your brand"
+              isLight={false}
+            />,
+          ]}
+        />
+      </div>
 
       <ScaleFrame width={1280} height={192} mobileWidth={1000}>
         <motion.div
@@ -1808,17 +1604,33 @@ function DarkPageContent() {
         </motion.div>
       </ScaleFrame>
 
-      <ScaleFrame width={1278} height={240} mobileWidth={850} mobileHeight={480}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full flex flex-col items-center overflow-hidden"
-        >
-          <Why_Frame />
-        </motion.div>
-      </ScaleFrame>
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10">
+        <CardCarousel
+          isLight={false}
+          cardWidth={380}
+          minHeight={240}
+          items={[
+            <WhyCard
+              badge={<NumberBadge n={1} rotate="-rotate-4" />}
+              title="Everything under one roof"
+              desc="One team for design, development, branding, and marketing. No juggling multiple freelancers."
+              isLight={false}
+            />,
+            <WhyCard
+              badge={<NumberBadge n={2} rotate="rotate-3" />}
+              title="Fast communication"
+              desc="No disappearing acts. Just clear updates and quick replies throughout your project."
+              isLight={false}
+            />,
+            <WhyCard
+              badge={<NumberBadge n={3} rotate="-rotate-6" />}
+              title="Built for growth"
+              desc="We build with tomorrow in mind, so your website can grow as your business does."
+              isLight={false}
+            />,
+          ]}
+        />
+      </div>
 
       <ScaleFrame width={1280} height={192} mobileWidth={1000}>
         <motion.div
@@ -1889,17 +1701,39 @@ function LightPageContent() {
         </motion.div>
       </ScaleFrame>
 
-      <ScaleFrame width={1278} height={331} mobileWidth={650} mobileHeight={660}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full flex flex-col items-center overflow-hidden"
-        >
-          <LHero_Frame2 />
-        </motion.div>
-      </ScaleFrame>
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10">
+        <CardCarousel
+          isLight={true}
+          cardWidth={300}
+          minHeight={380}
+          items={[
+            <ServiceCard
+              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame28} />}
+              title="Web development"
+              desc="Fast, scalable websites build for growth"
+              isLight={true}
+            />,
+            <ServiceCard
+              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame29} />}
+              title="Ads and Branding"
+              desc="Identity that stands out, campaigns that convert"
+              isLight={true}
+            />,
+            <ServiceCard
+              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame30} />}
+              title="UI UX Design"
+              desc="Interfaces that are intuitive and beautiful"
+              isLight={true}
+            />,
+            <ServiceCard
+              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame31} />}
+              title="SMM"
+              desc="Content that gets people talking about your brand"
+              isLight={true}
+            />,
+          ]}
+        />
+      </div>
 
       <ScaleFrame width={1280} height={192} mobileWidth={1000}>
         <motion.div
@@ -1914,17 +1748,33 @@ function LightPageContent() {
         </motion.div>
       </ScaleFrame>
 
-      <ScaleFrame width={1278} height={240} mobileWidth={850} mobileHeight={480}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full flex flex-col items-center overflow-hidden"
-        >
-          <LHero_Frame7 />
-        </motion.div>
-      </ScaleFrame>
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10">
+        <CardCarousel
+          isLight={true}
+          cardWidth={380}
+          minHeight={240}
+          items={[
+            <WhyCard
+              badge={<NumberBadge n={1} rotate="-rotate-4" />}
+              title="Everything under one roof"
+              desc="One team for design, development, branding, and marketing. No juggling multiple freelancers."
+              isLight={true}
+            />,
+            <WhyCard
+              badge={<NumberBadge n={2} rotate="rotate-3" />}
+              title="Fast communication"
+              desc="No disappearing acts. Just clear updates and quick replies throughout your project."
+              isLight={true}
+            />,
+            <WhyCard
+              badge={<NumberBadge n={3} rotate="-rotate-6" />}
+              title="Built for growth"
+              desc="We build with tomorrow in mind, so your website can grow as your business does."
+              isLight={true}
+            />,
+          ]}
+        />
+      </div>
 
       <ScaleFrame width={1280} height={192} mobileWidth={1000}>
         <motion.div

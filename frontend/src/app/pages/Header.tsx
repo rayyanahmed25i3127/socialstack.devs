@@ -1,84 +1,207 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared Header
-// Extracted from FaqPage.tsx so every page uses one nav implementation instead
-// of each page carrying its own copy. TEMPORARY — will be replaced wholesale
-// once the lead dev delivers the official shared Header. Pages should only
-// ever import { Header } from "./Header" and never redefine their own nav,
-// so that swap is a one-file change with zero edits to any page.
-// ─────────────────────────────────────────────────────────────────────────────
+import { useState, type CSSProperties } from "react";
+import { Sun, Moon } from "lucide-react";
+import { motion, AnimatePresence, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Menu, X } from "lucide-react";
+import imgLogoRecolored from "../../imports/DStory/eef17f758a83029ddf8e98fae373f5efc3059691.png";
+import imgIconPlaceholder from "../../imports/DStory/ca7a4b5d9052afe7cb23b96175cc5d547c211686.png";
 
-import imgIconPlaceholder from "../../imports/Nav/ca7a4b5d9052afe7cb23b96175cc5d547c211686.png";
-import navSvgPaths from "../../imports/Nav/svg-bwxa6ajcay";
-import imgLightLogo from "../../imports/LightFaQs/7827342e88d818352b12b7398ddea508cdbb3d6c.png";
+const easeOutExpo = [0.16, 1, 0.3, 1] as const;
 
-function SunIcon({ theme = "dark" }) {
-  const stroke = theme === "light" ? "#273338" : "#B7DD67";
-  return (
-    <svg className="w-[14px] h-[14px]" fill="none" viewBox="0 0 14 14">
-      <g clipPath="url(#sun-clip)">
-        {[navSvgPaths.p24da2380, "M7 1.16667V2.33333", "M7 11.6667V12.8333", navSvgPaths.p37111300, navSvgPaths.p9000440, "M1.16667 7H2.33333", "M11.6667 7H12.8333", navSvgPaths.p9ee27e0, navSvgPaths.pe9da980].map((d, i) => (
-          <path key={i} d={d} stroke={stroke} strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.16667" />
-        ))}
-      </g>
-      <defs><clipPath id="sun-clip"><rect fill="white" height="14" width="14" /></clipPath></defs>
-    </svg>
-  );
-}
+export function Header({
+  theme,
+  onThemeChange,
+}: {
+  theme: "dark" | "light";
+  onThemeChange: (theme: "dark" | "light") => void;
+}) {
+  const d = theme === "dark";
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [navFloating, setNavFloating] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const progressScale = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
-function MoonIcon() {
-  return <svg className="w-[14px] h-[14px]" fill="none" viewBox="0 0 14 14"><path d={navSvgPaths.p3283c680} stroke="#E6F2DD" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.16667" /></svg>;
-}
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    setNavFloating(latest > 0.05);
+  });
 
-function ThemeToggle({ theme, onThemeChange }) {
-  const isLight = theme === "light";
-  return (
-    <button type="button" onClick={() => onThemeChange(isLight ? "dark" : "light")} className={`${isLight ? "bg-[rgba(111,127,60,0.9)]" : "bg-[#2e3936]"} h-[34px] relative rounded-full shrink-0 w-[68px] cursor-pointer select-none transition-colors`} aria-label="Toggle theme">
-      <div aria-hidden className={`absolute border-[0.783px] ${isLight ? "border-[rgba(39,51,56,0.18)]" : "border-[rgba(200,231,123,0.2)]"} border-solid inset-0 pointer-events-none rounded-full`} />
-      <motion.div className={`${isLight ? "bg-[#e6f2dd]" : "bg-[#c8e77b]"} absolute rounded-full size-[26px] top-[3.78px]`} animate={{ left: isLight ? 3.78 : 38.22 }} transition={{ duration: 0.22, ease: "easeInOut" }} />
-      <div className="absolute flex items-center justify-center left-[4.78px] size-[26px] top-[4px]"><SunIcon theme={theme} /></div>
-      <div className="absolute flex items-center justify-center left-[34.78px] size-[26px] top-[4px]"><MoonIcon /></div>
-    </button>
-  );
-}
-
-const navLinks = ["Services", "About us", "FAQs"];
-
-export function Header({ theme = "dark", onThemeChange = () => {} }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const isLight = theme === "light";
+  const navLink = d ? "text-[#e6f2dd]" : "text-[rgba(111,127,60,0.9)]";
+  const drawerText = d ? "text-[#D9D9D9]" : "text-[#253236]";
+  const contactBg = d ? "bg-[#c6e7bc]" : "bg-[rgba(111,127,60,0.9)]";
+  const mobMenuBg = d ? "bg-[#2e3936]" : "bg-[#4a5e59]";
+  const navGlassStyle = {
+    background: d
+      ? "linear-gradient(135deg, rgba(39,51,56,0.58), rgba(46,57,54,0.34))"
+      : "linear-gradient(135deg, rgba(230,242,221,0.64), rgba(255,255,255,0.24))",
+    borderColor: d ? "rgba(230,242,221,0.16)" : "rgba(111,127,60,0.2)",
+    boxShadow: d
+      ? "0 20px 55px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(183,221,103,0.08)"
+      : "0 20px 55px rgba(63,79,74,0.15), inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(111,127,60,0.12)",
+    backdropFilter: "blur(24px) saturate(170%)",
+    WebkitBackdropFilter: "blur(24px) saturate(170%)",
+  } as CSSProperties;
 
   return (
-    <header className={`w-full relative z-50 transition-colors ${isLight ? "bg-[#e6f2dd]" : "bg-[#222d31]"}`}>
-      <div className="w-full relative flex items-center px-6 md:px-20 py-4 md:py-6">
-        <div className="w-[70px] h-[70px] md:w-[85px] md:h-[85px] flex-shrink-0">
-          <img src={isLight ? imgLightLogo : imgIconPlaceholder} alt="SocialStack" className="w-full h-full object-contain" />
+    <>
+      {/* Scroll progress bar */}
+      <motion.div
+        className="fixed left-0 top-0 z-[70] h-1"
+        style={{
+          width: progressScale,
+          backgroundColor: d ? "#b7dd67" : "#273338",
+          boxShadow: d ? "0 0 18px rgba(183,221,103,0.65)" : "0 0 18px rgba(39,51,56,0.34)",
+        }}
+      />
+
+      {/* Nav */}
+      <motion.nav
+        initial={{ y: -90, opacity: 0, scale: 0.96, filter: "blur(12px)" }}
+        animate={{ y: 0, opacity: 1, scale: 1, filter: "blur(0px)" }}
+        transition={{ duration: 0.85, ease: easeOutExpo }}
+        className={`fixed left-0 right-0 z-50 mx-auto flex items-center justify-between overflow-hidden border px-4 py-3 transition-all duration-500 ease-out md:px-6 ${
+          navFloating
+            ? "top-2.5 w-[calc(100%-1.5rem)] max-w-6xl rounded-full sm:w-[calc(100%-2.5rem)]"
+            : "top-0 w-full max-w-none rounded-none border-x-0 border-t-0"
+        }`}
+        style={navGlassStyle}
+      >
+        <motion.div
+          className={`pointer-events-none absolute inset-0 opacity-80 transition-[border-radius] duration-500 ${navFloating ? "rounded-full" : "rounded-none"}`}
+          style={{
+            background: d
+              ? "linear-gradient(100deg, rgba(255,255,255,0.13), transparent 34%, rgba(183,221,103,0.1) 72%, transparent)"
+              : "linear-gradient(100deg, rgba(255,255,255,0.72), transparent 38%, rgba(111,127,60,0.16) 76%, transparent)",
+          }}
+          animate={{ x: ["-18%", "18%", "-18%"] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.img
+          src={d ? imgIconPlaceholder : imgLogoRecolored}
+          alt="SocialStack"
+          className="relative z-10 h-10 w-auto object-contain transition-transform duration-200 sm:h-11 md:h-12"
+          whileHover={{ rotate: -3, scale: 1.08, filter: "drop-shadow(0 0 12px rgba(183,221,103,0.48))" }}
+          whileTap={{ scale: 0.96 }}
+        />
+
+        {/* Desktop links */}
+        <div className={`relative z-10 hidden lg:flex gap-2 font-['Manrope:SemiBold',sans-serif] font-semibold text-lg ${navLink} transition-colors duration-300`}>
+          {["Services", "About us", "Projects", "FAQs"].map((l, index) => (
+            <motion.a
+              key={l}
+              href="#"
+              className="relative overflow-hidden rounded-full px-4 py-2 transition-colors duration-300 after:absolute after:bottom-1.5 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-[#b7dd67] after:transition-all after:duration-300 hover:after:w-1/2"
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.12 + index * 0.08 }}
+              whileHover={{
+                y: -3,
+                backgroundColor: d ? "rgba(230,242,221,0.08)" : "rgba(111,127,60,0.1)",
+                boxShadow: d ? "0 8px 22px rgba(183,221,103,0.08)" : "0 8px 22px rgba(63,79,74,0.1)",
+              }}
+              whileTap={{ scale: 0.96 }}
+            >
+              {l}
+            </motion.a>
+          ))}
         </div>
-        <nav className="hidden lg:flex gap-12 items-center absolute left-1/2 -translate-x-1/2">
-          {navLinks.map((link) => <a key={link} href="#" className={`font-['Manrope'] font-semibold ${isLight ? "text-[rgba(111,127,60,0.9)]" : "text-[#e6f2dd]"} text-[20px] leading-normal hover:opacity-70 transition-opacity whitespace-nowrap`}>{link}</a>)}
-        </nav>
-        <div className="flex items-center gap-4 md:gap-6 ml-auto">
-          <ThemeToggle theme={theme} onThemeChange={onThemeChange} />
-          <button className={`${isLight ? "bg-[rgba(111,127,60,0.9)]" : "bg-[#c6e7bc]"} rounded-full px-5 py-3 md:py-4 font-['Manrope'] font-bold text-[#273338] text-[14px] md:text-[15px] hover:opacity-90 transition-opacity whitespace-nowrap relative overflow-hidden`}>
-            <span className="relative z-10">Contact</span>
-          </button>
-          <button className={`lg:hidden ${isLight ? "text-[rgba(111,127,60,0.9)]" : "text-[#e6f2dd]"} hover:opacity-70 transition-opacity`} onClick={() => setMobileOpen((v) => !v)} aria-label="Toggle menu">
-            {mobileOpen ? <X size={26} /> : <Menu size={26} />}
-          </button>
+
+        <div className="relative z-10 flex items-center gap-2 sm:gap-3">
+          {/* Theme toggle */}
+          <motion.button
+            onClick={() => onThemeChange(d ? "light" : "dark")}
+            aria-label="Toggle theme"
+            className={`relative flex h-8 w-16 items-center rounded-full border transition-all duration-300 ${
+              d ? "bg-[#2e3936]/80" : "bg-white/30"
+            } border-[rgba(200,231,123,0.25)]`}
+            whileHover={{
+              scale: 1.06,
+              boxShadow: d ? "0 0 20px rgba(183,221,103,0.2)" : "0 0 20px rgba(111,127,60,0.16)",
+            }}
+            whileTap={{ scale: 0.92 }}
+          >
+            <Sun size={13} className="absolute left-[8px] text-[#b7dd67]" />
+            <Moon size={13} className={`absolute right-[8px] ${d ? "text-[#e6f2dd]" : "text-[#273338]"}`} />
+            <span
+              className="absolute w-6 h-6 rounded-full bg-[#c8e77b] shadow-md transition-transform duration-300 left-1"
+              style={{ transform: d ? "translateX(32px)" : "translateX(0)" }}
+            />
+          </motion.button>
+
+          {/* Contact — desktop */}
+          <motion.button
+            className={`${contactBg} text-[#273338] font-['Manrope:Bold',sans-serif] font-bold text-[13px] px-3.5 py-2 rounded-full transition-all duration-200 sm:text-[15px] sm:px-5 sm:py-2.5`}
+            whileHover={{
+              scale: 1.07,
+              y: -2,
+              boxShadow: d ? "0 10px 25px rgba(183,221,103,0.22)" : "0 10px 25px rgba(63,79,74,0.2)",
+              filter: "brightness(1.08)",
+            }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Contact
+          </motion.button>
+
+          {/* Hamburger */}
+          <motion.button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className={`${navLink} relative grid h-10 w-10 place-items-center rounded-full transition-all duration-200 hover:bg-white/10 hover:opacity-90 lg:hidden`}
+            aria-label="Toggle menu"
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <span className="relative block h-5 w-6">
+              {[0, 1, 2].map((line) => (
+                <motion.span
+                  key={line}
+                  className={`absolute left-0 h-[2px] w-6 rounded-full ${d ? "bg-[#e6f2dd]" : "bg-[#273338]"}`}
+                  initial={false}
+                  animate={
+                    line === 0
+                      ? { y: menuOpen ? 9 : 2, rotate: menuOpen ? 45 : 0 }
+                      : line === 1
+                        ? { y: 9, opacity: menuOpen ? 0 : 1, scaleX: menuOpen ? 0.25 : 1 }
+                        : { y: menuOpen ? 9 : 16, rotate: menuOpen ? -45 : 0 }
+                  }
+                  transition={{ duration: 0.32, ease: easeOutExpo }}
+                />
+              ))}
+            </span>
+          </motion.button>
         </div>
-      </div>
+      </motion.nav>
+
+      {/* Mobile drawer */}
       <AnimatePresence>
-        {mobileOpen && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: "easeInOut" }} className={`lg:hidden overflow-hidden ${isLight ? "bg-[#dbeacb] border-t border-[rgba(111,127,60,0.18)]" : "bg-[#2e3936] border-t border-[rgba(200,231,123,0.15)]"}`}>
-            <nav className="flex flex-col px-6 py-4 gap-4">
-              {navLinks.map((link) => <a key={link} href="#" className={`font-['Manrope'] font-semibold ${isLight ? "text-[rgba(111,127,60,0.9)]" : "text-[#e6f2dd]"} text-[20px] leading-normal py-2 hover:opacity-70 transition-opacity`} onClick={() => setMobileOpen(false)}>{link}</a>)}
-            </nav>
+        {menuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: easeOutExpo }}
+            className={`fixed left-0 right-0 top-[88px] z-40 mx-auto flex w-[calc(100%-1.5rem)] max-w-md flex-col gap-4 overflow-hidden rounded-[28px] border px-6 py-6 font-['Manrope:SemiBold',sans-serif] text-xl font-semibold shadow-[0_20px_45px_rgba(0,0,0,0.22)] lg:hidden ${mobMenuBg} ${drawerText}`}
+            style={navGlassStyle}
+          >
+            {["Services", "About us", "Projects", "FAQs"].map((l, index) => (
+              <motion.a
+                key={l}
+                href="#"
+                onClick={() => setMenuOpen(false)}
+                className={`py-3 border-b ${d ? "border-white/10" : "border-[#253236]/15"} hover:opacity-70 hover:pl-2 transition-all duration-200`}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                {l}
+              </motion.a>
+            ))}
+            <button className={`mt-2 ${contactBg} text-[#273338] font-['Manrope:Bold',sans-serif] font-bold text-[15px] px-5 py-2.5 rounded-full self-start hover:scale-105 hover:brightness-110 active:scale-95 transition-all duration-200`}>
+              Contact
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+
+      {/* Spacer so page content doesn't sit under the fixed nav */}
+      <div className="h-[88px] md:h-[96px]" aria-hidden="true" />
+    </>
   );
 }
