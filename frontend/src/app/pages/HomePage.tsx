@@ -2,7 +2,7 @@
 // HomePage - Modified to remove hero icons, unify theme spacing, and add animations
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { cloneElement, useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 import { Header } from "./Header";
@@ -1333,68 +1333,103 @@ function BrushDoodle({ d, width, height, left, top, color = "#F4F4EF" }) {
 function NumberBadge({ n, rotate }) {
   return (
     <div
-      className={`shrink-0 size-[48px] rounded-[4px] bg-[rgba(183,221,103,0.8)] shadow-[0px_4px_10px_0px_rgba(183,221,103,0.12)] flex items-center justify-center ${rotate}`}
+      className={`shrink-0 size-7 md:size-[48px] rounded-[4px] bg-[rgba(183,221,103,0.8)] shadow-[0px_4px_10px_0px_rgba(183,221,103,0.12)] flex items-center justify-center ${rotate}`}
     >
-      <span className="font-['Manrope:Medium',sans-serif] font-medium text-[20px] text-black">{n}.</span>
+      <span className="font-['Manrope:Medium',sans-serif] font-medium text-xs md:text-[20px] text-black">{n}.</span>
     </div>
   );
 }
 
-function ServiceCard({ icon, title, desc, isLight }) {
+function ServiceCard({ icon, title, desc, isLight, active = true }) {
   return (
     <motion.div
       whileHover={{ y: -6, scale: 1.04 }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.25, ease: "easeInOut" }}
-      className={`group relative rounded-[18px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] w-full h-full px-5 py-6 flex flex-col items-center text-center gap-3 justify-center transition-colors duration-300 shadow-xl ${
-        isLight ? "bg-[rgba(111,127,60,0.15)]" : "bg-[#253236]"
+      className={`group relative overflow-hidden rounded-[18px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] w-full h-full px-3 py-3 md:px-5 md:py-6 flex flex-col items-center text-center gap-1.5 md:gap-3 justify-center transition-shadow duration-300 ${
+        isLight ? "bg-[#eef3e2]" : "bg-[#253236]"
+      } ${
+        active
+          ? isLight
+            ? "shadow-[0_18px_45px_rgba(63,79,74,0.22)]"
+            : "shadow-[0_18px_45px_rgba(0,0,0,0.45),0_0_40px_rgba(183,221,103,0.12)]"
+          : "shadow-lg"
       }`}
     >
-      {icon}
-      <h3 className={`font-['Manrope:Bold',sans-serif] font-bold text-2xl tracking-[-1px] ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
+      {/* soft decorative glow behind the icon */}
+      <div
+        aria-hidden
+        className="absolute top-2 md:top-4 left-1/2 -translate-x-1/2 size-14 md:size-24 rounded-full pointer-events-none blur-2xl"
+        style={{ background: isLight ? "rgba(111,127,60,0.28)" : "rgba(183,221,103,0.18)" }}
+      />
+      <div className="relative">{icon}</div>
+      <h3 className={`relative font-['Manrope:Bold',sans-serif] font-bold text-base md:text-2xl tracking-[-1px] ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
         {title}
       </h3>
       {desc && (
-        <p className={`font-['Manrope:Medium',sans-serif] font-medium text-sm ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
+        <p className={`relative font-['Manrope:Medium',sans-serif] font-medium text-[11px] md:text-sm ${isLight ? "text-[#3f4a3b]" : "text-[#d9e3d2]"}`}>
           {desc}
         </p>
       )}
-      <p className={`font-['Manrope:Bold',sans-serif] font-bold text-lg group-hover:underline transition-colors duration-300 ${isLight ? "text-[#6f7f3c]" : "text-[#b7dd67]"}`}>
+      <p className={`relative font-['Manrope:Bold',sans-serif] font-bold text-xs md:text-lg group-hover:underline transition-colors duration-300 ${isLight ? "text-[#6f7f3c]" : "text-[#b7dd67]"}`}>
         Learn more...
       </p>
       <div
         aria-hidden
         className={`absolute border border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300 ${
-          isLight ? "border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)]" : "border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)]"
+          isLight
+            ? active
+              ? "border-[rgba(111,127,60,0.55)] group-hover:border-[rgba(111,127,60,0.75)]"
+              : "border-[#4f5a4b]/40"
+            : active
+              ? "border-[rgba(183,221,103,0.45)] group-hover:border-[rgba(183,221,103,0.7)]"
+              : "border-[#4c5a53]/40"
         }`}
       />
     </motion.div>
   );
 }
 
-function WhyCard({ badge, title, desc, isLight }) {
+function WhyCard({ badge, title, desc, isLight, active = true }) {
   return (
     <motion.div
       whileHover={{ y: -6, scale: 1.04 }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.25, ease: "easeInOut" }}
-      className={`group relative rounded-[18px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] w-full h-full px-5 py-5 flex flex-col justify-center gap-3 transition-colors duration-300 shadow-xl ${
-        isLight ? "bg-[rgba(111,127,60,0.15)]" : "bg-[#253236]"
+      className={`group relative overflow-hidden rounded-[18px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] w-full h-full px-3 py-3 md:px-5 md:py-5 flex flex-col justify-center gap-1.5 md:gap-3 transition-shadow duration-300 ${
+        isLight ? "bg-[#eef3e2]" : "bg-[#253236]"
+      } ${
+        active
+          ? isLight
+            ? "shadow-[0_18px_45px_rgba(63,79,74,0.22)]"
+            : "shadow-[0_18px_45px_rgba(0,0,0,0.45),0_0_40px_rgba(183,221,103,0.12)]"
+          : "shadow-lg"
       }`}
     >
-      <div className="flex items-center gap-3">
+      <div
+        aria-hidden
+        className="absolute -top-4 -right-4 md:-top-6 md:-right-6 size-16 md:size-28 rounded-full pointer-events-none blur-2xl"
+        style={{ background: isLight ? "rgba(111,127,60,0.22)" : "rgba(183,221,103,0.14)" }}
+      />
+      <div className="relative flex items-center gap-2 md:gap-3">
         {badge}
-        <h3 className={`font-['Manrope:Bold',sans-serif] font-bold text-xl sm:text-2xl tracking-[-1px] ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
+        <h3 className={`font-['Manrope:Bold',sans-serif] font-bold text-sm md:text-2xl tracking-[-1px] ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
           {title}
         </h3>
       </div>
-      <p className={`font-['Inter:Medium',sans-serif] text-sm ${isLight ? "text-[#253236]" : "text-[#f4f4ef]"}`}>
+      <p className={`relative font-['Inter:Medium',sans-serif] text-[11px] md:text-sm ${isLight ? "text-[#3f4a3b]" : "text-[#d9e3d2]"}`}>
         {desc}
       </p>
       <div
         aria-hidden
         className={`absolute border border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300 ${
-          isLight ? "border-[#4f5a4b] group-hover:border-[rgba(111,127,60,0.6)]" : "border-[#4c5a53] group-hover:border-[rgba(183,221,103,0.6)]"
+          isLight
+            ? active
+              ? "border-[rgba(111,127,60,0.55)] group-hover:border-[rgba(111,127,60,0.75)]"
+              : "border-[#4f5a4b]/40"
+            : active
+              ? "border-[rgba(183,221,103,0.45)] group-hover:border-[rgba(183,221,103,0.7)]"
+              : "border-[#4c5a53]/40"
         }`}
       />
     </motion.div>
@@ -1403,7 +1438,32 @@ function WhyCard({ badge, title, desc, isLight }) {
 
 function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
   const [active, setActive] = useState(0);
+  const [dims, setDims] = useState({ w: cardWidth, h: minHeight });
+  const containerRef = useRef(null);
   const total = items.length;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    function updateDims() {
+      const avail = el.parentElement ? el.parentElement.clientWidth : window.innerWidth;
+      if (avail < 480) {
+        setDims({ w: Math.max(160, Math.min(cardWidth * 0.7, avail * 0.66)), h: minHeight * 0.58 });
+      } else if (avail < 860) {
+        setDims({ w: Math.min(cardWidth * 0.82, avail * 0.52), h: minHeight * 0.78 });
+      } else {
+        setDims({ w: cardWidth, h: minHeight });
+      }
+    }
+    updateDims();
+    const ro = new ResizeObserver(updateDims);
+    if (el.parentElement) ro.observe(el.parentElement);
+    window.addEventListener("resize", updateDims);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateDims);
+    };
+  }, [cardWidth, minHeight]);
 
   const go = useCallback(
     (dir) => setActive((a) => (a + dir + total) % total),
@@ -1413,6 +1473,7 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
   return (
     <div className="w-full flex flex-col items-center gap-7">
       <div
+        ref={containerRef}
         tabIndex={0}
         role="group"
         aria-roledescription="carousel"
@@ -1426,31 +1487,36 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
             go(-1);
           }
         }}
-        className="relative w-full max-w-[1280px] overflow-hidden outline-none rounded-2xl focus-visible:ring-2 focus-visible:ring-[#b7dd67]"
-        style={{ height: minHeight }}
+        className="relative w-full max-w-[1280px] mx-auto overflow-hidden outline-none rounded-2xl focus-visible:ring-2 focus-visible:ring-[#b7dd67]"
+        style={{ height: dims.h }}
       >
         {items.map((item, i) => {
           let offset = i - active;
           if (offset > total / 2) offset -= total;
-          if (offset < -total / 2) offset -= -total;
+          if (offset < -total / 2) offset += total;
           const abs = Math.abs(offset);
           const isActive = offset === 0;
+          // Only ever show the immediate left/right neighbor, regardless of
+          // total card count — keeps the group visually symmetric and
+          // centered no matter which card (or how many total) is active.
+          const visible = abs <= 1;
           return (
             <motion.div
               key={i}
               className="absolute left-1/2 top-1/2 px-2"
-              style={{ zIndex: total - abs, width: cardWidth }}
+              style={{ zIndex: total - abs, width: dims.w, pointerEvents: visible ? "auto" : "none" }}
               initial={false}
               animate={{
-                x: `calc(-50% + ${offset * cardWidth * 0.7}px)`,
+                x: `calc(-50% + ${offset * dims.w * 0.62}px)`,
                 y: "-50%",
-                scale: isActive ? 1 : Math.max(0.8, 1 - abs * 0.12),
-                opacity: abs > 2 ? 0 : isActive ? 1 : Math.max(0.35, 1 - abs * 0.32),
+                scale: isActive ? 1 : 0.85,
+                opacity: visible ? (isActive ? 1 : 0.32) : 0,
+                filter: isActive ? "blur(0px)" : "blur(3px)",
               }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => !isActive && setActive(i)}
             >
-              {item}
+              {cloneElement(item, { active: isActive })}
             </motion.div>
           );
         })}
@@ -1552,8 +1618,10 @@ function DarkPageContent() {
           transition={{ duration: 0.35 }}
           className="relative size-full flex items-center justify-center overflow-hidden"
         >
-          <WhatWeDo_Brush />
-          <BrushDoodle d={doodlePaths.whatWeDo} width={304} height={15} left={488} top={166} />
+          <div className="relative" style={{ width: 962, height: 190 }}>
+            <WhatWeDo_Brush />
+            <BrushDoodle d={doodlePaths.whatWeDo} width={304} height={15} left={488} top={166} />
+          </div>
         </motion.div>
       </ScaleFrame>
 
@@ -1564,25 +1632,25 @@ function DarkPageContent() {
           minHeight={380}
           items={[
             <ServiceCard
-              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame28} />}
+              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame28} />}
               title="Web development"
               desc="Fast, scalable websites build for growth"
               isLight={false}
             />,
             <ServiceCard
-              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame29} />}
+              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame29} />}
               title="Ads and Branding"
               desc="Identity that stands out, campaigns that convert"
               isLight={false}
             />,
             <ServiceCard
-              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame30} />}
+              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame30} />}
               title="UI UX Design"
               desc="Interfaces that are intuitive and beautiful"
               isLight={false}
             />,
             <ServiceCard
-              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame31} />}
+              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame31} />}
               title="SMM"
               desc="Content that gets people talking about your brand"
               isLight={false}
@@ -1599,8 +1667,10 @@ function DarkPageContent() {
           transition={{ duration: 0.35 }}
           className="relative size-full flex items-center justify-center overflow-hidden"
         >
-          <Why_Brush />
-          <BrushDoodle d={doodlePaths.whySocialStack} width={228} height={20} left={526} top={152} />
+          <div className="relative" style={{ width: 834, height: 180 }}>
+            <Why_Brush />
+            <BrushDoodle d={doodlePaths.whySocialStack} width={228} height={20} left={526} top={152} />
+          </div>
         </motion.div>
       </ScaleFrame>
 
@@ -1640,8 +1710,10 @@ function DarkPageContent() {
           transition={{ duration: 0.35 }}
           className="relative size-full flex items-center justify-center overflow-hidden"
         >
-          <How_Brush />
-          <BrushDoodle d={doodlePaths.howSocialStack} width={388} height={15} left={446} top={156} />
+          <div className="relative" style={{ width: 834, height: 180 }}>
+            <How_Brush />
+            <BrushDoodle d={doodlePaths.howSocialStack} width={388} height={15} left={446} top={156} />
+          </div>
         </motion.div>
       </ScaleFrame>
 
@@ -1696,8 +1768,10 @@ function LightPageContent() {
           transition={{ duration: 0.35 }}
           className="relative size-full flex items-center justify-center overflow-hidden"
         >
-          <LHero_Brush />
-          <BrushDoodle d={doodlePaths.whatWeDo} width={304} height={15} left={488} top={166} color="#6F7F3C" />
+          <div className="relative" style={{ width: 962, height: 190 }}>
+            <LHero_Brush />
+            <BrushDoodle d={doodlePaths.whatWeDo} width={304} height={15} left={488} top={166} color="#6F7F3C" />
+          </div>
         </motion.div>
       </ScaleFrame>
 
@@ -1708,25 +1782,25 @@ function LightPageContent() {
           minHeight={380}
           items={[
             <ServiceCard
-              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame28} />}
+              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame28} />}
               title="Web development"
               desc="Fast, scalable websites build for growth"
               isLight={true}
             />,
             <ServiceCard
-              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame29} />}
+              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame29} />}
               title="Ads and Branding"
               desc="Identity that stands out, campaigns that convert"
               isLight={true}
             />,
             <ServiceCard
-              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame30} />}
+              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame30} />}
               title="UI UX Design"
               desc="Interfaces that are intuitive and beautiful"
               isLight={true}
             />,
             <ServiceCard
-              icon={<img alt="" className="h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame31} />}
+              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame31} />}
               title="SMM"
               desc="Content that gets people talking about your brand"
               isLight={true}
@@ -1743,8 +1817,10 @@ function LightPageContent() {
           transition={{ duration: 0.35 }}
           className="relative size-full flex items-center justify-center overflow-hidden"
         >
-          <LHero_Brush1 />
-          <BrushDoodle d={doodlePaths.whySocialStack} width={228} height={20} left={526} top={152} color="#6F7F3C" />
+          <div className="relative" style={{ width: 834, height: 180 }}>
+            <LHero_Brush1 />
+            <BrushDoodle d={doodlePaths.whySocialStack} width={228} height={20} left={526} top={152} color="#6F7F3C" />
+          </div>
         </motion.div>
       </ScaleFrame>
 
@@ -1784,8 +1860,10 @@ function LightPageContent() {
           transition={{ duration: 0.35 }}
           className="relative size-full flex items-center justify-center overflow-hidden"
         >
-          <LHero_Brush2 />
-          <BrushDoodle d={doodlePaths.howSocialStack} width={388} height={15} left={446} top={156} color="#6F7F3C" />
+          <div className="relative" style={{ width: 834, height: 180 }}>
+            <LHero_Brush2 />
+            <BrushDoodle d={doodlePaths.howSocialStack} width={388} height={15} left={446} top={156} color="#6F7F3C" />
+          </div>
         </motion.div>
       </ScaleFrame>
 
