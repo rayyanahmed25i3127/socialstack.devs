@@ -28,12 +28,21 @@ import lHeroImgFrame31 from "../../imports/home-light-hero-section/project-smm.p
 // ─── Hero (dark theme) ─────────────────────────────────────────────────────
 function Hero_WhatWeDo() {
   return (
-    <div className="bg-[#2e3936] h-[28px] relative rounded-[999px] shrink-0" data-name="what we do">
-      <div className="content-stretch flex items-center justify-center overflow-clip px-[12px] py-[6px] relative rounded-[inherit] size-full">
-        <p className="[word-break:break-word] font-['Manrope:Medium',sans-serif] font-medium leading-[20px] relative shrink-0 text-[#c8e77b] text-[20px] tracking-[2px] whitespace-nowrap">WELCOME TO SOCIAL STACK</p>
-      </div>
-      <div aria-hidden className="absolute border border-[rgba(196,240,107,0.15)] border-solid inset-0 pointer-events-none rounded-[999px]" />
-    </div>
+    <motion.div className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
+      <span
+        className="absolute inset-[-80%] rounded-full opacity-90 animate-[spin360_3.8s_linear_infinite]"
+        style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 64deg, rgba(34,211,238,0.95) 82deg, transparent 104deg, transparent 360deg)" }}
+      />
+      <span
+        className="absolute inset-[-80%] rounded-full opacity-75 animate-[spin360_4.6s_linear_infinite]"
+        style={{ background: "conic-gradient(from 180deg, transparent 0deg, transparent 64deg, rgba(103,232,249,0.92) 82deg, transparent 104deg, transparent 360deg)" }}
+      />
+      <span className="relative z-10 inline-flex items-center bg-[#2e3936] rounded-full px-6 py-2.5 lg:px-8 lg:py-3 border border-[rgba(196,240,107,0.15)]">
+        <p className="font-['Manrope:Medium',sans-serif] font-medium text-[#c8e77b] text-base lg:text-xl tracking-[1.8px] lg:tracking-[2px] whitespace-nowrap">
+          WELCOME TO SOCIAL STACK
+        </p>
+      </span>
+    </motion.div>
   );
 }
 
@@ -140,6 +149,81 @@ function Hero_ServiceHeader() {
       <Hero_Frame />
       <p className="[word-break:break-word] font-['Manrope:ExtraBold',sans-serif] font-extrabold h-[132px] leading-[32px] min-w-full relative shrink-0 text-[#c7d1cc] text-[22px] w-[min-content]">We design websites, build apps, craft brands, and create digital experiences that help businesses grow with confidence.</p>
       <Hero_Buttons />
+    </div>
+  );
+}
+
+// Dedicated mobile Hero — the desktop Hero above is a fixed 1280px Figma
+// canvas that gets uniformly scaled down via ScaleFrame; on phone widths that
+// shrinks everything (badge, headline, paragraph, buttons) by roughly 70%,
+// which is why it read as tiny. This version is built with real responsive
+// Tailwind sizing instead, shared by both themes via `isLight`.
+function HeroMobile({ isLight }) {
+  return (
+    <div className="flex flex-col items-start gap-5 px-4 pt-3 pb-8">
+      {isLight ? <LHero_WhatWeDo /> : <Hero_WhatWeDo />}
+
+      <div className="-rotate-2 leading-[0.95]">
+        <p
+          className={`bg-clip-text bg-gradient-to-r text-transparent font-['Patrick_Hand:Regular',sans-serif] text-4xl sm:text-5xl tracking-[-1.5px] ${
+            isLight ? "from-[#2f372d] to-[#6e7f3f]" : "from-white to-[#8cc9b4]"
+          }`}
+        >
+          Ideas into
+        </p>
+        <p
+          className={`font-['Caveat_Brush:Regular',sans-serif] text-5xl sm:text-6xl tracking-[-1.5px] ${
+            isLight ? "text-[rgba(111,127,60,0.9)]" : "text-[rgba(183,221,103,0.8)]"
+          }`}
+        >
+          DIGITAL
+        </p>
+        <p
+          className={`font-['Caveat_Brush:Regular',sans-serif] text-5xl sm:text-6xl tracking-[-1.5px] ${
+            isLight ? "text-[rgba(111,127,60,0.9)]" : "text-[rgba(183,221,103,0.8)]"
+          }`}
+        >
+          REALITY
+        </p>
+      </div>
+
+      <p
+        className={`font-['Manrope:ExtraBold',sans-serif] font-extrabold text-base sm:text-lg leading-relaxed ${
+          isLight ? "text-[#556052]" : "text-[#c7d1cc]"
+        }`}
+      >
+        We design websites, build apps, craft brands, and create digital experiences that help businesses grow with confidence.
+      </p>
+
+      <div className="flex flex-wrap gap-3 w-full">
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.05, filter: "brightness(1.1)" }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+          className={`font-['Inter:Bold',sans-serif] font-bold text-base px-6 py-3 rounded-[18px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] ${
+            isLight ? "bg-[rgba(111,127,60,0.9)] text-[#e6f2dd]" : "bg-[rgba(183,221,103,0.8)] text-[#253236]"
+          }`}
+        >
+          Start a project
+        </motion.button>
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+          className={`group relative font-['Inter:Bold',sans-serif] font-bold text-base px-6 py-3 rounded-[18px] border-[3px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] ${
+            isLight ? "border-[rgba(111,127,60,0.9)] text-[rgba(111,127,60,0.9)]" : "border-[rgba(183,221,103,0.8)] text-[rgba(183,221,103,0.8)]"
+          }`}
+        >
+          <span
+            className={`absolute inset-0 rounded-[15px] transition-colors duration-300 ${
+              isLight ? "group-hover:bg-[rgba(111,127,60,0.12)]" : "group-hover:bg-[rgba(183,221,103,0.12)]"
+            }`}
+          />
+          <span className="relative">View our services</span>
+        </motion.button>
+      </div>
     </div>
   );
 }
@@ -674,12 +758,21 @@ function Cta_Frame() {
 // ─── Light theme page (self-contained: its own nav, hero, sections, footer) ─
 function LHero_WhatWeDo() {
   return (
-    <div className="bg-[#2e3936] h-[28px] relative rounded-[999px] shrink-0" data-name="what we do">
-      <div className="content-stretch flex items-center justify-center overflow-clip px-[12px] py-[6px] relative rounded-[inherit] size-full">
-        <p className="[word-break:break-word] font-['Manrope:Medium',sans-serif] font-medium leading-[20px] relative shrink-0 text-[#c8e77b] text-[20px] tracking-[2px] whitespace-nowrap">WELCOME TO SOCIAL STACK</p>
-      </div>
-      <div aria-hidden className="absolute border border-[rgba(196,240,107,0.15)] border-solid inset-0 pointer-events-none rounded-[999px]" />
-    </div>
+    <motion.div className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
+      <span
+        className="absolute inset-[-80%] rounded-full opacity-90 animate-[spin360_3.8s_linear_infinite]"
+        style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 64deg, rgba(34,211,238,0.95) 82deg, transparent 104deg, transparent 360deg)" }}
+      />
+      <span
+        className="absolute inset-[-80%] rounded-full opacity-75 animate-[spin360_4.6s_linear_infinite]"
+        style={{ background: "conic-gradient(from 180deg, transparent 0deg, transparent 64deg, rgba(103,232,249,0.92) 82deg, transparent 104deg, transparent 360deg)" }}
+      />
+      <span className="relative z-10 inline-flex items-center bg-[#526862] rounded-full px-6 py-2.5 lg:px-8 lg:py-3 border border-[rgba(196,240,107,0.15)]">
+        <p className="font-['Manrope:Medium',sans-serif] font-medium text-[#c8e77b] text-base lg:text-xl tracking-[1.8px] lg:tracking-[2px] whitespace-nowrap">
+          WELCOME TO SOCIAL STACK
+        </p>
+      </span>
+    </motion.div>
   );
 }
 
@@ -1311,11 +1404,25 @@ const doodlePaths = {
     "M25.5324 13.657C-36.9676 13.6571 28.5321 13.6572 125.532 3.15688C181.024 -2.85022 278.623 5.88972 388.532 3.15706",
 };
 
-function BrushDoodle({ d, width, height, left, top, color = "#F4F4EF" }) {
+// Always centers itself horizontally within its relative parent — this is
+// what keeps the little brush-accent squiggle lined up under each heading
+// regardless of theme, breakpoint, or however the parent box gets resized.
+// IMPORTANT: the self-centering shift lives in the `doodlePulse` keyframes
+// (translateX(-50%) baked into every step) rather than in an inline
+// `transform` style — a *running* CSS animation on `transform` overrides any
+// inline `transform` value for that same property, so setting it inline here
+// would get silently clobbered by the pulse animation. `left` is untouched
+// by the animation, so the optional `offsetX` nudge is applied there instead.
+function BrushDoodle({ d, width, height, top, color = "#F4F4EF", offsetX = 0 }) {
   return (
     <div
-      className="absolute pointer-events-none origin-center animate-[doodlePulse_2s_ease-out_infinite]"
-      style={{ left, top, width, height }}
+      className="absolute pointer-events-none origin-center animate-[doodleCenterPulse_2s_ease-out_infinite]"
+      style={{
+        left: `calc(50% + ${offsetX}px)`,
+        top,
+        width,
+        height,
+      }}
     >
       <svg
         className="block size-full overflow-visible"
@@ -1438,26 +1545,28 @@ function WhyCard({ badge, title, desc, isLight, active = true }) {
 
 function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
   const [active, setActive] = useState(0);
-  const [dims, setDims] = useState({ w: cardWidth, h: minHeight });
-  const containerRef = useRef(null);
+  const [dims, setDims] = useState({ w: cardWidth, h: minHeight, spread: 0.62, compact: false });
+  const wrapRef = useRef(null);
   const total = items.length;
 
   useEffect(() => {
-    const el = containerRef.current;
+    const el = wrapRef.current;
     if (!el) return;
     function updateDims() {
-      const avail = el.parentElement ? el.parentElement.clientWidth : window.innerWidth;
-      if (avail < 480) {
-        setDims({ w: Math.max(160, Math.min(cardWidth * 0.7, avail * 0.66)), h: minHeight * 0.58 });
-      } else if (avail < 860) {
-        setDims({ w: Math.min(cardWidth * 0.82, avail * 0.52), h: minHeight * 0.78 });
+      const avail = el.clientWidth || window.innerWidth;
+      if (avail < 860) {
+        // Compact (phone/tablet): a single, naturally-tall card — no forced
+        // pixel height. Forcing a guessed height here is what was clipping
+        // WhyCard's longer descriptions; letting content set its own height
+        // makes that impossible.
+        setDims({ w: Math.max(220, Math.min(cardWidth, avail * 0.86)), h: "auto", spread: 0.56, compact: true });
       } else {
-        setDims({ w: cardWidth, h: minHeight });
+        setDims({ w: cardWidth, h: minHeight, spread: 0.62, compact: false });
       }
     }
     updateDims();
     const ro = new ResizeObserver(updateDims);
-    if (el.parentElement) ro.observe(el.parentElement);
+    ro.observe(el);
     window.addEventListener("resize", updateDims);
     return () => {
       ro.disconnect();
@@ -1471,56 +1580,83 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
   );
 
   return (
-    <div className="w-full flex flex-col items-center gap-7">
-      <div
-        ref={containerRef}
-        tabIndex={0}
-        role="group"
-        aria-roledescription="carousel"
-        aria-label="Cards — use the left and right arrow keys to navigate"
-        onKeyDown={(e) => {
-          if (e.key === "ArrowRight") {
-            e.preventDefault();
-            go(1);
-          } else if (e.key === "ArrowLeft") {
-            e.preventDefault();
-            go(-1);
-          }
-        }}
-        className="relative w-full max-w-[1280px] mx-auto overflow-hidden outline-none rounded-2xl focus-visible:ring-2 focus-visible:ring-[#b7dd67]"
-        style={{ height: dims.h }}
-      >
-        {items.map((item, i) => {
-          let offset = i - active;
-          if (offset > total / 2) offset -= total;
-          if (offset < -total / 2) offset += total;
-          const abs = Math.abs(offset);
-          const isActive = offset === 0;
-          // Only ever show the immediate left/right neighbor, regardless of
-          // total card count — keeps the group visually symmetric and
-          // centered no matter which card (or how many total) is active.
-          const visible = abs <= 1;
-          return (
+    <div
+      ref={wrapRef}
+      tabIndex={0}
+      role="group"
+      aria-roledescription="carousel"
+      aria-label="Cards — swipe, or use the left and right arrow keys, to navigate"
+      onKeyDown={(e) => {
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          go(-1);
+        }
+      }}
+      className="w-full flex flex-col items-center gap-4 md:gap-7 outline-none"
+    >
+      {dims.compact ? (
+        <div className="relative w-full flex justify-center overflow-hidden py-3" style={{ touchAction: "pan-y" }}>
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
-              key={i}
-              className="absolute left-1/2 top-1/2 px-2"
-              style={{ zIndex: total - abs, width: dims.w, pointerEvents: visible ? "auto" : "none" }}
-              initial={false}
-              animate={{
-                x: `calc(-50% + ${offset * dims.w * 0.62}px)`,
-                y: "-50%",
-                scale: isActive ? 1 : 0.85,
-                opacity: visible ? (isActive ? 1 : 0.32) : 0,
-                filter: isActive ? "blur(0px)" : "blur(3px)",
+              key={active}
+              drag="x"
+              dragElastic={0.18}
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={(_e, info) => {
+                if (info.offset.x < -45 || info.velocity.x < -350) go(1);
+                else if (info.offset.x > 45 || info.velocity.x > 350) go(-1);
               }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              onClick={() => !isActive && setActive(i)}
+              initial={{ opacity: 0, x: 28, scale: 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -28, scale: 0.96 }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              style={{ width: dims.w }}
+              className="cursor-grab active:cursor-grabbing"
             >
-              {cloneElement(item, { active: isActive })}
+              {cloneElement(items[active], { active: true })}
             </motion.div>
-          );
-        })}
-      </div>
+          </AnimatePresence>
+        </div>
+      ) : (
+        <div
+          className="relative w-full max-w-[1280px] mx-auto overflow-hidden rounded-2xl"
+          style={{ height: dims.h }}
+        >
+          {items.map((item, i) => {
+            let offset = i - active;
+            if (offset > total / 2) offset -= total;
+            if (offset < -total / 2) offset += total;
+            const abs = Math.abs(offset);
+            const isActive = offset === 0;
+            // Only ever show the immediate left/right neighbor, regardless of
+            // total card count — keeps the group visually symmetric and
+            // centered no matter which card (or how many total) is active.
+            const visible = abs <= 1;
+            return (
+              <motion.div
+                key={i}
+                className="absolute left-1/2 top-1/2 px-2"
+                style={{ zIndex: total - abs, width: dims.w, pointerEvents: visible ? "auto" : "none" }}
+                initial={false}
+                animate={{
+                  x: `calc(-50% + ${offset * dims.w * dims.spread}px)`,
+                  y: "-50%",
+                  scale: isActive ? 1 : 0.85,
+                  opacity: visible ? (isActive ? 1 : 0.32) : 0,
+                  filter: isActive ? "blur(0px)" : "blur(3px)",
+                }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                onClick={() => !isActive && setActive(i)}
+              >
+                {cloneElement(item, { active: isActive })}
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Pagination dots */}
       <div className="flex items-center justify-center gap-2">
@@ -1594,21 +1730,305 @@ function ScaleFrame({ children, width, height, mobileWidth = null, mobileHeight 
   );
 }
 
+// ─── How Social Stack Works — responsive step cards ────────────────────────
+// Reuses the exact icon path data already imported (howSvgPaths / lHeroSvgPaths)
+// but positions everything with percentages instead of fixed pixels, so each
+// icon scales cleanly at any card size instead of needing separate mobile /
+// desktop markup.
+function StepIcon({ variant, paths, color }) {
+  if (variant === "idea") {
+    return (
+      <div className="absolute" style={{ left: "21.18%", top: "15.29%", width: "54.12%", height: "65.88%" }}>
+        <div className="absolute inset-[12.5%_20.83%_8.33%_20.82%]">
+          <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 26.8396 44.3333">
+            <path d={paths.p362031c0} fill={color} fillOpacity="0.9" />
+          </svg>
+        </div>
+      </div>
+    );
+  }
+  if (variant === "plan") {
+    return (
+      <div className="absolute" style={{ left: "2.35%", top: "-2.35%", width: "91.76%", height: "91.76%" }}>
+        <div className="absolute inset-[19.46%_19.46%_16.67%_16.67%]">
+          <div className="absolute inset-[-3.01%]">
+            <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 52.8174 52.8174">
+              <path d={paths.p266d080} fill="none" stroke={color} strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+            </svg>
+          </div>
+        </div>
+        <div className="absolute inset-[27.08%_27.08%_56.25%_56.25%]">
+          <div className="absolute inset-[-11.54%]">
+            <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
+              <path d="M1.5 1.5L14.5 14.5" stroke={color} strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+            </svg>
+          </div>
+        </div>
+        <div className="absolute inset-[70.83%_29.17%_8.33%_70.83%]">
+          <div className="absolute inset-[-6.15%_-1px]">
+            <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 2 18.25">
+              <path d="M1 1V17.25" stroke={color} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            </svg>
+          </div>
+        </div>
+        <div className="absolute inset-[70.83%_12.5%_8.33%_87.5%]">
+          <div className="absolute inset-[-6.15%_-1px]">
+            <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 2 18.25">
+              <path d="M1 1V17.25" stroke={color} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (variant === "build") {
+    return (
+      <div className="absolute" style={{ left: "12.94%", top: "20%", width: "72.94%", height: "58.82%" }}>
+        <div className="absolute inset-[5.21%]">
+          <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 55.5417 44.7917">
+            <path d={paths.p1d674e00} fill={color} />
+            <path d={paths.p37ae180} fill={color} />
+            <path d={paths.p27471600} fill={color} />
+            <path clipRule="evenodd" d={paths.p7ea6800} fill={color} fillRule="evenodd" />
+          </svg>
+        </div>
+      </div>
+    );
+  }
+  // launch
+  return (
+    <div className="absolute" style={{ left: "10.59%", top: "20%", width: "64.71%", height: "64.71%" }}>
+      <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 55 55">
+        <path d={paths.p1423e400} fill={color} />
+        <path d={paths.p25ebb400} fill={color} />
+        <path d={paths.p184a4dc0} fill={color} />
+      </svg>
+    </div>
+  );
+}
+
+// Dashed connector with a small chevron + a subtle marching-dash animation to
+// hint at motion/progress between steps. Only shown on the 4-across desktop
+// row — the stacked mobile/tablet layouts rely on numbering + spacing instead.
+function StepConnector({ isLight }) {
+  const c = isLight ? "#6f7f3c" : "#b7dd67";
+  return (
+    <div className="hidden lg:flex items-center justify-center px-1" aria-hidden="true">
+      <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
+        <path d="M1 8H21" stroke={c} strokeOpacity="0.85" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4" className="animate-[dashFlow_1.1s_linear_infinite]" />
+        <path d="M19 2L27 8L19 14" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+}
+
+// The "STEP N" pill fills with color from the bottom up on hover — like
+// juice rising in a glass. It reacts to hovering anywhere on the parent
+// card (via Tailwind's `group`/`group-hover`, since HowStepCard's outer
+// wrapper carries the `group` class), not just the pill itself.
+function StepPill({ n, isLight }) {
+  const border = isLight ? "border-[#6f7f3c]" : "border-[#b7dd67]";
+  const textIdle = isLight ? "text-[#6f7f3c]" : "text-[#b7dd67]";
+  const textFilled = isLight ? "group-hover:text-[#eef3e2]" : "group-hover:text-[#253236]";
+  const fillBg = isLight ? "bg-[#6f7f3c]" : "bg-[#b7dd67]";
+
+  return (
+    <div
+      className={`relative inline-flex items-center justify-center h-8 sm:h-10 px-3 sm:px-4 rounded-[18px] overflow-hidden border-2 whitespace-nowrap ${border}`}
+    >
+      {/* rising "juice" fill — grows 0 → 100% height on hover, with a soft
+          highlight riding its own top edge to sell the liquid-surface look */}
+      <span
+        aria-hidden="true"
+        className={`absolute inset-x-0 bottom-0 h-0 group-hover:h-full transition-[height] duration-[550ms] ease-[cubic-bezier(0.65,0,0.35,1)] overflow-hidden ${fillBg}`}
+        style={{ boxShadow: "0 -2px 4px 0 rgba(255,255,255,0.35) inset" }}
+      >
+        {/* glossy diagonal shine sweeping back and forth across the liquid;
+            clipped to the fill's own bounds since it's nested inside it */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-0 w-1/4 bg-gradient-to-r from-transparent via-white/60 to-transparent group-hover:animate-[shineSweep_1.6s_ease-in-out_0.15s_infinite]"
+        />
+      </span>
+
+      {/* a few tiny glitter specks that twinkle in, staggered, once the
+          liquid has mostly risen — positioned on the pill itself (not the
+          fill) so their placement stays stable regardless of fill height */}
+      <span
+        aria-hidden="true"
+        className="absolute opacity-0 rounded-[1px] bg-white/90 group-hover:animate-[sparkleTwinkle_1.5s_ease-in-out_0.3s_infinite]"
+        style={{ left: "18%", top: "24%", width: 3, height: 3 }}
+      />
+      <span
+        aria-hidden="true"
+        className="absolute opacity-0 rounded-[1px] bg-white/90 group-hover:animate-[sparkleTwinkle_1.5s_ease-in-out_0.65s_infinite]"
+        style={{ left: "78%", top: "62%", width: 3, height: 3 }}
+      />
+      <span
+        aria-hidden="true"
+        className="absolute opacity-0 rounded-[1px] bg-white/90 group-hover:animate-[sparkleTwinkle_1.5s_ease-in-out_1s_infinite]"
+        style={{ left: "48%", top: "70%", width: 2.5, height: 2.5 }}
+      />
+
+      <span
+        className={`relative z-10 font-['Inter:Regular',sans-serif] text-xs sm:text-base tracking-[-0.4px] transition-colors duration-500 delay-150 ${textIdle} ${textFilled}`}
+      >
+        STEP {n}
+      </span>
+    </div>
+  );
+}
+
+function HowStepCard({ n, variant, title, isLight, paths, index }) {
+  const iconColor = isLight ? "#6F7F3C" : "#B7DD67";
+  const ringClass = isLight ? "border-2 border-[rgba(111,127,60,0.9)]" : "border-2 border-[rgba(183,221,103,0.8)]";
+  const titleClass = isLight
+    ? "font-['Inter:Semi_Bold',sans-serif] font-semibold text-[#253236]"
+    : "font-['Inter:Regular',sans-serif] font-normal text-white";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.45, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -6, scale: 1.03 }}
+      whileTap={{ scale: 0.98 }}
+      className={`group relative rounded-[18px] px-4 py-5 sm:px-5 sm:py-6 flex flex-col gap-4 sm:gap-5 transition-shadow duration-300 touch-manipulation [-webkit-tap-highlight-color:transparent] ${
+        isLight
+          ? "bg-[#eef3e2] shadow-[0_18px_45px_rgba(63,79,74,0.22)]"
+          : "bg-[#253236] shadow-[0_18px_45px_rgba(0,0,0,0.45),0_0_40px_rgba(183,221,103,0.12)]"
+      }`}
+    >
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div className={`relative shrink-0 rounded-full overflow-hidden size-16 sm:size-20 lg:size-[85px] ${ringClass}`}>
+          <StepIcon variant={variant} paths={paths} color={iconColor} />
+        </div>
+        <StepPill n={n} isLight={isLight} />
+      </div>
+      <p className={`text-base sm:text-xl tracking-[-0.8px] ${titleClass}`}>{title}</p>
+    </motion.div>
+  );
+}
+
+function HowStepsSection({ isLight }) {
+  const paths = isLight ? lHeroSvgPaths : howSvgPaths;
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] gap-5 lg:gap-0 lg:items-stretch">
+      <HowStepCard n={1} variant="idea" title="Tell us your idea." isLight={isLight} paths={paths} index={0} />
+      <StepConnector isLight={isLight} />
+      <HowStepCard n={2} variant="plan" title="We plan your stack" isLight={isLight} paths={paths} index={1} />
+      <StepConnector isLight={isLight} />
+      <HowStepCard n={3} variant="build" title="We build it for you" isLight={isLight} paths={paths} index={2} />
+      <StepConnector isLight={isLight} />
+      <HowStepCard n={4} variant="launch" title="Launch and grow together" isLight={isLight} paths={paths} index={3} />
+    </div>
+  );
+}
+
+// ─── CTA — "Ready to build" (mobile-aware wrapper) ─────────────────────────
+// Desktop/tablet (md+) keeps the original pixel-precise Figma layout exactly
+// as-is via ScaleFrame. Mobile gets its own purpose-built layout: still a
+// horizontal row (heading | divider | copy+button) like the original intent,
+// just sized with real responsive units instead of being uniformly
+// scaled down from a 1266px-wide canvas — which is what was crushing it.
+function CtaMobile({ isLight }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className={`relative overflow-hidden rounded-[18px] border flex items-center gap-3 px-4 py-5 sm:px-6 sm:py-6 ${
+        isLight ? "bg-[rgba(111,127,60,0.12)] border-[#4f5a4b]/30" : "bg-[#253236] border-[#4c5a53]"
+      }`}
+    >
+      <div className="flex-[0.9] min-w-0">
+        <p
+          className={`font-['Caveat_Brush:Regular',sans-serif] leading-[0.95] text-[26px] sm:text-[32px] tracking-[-1.2px] -rotate-3 ${
+            isLight ? "text-[rgba(111,127,60,0.9)]" : "text-[#e6f2dd]"
+          }`}
+        >
+          Ready to
+        </p>
+        <p
+          className={`font-['Caveat_Brush:Regular',sans-serif] leading-[0.95] text-[26px] sm:text-[32px] tracking-[-1.2px] -rotate-3 ${
+            isLight ? "text-[#253236]" : "text-[#c6e7bc]"
+          }`}
+        >
+          your stack?
+        </p>
+      </div>
+
+      <div className={`w-px self-stretch shrink-0 ${isLight ? "bg-[#4f5a4b]/30" : "bg-[#4c5a53]"}`} />
+
+      <div className="flex-1 flex flex-col gap-2.5 sm:gap-3.5 min-w-0">
+        <p
+          className={`font-['Manrope:Bold',sans-serif] font-bold text-[11px] sm:text-[13px] leading-snug tracking-[-0.4px] ${
+            isLight ? "text-[#556052]" : "text-[#f4f4ef]"
+          }`}
+        >
+          Whether you're starting from scratch or ready to level up, we're here to help bring your ideas to life.
+        </p>
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.05, filter: "brightness(1.1)" }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+          className={`self-start font-['Inter:Bold',sans-serif] font-bold text-[11px] sm:text-xs px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] whitespace-nowrap ${
+            isLight ? "bg-[rgba(111,127,60,0.9)] text-[#e6f2dd]" : "bg-[rgba(183,221,103,0.8)] text-[#253236]"
+          }`}
+        >
+          Start your project
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+}
+
+function CtaSection({ isLight }) {
+  return (
+    <>
+      <div className="hidden md:block">
+        <ScaleFrame width={1266} height={277}>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.35 }}
+            className="relative size-full"
+          >
+            {isLight ? <LHero_Frame27 /> : <Cta_Frame />}
+          </motion.div>
+        </ScaleFrame>
+      </div>
+      <div className="md:hidden px-4 sm:px-6">
+        <CtaMobile isLight={isLight} />
+      </div>
+    </>
+  );
+}
+
 // ─── Dark page content ───────────────────────────────────────────────────────
 function DarkPageContent() {
   return (
-    <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-[10px] pb-[80px] pt-[38px] text-[#f4f4ef]">
-      <ScaleFrame width={1280} height={710}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full overflow-hidden"
-        >
-          <HeroOnly />
-        </motion.div>
-      </ScaleFrame>
+    <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-[10px] pb-[80px] pt-4 md:pt-[38px] text-[#f4f4ef]">
+      <div className="hidden md:block">
+        <ScaleFrame width={1280} height={710}>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.35 }}
+            className="relative size-full overflow-hidden"
+          >
+            <HeroOnly />
+          </motion.div>
+        </ScaleFrame>
+      </div>
+      <div className="md:hidden">
+        <HeroMobile isLight={false} />
+      </div>
 
       <ScaleFrame width={1280} height={202} mobileWidth={1000}>
         <motion.div
@@ -1620,7 +2040,7 @@ function DarkPageContent() {
         >
           <div className="relative" style={{ width: 962, height: 190 }}>
             <WhatWeDo_Brush />
-            <BrushDoodle d={doodlePaths.whatWeDo} width={304} height={15} left={488} top={166} />
+            <BrushDoodle d={doodlePaths.whatWeDo} width={304} height={15} top={166} />
           </div>
         </motion.div>
       </ScaleFrame>
@@ -1669,7 +2089,7 @@ function DarkPageContent() {
         >
           <div className="relative" style={{ width: 834, height: 180 }}>
             <Why_Brush />
-            <BrushDoodle d={doodlePaths.whySocialStack} width={228} height={20} left={526} top={152} />
+            <BrushDoodle d={doodlePaths.whySocialStack} width={228} height={20} top={152} />
           </div>
         </motion.div>
       </ScaleFrame>
@@ -1712,34 +2132,18 @@ function DarkPageContent() {
         >
           <div className="relative" style={{ width: 834, height: 180 }}>
             <How_Brush />
-            <BrushDoodle d={doodlePaths.howSocialStack} width={388} height={15} left={446} top={156} />
+            <BrushDoodle d={doodlePaths.howSocialStack} width={388} height={15} top={156} />
           </div>
         </motion.div>
       </ScaleFrame>
 
-      <ScaleFrame width={1290} height={350} mobileWidth={650} mobileHeight={520}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full flex flex-col items-center overflow-hidden"
-        >
-          <How_Frame />
-        </motion.div>
-      </ScaleFrame>
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10">
+        <HowStepsSection isLight={false} />
+      </div>
 
-      <ScaleFrame width={1266} height={277}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full"
-        >
-          <Cta_Frame />
-        </motion.div>
-      </ScaleFrame>
+      <div className="mt-2">
+        <CtaSection isLight={false} />
+      </div>
     </div>
   );
 }
@@ -1747,18 +2151,23 @@ function DarkPageContent() {
 // ─── Light page content ───────────────────────────────────────────────────────
 function LightPageContent() {
   return (
-    <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-[10px] pb-[80px] pt-[38px] text-[#2f372d]">
-      <ScaleFrame width={1280} height={710}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full overflow-hidden"
-        >
-          <LHero_HeroOnly />
-        </motion.div>
-      </ScaleFrame>
+    <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-[10px] pb-[80px] pt-4 md:pt-[38px] text-[#2f372d]">
+      <div className="hidden md:block">
+        <ScaleFrame width={1280} height={710}>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.35 }}
+            className="relative size-full overflow-hidden"
+          >
+            <LHero_HeroOnly />
+          </motion.div>
+        </ScaleFrame>
+      </div>
+      <div className="md:hidden">
+        <HeroMobile isLight={true} />
+      </div>
 
       <ScaleFrame width={1280} height={202} mobileWidth={1000}>
         <motion.div
@@ -1770,7 +2179,7 @@ function LightPageContent() {
         >
           <div className="relative" style={{ width: 962, height: 190 }}>
             <LHero_Brush />
-            <BrushDoodle d={doodlePaths.whatWeDo} width={304} height={15} left={488} top={166} color="#6F7F3C" />
+            <BrushDoodle d={doodlePaths.whatWeDo} width={304} height={15} top={166} color="#6F7F3C" />
           </div>
         </motion.div>
       </ScaleFrame>
@@ -1819,7 +2228,7 @@ function LightPageContent() {
         >
           <div className="relative" style={{ width: 834, height: 180 }}>
             <LHero_Brush1 />
-            <BrushDoodle d={doodlePaths.whySocialStack} width={228} height={20} left={526} top={152} color="#6F7F3C" />
+            <BrushDoodle d={doodlePaths.whySocialStack} width={228} height={20} top={152} color="#6F7F3C" />
           </div>
         </motion.div>
       </ScaleFrame>
@@ -1862,34 +2271,18 @@ function LightPageContent() {
         >
           <div className="relative" style={{ width: 834, height: 180 }}>
             <LHero_Brush2 />
-            <BrushDoodle d={doodlePaths.howSocialStack} width={388} height={15} left={446} top={156} color="#6F7F3C" />
+            <BrushDoodle d={doodlePaths.howSocialStack} width={388} height={15} top={156} color="#6F7F3C" />
           </div>
         </motion.div>
       </ScaleFrame>
 
-      <ScaleFrame width={1290} height={350} mobileWidth={650} mobileHeight={520}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full flex flex-col items-center overflow-hidden"
-        >
-          <LHero_Frame17 />
-        </motion.div>
-      </ScaleFrame>
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10">
+        <HowStepsSection isLight={true} />
+      </div>
 
-      <ScaleFrame width={1266} height={277}>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.35 }}
-          className="relative size-full"
-        >
-          <LHero_Frame27 />
-        </motion.div>
-      </ScaleFrame>
+      <div className="mt-2">
+        <CtaSection isLight={true} />
+      </div>
     </div>
   );
 }
@@ -1903,12 +2296,11 @@ export default function HomePage() {
     <main className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${isLight ? "bg-[#e6f2dd]" : "bg-[#222d31]"}`}>
       <style>{`
         @keyframes doodlePulse { 0% { transform: scale(1.2); } 25% { transform: scale(1); } 100% { transform: scale(1); } }
-        @media (max-width: 767px) {
-          [data-name="step 3"] { left: 10px !important; top: 265px !important; }
-          [data-name="step 4"] { left: 330px !important; top: 265px !important; }
-          [data-name="connector-arrow"] { display: none !important; }
-          [data-name="steps-canvas"] { height: 520px !important; }
-        }
+        @keyframes doodleCenterPulse { 0% { transform: translateX(-50%) scale(1.2); } 25% { transform: translateX(-50%) scale(1); } 100% { transform: translateX(-50%) scale(1); } }
+        @keyframes dashFlow { to { stroke-dashoffset: -16; } }
+        @keyframes shineSweep { 0% { transform: translateX(-160%) skewX(-12deg); } 100% { transform: translateX(420%) skewX(-12deg); } }
+        @keyframes sparkleTwinkle { 0%, 100% { opacity: 0; transform: scale(0.4) rotate(45deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
+        @keyframes spin360 { to { transform: rotate(360deg); } }
       `}</style>
       <Header theme={theme} onThemeChange={setTheme} />
 

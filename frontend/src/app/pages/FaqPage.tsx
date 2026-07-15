@@ -248,11 +248,25 @@ function Hero({ theme = "dark" }) {
         className="flex flex-col gap-6 w-full lg:w-[43%] items-start"
       >
         {/* FAQs badge */}
-        <div className={`${isLight ? "bg-[#526862]" : "bg-[#2e3936]"} rounded-full px-6 py-3 border border-[rgba(196,240,107,0.15)] inline-block`}>
-          <p className="font-['Manrope'] font-medium text-[#c8e77b] text-lg tracking-[2px] uppercase">
-            FAQs
-          </p>
-        </div>
+        <motion.div className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
+          <motion.span
+            className="absolute inset-[-80%] rounded-full opacity-90"
+            style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 64deg, rgba(34,211,238,0.95) 82deg, transparent 104deg, transparent 360deg)" }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.span
+            className="absolute inset-[-80%] rounded-full opacity-75"
+            style={{ background: "conic-gradient(from 180deg, transparent 0deg, transparent 64deg, rgba(103,232,249,0.92) 82deg, transparent 104deg, transparent 360deg)" }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
+          />
+          <span className={`relative z-10 inline-flex ${isLight ? "bg-[#526862]" : "bg-[#2e3936]"} rounded-full px-6 py-3 border border-[rgba(196,240,107,0.15)]`}>
+            <p className="font-['Manrope'] font-medium text-[#c8e77b] text-lg tracking-[2px] uppercase">
+              FAQs
+            </p>
+          </span>
+        </motion.div>
 
         <HeroFrame theme={theme} />
 
