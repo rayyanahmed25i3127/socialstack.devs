@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Sun, Moon, Plus, Minus } from "lucide-react";
+import { useState, type CSSProperties } from "react";
+import { motion } from "motion/react";
+
+import { Header } from "./Header";
+import { Footer } from "./Footer";
 
 import svgPathsDark from "../../imports/DServicesExpanded/svg-xnbm573k17";
 import svgPathsLight from "../../imports/LServicesBoth/svg-a37jqh11z0";
@@ -39,36 +41,10 @@ import imgFlutter from "../../imports/DServicesExpanded/1abccac24bb239ea183a5ccc
 import imgFirebase from "../../imports/DServicesExpanded/fcab6d310952243f23fc6d5de741d6f38d0c6f05.png";
 import imgDart from "../../imports/DServicesExpanded/015b9bb4bc3f7ded175ce2da7edcca184eae6580.png";
 
-/* ─── Footer icons ─── */
-import imgGmailD from "../../imports/DServicesExpanded/bb41079225c7e7e337a305986d06c16975f4fb87.png";
-import imgInstagramD from "../../imports/DServicesExpanded/4df4f05f97b46091b25e33867b09dde1cfa65a65.png";
-import imgLinkedinD from "../../imports/DServicesExpanded/f061b0dccdf43cbb885fbbf475aa5115a5fee706.png";
-import imgLogo from "../../imports/DServicesExpanded/eef17f758a83029ddf8e98fae373f5efc3059691.png";
-import imgGmailL from "../../imports/LServicesBoth/6b4ec495fae1c48f0f0ded0d4de376f6d0e25992.png";
-import imgInstagramL from "../../imports/LServicesBoth/0a53286268279a29ea6db753d8d408bb499874ac.png";
-import imgLinkedinL from "../../imports/LServicesBoth/5ac66073681efe5925013d8e779ef7ae2781251e.png";
-
-/* ─── Nav icon ─── */
-// A DIFFERENT asset from the footer logo above — it exists in the Figma export
-// but was never imported/used in the previous version of this file, which is
-// why it appeared to be "missing" rather than just mis-themed.
-import imgNavIcon from "../../imports/DServicesExpanded/ca7a4b5d9052afe7cb23b96175cc5d547c211686.png";
-
 // ─── Theme tokens ───────────────────────────────────────────────────────────
 
 const DARK = {
   pageBg: "#222d31",
-  navBg: "#222d31",
-  navBorder: "transparent",
-  navLink: "#e6f2dd",
-  contactBg: "#c6e7bc",
-  contactText: "#273338",
-  hamburger: "#e6f2dd",
-  mobileMenuBg: "#222d31",
-  mobileMenuBorder: "#3f5757",
-  toggleBg: "#2e3936",
-  toggleIndicator: "#c8e77b",
-  arrowStroke: "#B7DD67",
 
   cardBg: "#253236",
   lime: "#B7E66B",
@@ -103,24 +79,10 @@ const DARK = {
   ctaPillText: "#c8e77b",
   // Exact requested colour — #F4EEE3 at 70% opacity (noise texture layered on top separately)
   ctaPaper: "rgba(244,238,227,0.7)",
-
-  footerBg: "rgba(183,221,103,0.9)",
-  footerText: "#222d31",
 };
 
 const LIGHT = {
   pageBg: "#e6f2dd",
-  navBg: "#e6f2dd",
-  navBorder: "rgba(111,127,60,0.2)",
-  navLink: "#273338",
-  contactBg: "#35594d",
-  contactText: "#e6f2dd",
-  hamburger: "#273338",
-  mobileMenuBg: "#e6f2dd",
-  mobileMenuBorder: "rgba(111,127,60,0.3)",
-  toggleBg: "rgba(111,127,60,0.15)",
-  toggleIndicator: "#35594d",
-  arrowStroke: "#6F7F3C",
 
   cardBg: "rgba(111,127,60,0.1)",
   lime: "#7D9444",
@@ -154,13 +116,204 @@ const LIGHT = {
   ctaPillBg: "#1c2528",
   ctaPillText: "#c8e77b",
   ctaPaper: "rgba(244,238,227,0.7)",
-
-  footerBg: "#3e4f4a",
-  footerText: "rgba(183,221,103,0.9)",
 };
 
 type Tokens = typeof DARK;
 const TRANSITION_CSS = "background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease";
+const revealViewport = { once: true, margin: "-80px" };
+const revealTransition = { duration: 0.72, ease: [0.16, 1, 0.3, 1] as const };
+const revealUp = {
+  hidden: { opacity: 0, y: 34, filter: "blur(10px)" },
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: revealTransition },
+};
+
+function ServiceCardHoverStyles() {
+  return (
+    <style>
+      {`
+        .slice {
+          --size-letter: clamp(13px, 1.25vw, 14px);
+          padding: 0.5em 1em;
+          font-size: var(--size-letter);
+          background-color: transparent;
+          border: calc(var(--size-letter) / 6) solid var(--c2);
+          border-radius: 0.55em;
+          cursor: pointer;
+          overflow: hidden;
+          position: relative;
+          transition: 300ms cubic-bezier(0.83, 0, 0.17, 1);
+        }
+
+        .slice > .text {
+          font-weight: 800;
+          color: var(--c2);
+          position: relative;
+          z-index: 1;
+          transition: color 700ms cubic-bezier(0.83, 0, 0.17, 1);
+        }
+
+        .slice::after {
+          content: "";
+          width: 0;
+          height: calc(300% + 1em);
+          position: absolute;
+          translate: -50% -50%;
+          inset: 50%;
+          rotate: 30deg;
+          background-color: var(--c2);
+          transition: 1000ms cubic-bezier(0.83, 0, 0.17, 1);
+        }
+
+        .slice:hover > .text,
+        .slice:focus-visible > .text {
+          color: var(--c1);
+        }
+
+        .slice:hover::after,
+        .slice:focus-visible::after {
+          width: calc(120% + 1em);
+        }
+
+        .slice:active {
+          scale: 0.98;
+          filter: brightness(0.9);
+        }
+
+        .service-hover-card {
+          position: relative;
+          isolation: isolate;
+          z-index: 1;
+          border-radius: 24px;
+          overflow: hidden;
+          transform-origin: center;
+          transition:
+            transform 0.22s ease-in-out,
+            filter 0.22s ease-in-out,
+            box-shadow 0.22s ease-in-out,
+            background-color 0.4s ease,
+            border-color 0.4s ease;
+        }
+
+        .service-hover-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          background:
+            linear-gradient(135deg, var(--service-glass-top), transparent 46%),
+            radial-gradient(circle at 18% 12%, var(--service-glass-glow), transparent 30%),
+            var(--service-glass-bg);
+          opacity: 0;
+          backdrop-filter: blur(22px) saturate(170%);
+          -webkit-backdrop-filter: blur(22px) saturate(170%);
+          transition: opacity 0.24s ease-in-out;
+        }
+
+        .service-hover-card > * {
+          position: relative;
+          z-index: 1;
+        }
+
+        .service-hover-card:hover,
+        .service-hover-card:focus-within {
+          z-index: 3;
+          transform: scale(1.04) rotate(-1deg);
+          box-shadow: 0 24px 50px var(--service-card-shadow);
+        }
+
+        .service-hover-card:hover::before,
+        .service-hover-card:focus-within::before {
+          opacity: 1;
+        }
+
+        .service-hover-media {
+          flex: 0 0 auto;
+          width: min(34vw, 300px);
+          transition:
+            transform 0.22s ease-in-out,
+            filter 0.22s ease-in-out,
+            opacity 0.22s ease-in-out;
+        }
+
+        .service-hover-card:hover .service-hover-media,
+        .service-hover-card:focus-within .service-hover-media {
+          transform: scale(1.08);
+          filter: blur(7px);
+          opacity: 0;
+          animation: service-card-float 3s infinite ease-in-out;
+        }
+
+        .service-hover-details {
+          display: grid;
+          grid-template-rows: 0fr;
+          opacity: 0;
+          transform: translateY(14px);
+          margin-top: 0;
+          transition:
+            grid-template-rows 0.26s ease-in-out,
+            margin-top 0.26s ease-in-out,
+            opacity 0.2s ease-in-out,
+            transform 0.22s ease-in-out;
+        }
+
+        .service-hover-card:hover .service-hover-details,
+        .service-hover-card:focus-within .service-hover-details {
+          grid-template-rows: 1fr;
+          opacity: 1;
+          transform: translateY(0);
+          margin-top: 18px;
+        }
+
+        @keyframes service-card-float {
+          0% { transform: translateY(0) scale(1.08); }
+          50% { transform: translateY(-20px) scale(1.08); }
+          100% { transform: translateY(0) scale(1.08); }
+        }
+
+        .services-hover-stage {
+          position: relative;
+          isolation: isolate;
+        }
+
+        .services-hover-stage::before {
+          content: "";
+          position: absolute;
+          inset: -18px;
+          z-index: 2;
+          pointer-events: none;
+          border-radius: 30px;
+          opacity: 0;
+          background: rgba(12, 18, 20, 0.08);
+          backdrop-filter: blur(12px) saturate(140%);
+          -webkit-backdrop-filter: blur(12px) saturate(140%);
+          transition: opacity 0.24s ease-in-out;
+        }
+
+        .services-hover-stage:has(.service-hover-card:hover) .service-hover-card:not(:hover),
+        .services-hover-stage:has(.service-hover-card:focus-within) .service-hover-card:not(:focus-within) {
+          filter: blur(8px);
+        }
+
+        .services-hover-stage:has(.service-hover-card:hover)::before,
+        .services-hover-stage:has(.service-hover-card:focus-within)::before {
+          opacity: 1;
+        }
+
+        @media (max-width: 767px) {
+          .service-hover-media {
+            width: 44%;
+            min-width: 136px;
+          }
+
+          .service-hover-card:hover,
+          .service-hover-card:focus-within {
+            transform: scale(1.01);
+          }
+        }
+      `}
+    </style>
+  );
+}
 
 // ─── Service content (copy only — no layout/vector data lives here) ────────
 
@@ -324,10 +477,13 @@ interface ArrowDoodle {
   rect: CropRect;
 }
 
-const CARD_VISUALS: Record<
-  number,
-  { collapsedCrop: IllustrationCrop; expandedCrop: IllustrationCrop; collapsedArrow?: ArrowDoodle }
-> = {
+interface CardVisual {
+  collapsedCrop: IllustrationCrop;
+  expandedCrop: IllustrationCrop;
+  collapsedArrow?: ArrowDoodle;
+}
+
+const CARD_VISUALS: Record<number, CardVisual> = {
   1: {
     collapsedCrop: { aspect: "347/110", window: { left: -8.83, top: -18.09, width: 71.76, height: 115.45 } },
     expandedCrop: { aspect: "432/327", window: { left: 0, top: 0, width: 100, height: 100 } },
@@ -469,127 +625,6 @@ function FloatingStar({ style, delay = 0, filled = false, tk }: { style: React.C
   );
 }
 
-// ─── Theme toggle (same pattern as FaqPage) ─────────────────────────────────
-
-function ThemeToggle({ isDark, onToggle, tk }: { isDark: boolean; onToggle: () => void; tk: Tokens }) {
-  return (
-    <motion.button
-      onClick={onToggle}
-      aria-label="Toggle theme"
-      className="relative flex items-center gap-1 px-1 py-1 rounded-full shrink-0"
-      style={{
-        backgroundColor: tk.toggleBg,
-        border: `1px solid ${isDark ? "rgba(200,231,123,0.2)" : "rgba(111,127,60,0.25)"}`,
-        transition: TRANSITION_CSS,
-        width: 68,
-        height: 34,
-      }}
-    >
-      <motion.div
-        className="absolute top-[3px] rounded-full size-[26px] z-0"
-        animate={{ left: isDark ? "calc(100% - 29px)" : "3px" }}
-        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        style={{ backgroundColor: tk.toggleIndicator }}
-      />
-      <span className="relative z-10 flex items-center justify-center w-[26px] h-[26px]">
-        <Sun size={14} style={{ color: isDark ? tk.arrowStroke : "#e6f2dd", transition: "color 0.3s" }} />
-      </span>
-      <span className="relative z-10 flex items-center justify-center w-[26px] h-[26px]">
-        <Moon size={14} style={{ color: isDark ? "#e6f2dd" : tk.arrowStroke, transition: "color 0.3s" }} />
-      </span>
-    </motion.button>
-  );
-}
-
-// ─── Nav (temporary — will be replaced by the shared team header) ──────────
-
-function Nav({ isDark, onToggle, tk }: { isDark: boolean; onToggle: () => void; tk: Tokens }) {
-  const [open, setOpen] = useState(false);
-  const links = ["Home", "About us", "Services", "Projects", "FAQs"];
-
-  return (
-    <nav
-      className="w-full sticky top-0 z-50"
-      style={{ backgroundColor: tk.navBg, borderBottom: `1px solid ${tk.navBorder}`, transition: TRANSITION_CSS }}
-    >
-      <div className="flex items-center justify-between px-6 sm:px-10 lg:px-20 h-[72px] sm:h-[88px] gap-4">
-        <img src={imgNavIcon} alt="SocialStack logo" className="w-[40px] h-[40px] object-contain shrink-0" />
-
-        <div className="hidden md:flex items-center gap-6 lg:gap-10 flex-1 justify-center">
-          {links.map((link) => (
-            <a
-              key={link}
-              href="#"
-              className="font-['Manrope',sans-serif] font-semibold text-[15px] lg:text-[16px] whitespace-nowrap transition-colors"
-              style={{ color: tk.navLink }}
-            >
-              {link}
-            </a>
-          ))}
-        </div>
-
-        <div className="hidden md:flex items-center gap-3">
-          <ThemeToggle isDark={isDark} onToggle={onToggle} tk={tk} />
-          <motion.button
-            className="font-['Manrope',sans-serif] font-bold text-[14px] lg:text-[15px] px-5 py-[10px] rounded-[800px] whitespace-nowrap"
-            style={{ backgroundColor: tk.contactBg, color: tk.contactText, transition: TRANSITION_CSS }}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Contact
-          </motion.button>
-        </div>
-
-        <div className="md:hidden flex items-center gap-3">
-          <ThemeToggle isDark={isDark} onToggle={onToggle} tk={tk} />
-          <button
-            className="flex flex-col justify-center gap-[5px] w-[44px] h-[44px] items-center rounded-md"
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Close menu" : "Open menu"}
-          >
-            <motion.span animate={{ rotate: open ? 45 : 0, y: open ? 7 : 0 }} className="block h-[2px] w-[22px] rounded-full origin-center" style={{ backgroundColor: tk.hamburger }} />
-            <motion.span animate={{ opacity: open ? 0 : 1 }} className="block h-[2px] w-[22px] rounded-full" style={{ backgroundColor: tk.hamburger }} />
-            <motion.span animate={{ rotate: open ? -45 : 0, y: open ? -7 : 0 }} className="block h-[2px] w-[22px] rounded-full origin-center" style={{ backgroundColor: tk.hamburger }} />
-          </button>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.22 }}
-            className="overflow-hidden md:hidden"
-            style={{ borderTop: `1px solid ${tk.mobileMenuBorder}`, backgroundColor: tk.mobileMenuBg, transition: TRANSITION_CSS }}
-          >
-            <div className="flex flex-col px-6 py-3">
-              {links.map((link) => (
-                <a
-                  key={link}
-                  href="#"
-                  onClick={() => setOpen(false)}
-                  className="font-['Manrope',sans-serif] font-semibold text-[16px] py-4 transition-colors"
-                  style={{ color: tk.navLink, borderBottom: `1px solid ${tk.mobileMenuBorder}` }}
-                >
-                  {link}
-                </a>
-              ))}
-              <button
-                className="mt-4 mb-2 font-['Manrope',sans-serif] font-bold text-[15px] px-5 py-3 rounded-[800px]"
-                style={{ backgroundColor: tk.contactBg, color: tk.contactText, transition: TRANSITION_CSS }}
-              >
-                Contact
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
-  );
-}
-
 // ─── Small shared pieces ────────────────────────────────────────────────────
 
 function NumberBadge({ number, rotation, tk }: { number: string; rotation: number; tk: Tokens }) {
@@ -633,15 +668,51 @@ function ToolPill({ img, alt, tk }: { img: string; alt: string; tk: Tokens }) {
 function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
   const svgPaths = isDark ? svgPathsDark : svgPathsLight;
   const stackImg = isDark ? imgStackDark : imgStackLight;
+  const badgeSpinPrimary = isDark ? "rgba(34,211,238,0.95)" : "rgba(39,51,56,0.95)";
+  const badgeSpinSecondary = isDark ? "rgba(103,232,249,0.92)" : "rgba(63,79,74,0.92)";
 
   return (
-    <section className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-center w-full">
+    <motion.section
+      className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-center w-full"
+      initial="hidden"
+      whileInView="show"
+      viewport={revealViewport}
+      variants={revealUp}
+    >
       {/* Left: copy */}
       <div className="flex flex-col gap-5 sm:gap-6 flex-1 min-w-0 lg:max-w-[520px] w-full">
-        <div className="inline-flex items-center justify-center px-4 py-2 rounded-full w-fit" style={{ backgroundColor: tk.pillBg, border: `1px solid ${tk.pillBorder}`, transition: TRANSITION_CSS }}>
-          <span className="font-['Manrope',sans-serif] font-medium text-[13px] sm:text-[14px] tracking-[2px] whitespace-nowrap" style={{ color: tk.accentText }}>
-            WHAT WE DO
-          </span>
+        <div className="mb-10 text-left">
+          <motion.div
+            className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default"
+            whileHover={{ scale: 1.05, x: 5 }}
+          >
+            <motion.span
+              className="absolute inset-[-80%] rounded-full opacity-90"
+              style={{
+                background:
+                  `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeSpinPrimary} 82deg, transparent 104deg, transparent 360deg)`,
+              }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.span
+              className="absolute inset-[-80%] rounded-full opacity-75"
+              style={{
+                background:
+                  `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeSpinSecondary} 82deg, transparent 104deg, transparent 360deg)`,
+              }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
+            />
+            <span
+              className="relative z-10 inline-flex rounded-full px-8 py-3 border border-[rgba(196,240,107,0.15)] transition-all duration-300"
+              style={{ backgroundColor: tk.pillBg, transition: TRANSITION_CSS }}
+            >
+              <span className="text-[#c8e77b] font-['Manrope',sans-serif] font-medium text-xl tracking-[2px] whitespace-nowrap">
+                WHAT WE DO
+              </span>
+            </span>
+          </motion.div>
         </div>
 
         {/* Fixed-aspect coordinate frame — exact Figma proportions (511 × 461) */}
@@ -732,13 +803,17 @@ function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
       </div>
 
       {/* Right: stack image */}
-      <div className="relative shrink-0 w-full max-w-[480px] lg:max-w-none lg:w-[46%] rounded-[32px] lg:rounded-[60px] overflow-hidden aspect-[4/3] lg:aspect-[8/7]">
+      <motion.div
+        className="relative shrink-0 w-full max-w-[480px] lg:max-w-none lg:w-[46%] rounded-[32px] lg:rounded-[60px] overflow-hidden aspect-[4/3] lg:aspect-[8/7]"
+        animate={{ y: [0, -14, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      >
         <img alt="SocialStack portfolio stack" className="absolute inset-0 w-full h-full object-contain pointer-events-none" src={stackImg} />
         <FloatingStar style={{ left: "8%", top: "42%" }} delay={0} filled tk={tk} />
         <FloatingStar style={{ left: "30%", bottom: "14%" }} delay={1.2} tk={tk} />
         <FloatingStar style={{ right: "18%", top: "12%" }} delay={0.6} tk={tk} />
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 }
 
@@ -747,7 +822,13 @@ function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 function TaglineBanner({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
   const svgPaths = isDark ? svgPathsDark : svgPathsLight;
   return (
-    <div className="relative w-full flex items-center justify-center py-6 sm:py-8">
+    <motion.div
+      className="relative w-full flex items-center justify-center py-6 sm:py-8"
+      initial="hidden"
+      whileInView="show"
+      viewport={revealViewport}
+      variants={revealUp}
+    >
       <div className="relative w-full max-w-[1100px] flex items-center justify-center px-6 py-6 sm:py-8">
         <div className="absolute inset-0">
           <svg className="w-full h-full" viewBox="0 0 1161 112" fill="none" preserveAspectRatio="none">
@@ -761,7 +842,7 @@ function TaglineBanner({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
           Strategy meets design, content meets code, and ideas meet impact.
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -774,32 +855,38 @@ function TaglineBanner({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 
 function ServiceCard({
   service,
-  isOpen,
-  onToggle,
   isDark,
   tk,
 }: {
   service: ServiceItem;
-  isOpen: boolean;
-  onToggle: () => void;
   isDark: boolean;
   tk: Tokens;
 }) {
   const thumb = isDark ? service.thumbDark : service.thumbLight;
   const visuals = CARD_VISUALS[service.id];
+  const cardStyle = {
+    backgroundColor: tk.cardBg,
+    border: `1px solid ${tk.borderColor}`,
+    transition: TRANSITION_CSS,
+    "--service-card-shadow": isDark ? "rgba(0,0,0,0.28)" : "rgba(63,79,74,0.18)",
+    "--service-glass-bg": isDark ? "rgba(37,50,54,0.48)" : "rgba(230,242,221,0.42)",
+    "--service-glass-top": isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.62)",
+    "--service-glass-glow": isDark ? "rgba(183,221,103,0.14)" : "rgba(111,127,60,0.18)",
+  } as CSSProperties;
 
   return (
-    <article className="relative rounded-[20px] sm:rounded-[24px] w-full overflow-hidden" style={{ backgroundColor: tk.cardBg, border: `1px solid ${tk.borderColor}`, transition: TRANSITION_CSS }}>
-      {/* Header row */}
-      <button
-        onClick={onToggle}
-        aria-expanded={isOpen}
-        className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-4 sm:py-5 cursor-pointer text-left bg-transparent border-none"
-      >
-        <NumberBadge number={service.number} rotation={service.noteRotation} tk={tk} />
-
-        {!isOpen ? (
-          <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+    <motion.article
+      className="service-hover-card w-full rounded-[24px] sm:rounded-[28px]"
+      style={cardStyle}
+      initial="hidden"
+      whileInView="show"
+      viewport={revealViewport}
+      variants={revealUp}
+      tabIndex={0}
+    >
+      <div className="flex flex-col px-4 py-4 sm:px-6 sm:py-5">
+        <div className="flex items-center gap-4 sm:gap-6">
+          <div className="min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
             <p className="font-['Manrope',sans-serif] font-extrabold text-[20px] sm:text-[28px] lg:text-[32px] leading-tight tracking-tight shrink-0" style={{ color: tk.cardHeading }}>
               {service.title}
             </p>
@@ -807,29 +894,17 @@ function ServiceCard({
               {service.tagline}
             </p>
           </div>
-        ) : (
-          <div className="flex-1 min-w-0" />
-        )}
 
-        {/* Wide illustration strip, matching the Figma proportions (~3:1), with the
-            exact crop for this card plus its reused curved-arrow doodle */}
-        {!isOpen && (
-          <div className="shrink-0 hidden md:block w-[220px] lg:w-[300px] relative">
+          <div className="service-hover-media ml-auto">
             <IllustrationBox crop={visuals.collapsedCrop} src={thumb} alt={service.title}>
               {visuals.collapsedArrow && <ArrowOverlay arrow={visuals.collapsedArrow} color={tk.doodleStroke} />}
             </IllustrationBox>
           </div>
-        )}
-
-        <div className="shrink-0 flex items-center justify-center rounded-full size-[38px] sm:size-[48px]" style={{ border: `2px solid ${tk.limeAccent}` }}>
-          {isOpen ? <Minus size={18} color={tk.limeAccent} /> : <Plus size={18} color={tk.limeAccent} />}
         </div>
-      </button>
 
-      {/* Expandable content */}
-      <div style={{ display: "grid", gridTemplateRows: isOpen ? "1fr" : "0fr", transition: "grid-template-rows 0.38s cubic-bezier(0.4, 0, 0.2, 1)" }}>
-        <div className="overflow-hidden">
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 pl-[76px] sm:pl-[96px] pr-4 sm:pr-6 pb-6 sm:pb-8 pt-2">
+        <div className="service-hover-details">
+          <div className="overflow-hidden">
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 pt-2 pb-1">
             {/* Details column */}
             <div className="flex flex-col gap-4 flex-1 min-w-0 lg:max-w-[520px]">
               <p className="font-['Manrope',sans-serif] font-extrabold text-[28px] sm:text-[36px] lg:text-[42px] leading-[1.1] tracking-tight" style={{ color: tk.cardHeading }}>
@@ -862,7 +937,7 @@ function ServiceCard({
             </div>
 
             {/* Illustration column — exact per-card crop, no overlay text of any kind */}
-            <div className="flex flex-col gap-3 flex-1 min-w-0 lg:max-w-[440px]">
+            <div className="service-expanded-media flex flex-col gap-3 flex-1 min-w-0 lg:max-w-[440px]">
               <IllustrationBox crop={visuals.expandedCrop} src={thumb} alt={service.title} rounded />
 
               <p className="font-['Caveat_Brush',sans-serif] text-[22px] sm:text-[26px]" style={{ color: tk.limeAccent }}>
@@ -877,27 +952,18 @@ function ServiceCard({
           </div>
         </div>
       </div>
-    </article>
+      </div>
+    </motion.article>
   );
 }
 
 // ─── 4. ServicesSection ─────────────────────────────────────────────────────
 
 function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
-  const [openIds, setOpenIds] = useState<Set<number>>(new Set([1]));
-
-  const toggleCard = (id: number) => {
-    setOpenIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
   return (
-    <section className="flex flex-col gap-4 sm:gap-6 w-full">
+    <section className="services-hover-stage flex flex-col gap-4 sm:gap-6 w-full">
       {SERVICES.map((service) => (
-        <ServiceCard key={service.id} service={service} isOpen={openIds.has(service.id)} onToggle={() => toggleCard(service.id)} isDark={isDark} tk={tk} />
+        <ServiceCard key={service.id} service={service} isDark={isDark} tk={tk} />
       ))}
     </section>
   );
@@ -907,9 +973,21 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 
 function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
   const paperPath = isDark ? svgPathsDark.p28df1400 : svgPathsLight.p38c75100;
+  const badgeSpinPrimary = isDark ? "rgba(34,211,238,0.95)" : "rgba(39,51,56,0.95)";
+  const badgeSpinSecondary = isDark ? "rgba(103,232,249,0.92)" : "rgba(63,79,74,0.92)";
+  const sliceStyle = {
+    "--c1": tk.ctaButtonText,
+    "--c2": tk.ctaButtonBg,
+  } as CSSProperties;
 
   return (
-    <section className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden">
+    <motion.section
+      className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden"
+      initial="hidden"
+      whileInView="show"
+      viewport={revealViewport}
+      variants={revealUp}
+    >
       <div className="absolute inset-0">
         <svg className="w-full h-full" viewBox="0 0 1236 372" fill="none" preserveAspectRatio="none">
           <defs>
@@ -929,14 +1007,41 @@ function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
         </svg>
       </div>
 
-      {/* Only the PRICING oval sits top-right — everything else is centered inside the paper area */}
-      <div className="absolute top-5 right-5 sm:top-8 sm:right-10 inline-flex items-center justify-center px-4 py-2 rounded-full z-10" style={{ backgroundColor: tk.ctaPillBg }}>
-        <span className="font-['Manrope',sans-serif] font-medium text-[12px] sm:text-[13px] tracking-[2px]" style={{ color: tk.ctaPillText }}>
-          PRICING
-        </span>
+      <div className="absolute left-5 top-5 z-10 sm:left-8 sm:top-8">
+        <motion.div
+          className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default"
+          whileHover={{ scale: 1.05, x: 5 }}
+        >
+          <motion.span
+            className="absolute inset-[-80%] rounded-full opacity-90"
+            style={{
+              background:
+                `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeSpinPrimary} 82deg, transparent 104deg, transparent 360deg)`,
+            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.span
+            className="absolute inset-[-80%] rounded-full opacity-75"
+            style={{
+              background:
+                `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeSpinSecondary} 82deg, transparent 104deg, transparent 360deg)`,
+            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
+          />
+          <span
+            className="relative z-10 inline-flex rounded-full px-8 py-3 border border-[rgba(196,240,107,0.15)] transition-all duration-300"
+            style={{ backgroundColor: tk.ctaPillBg, transition: TRANSITION_CSS }}
+          >
+            <span className="text-[#c8e77b] font-['Manrope',sans-serif] font-medium text-xl tracking-[2px] whitespace-nowrap">
+              PRICING
+            </span>
+          </span>
+        </motion.div>
       </div>
 
-      <div className="relative flex flex-col items-center text-center gap-4 sm:gap-5 px-6 sm:px-12 pt-14 sm:pt-16 pb-10 sm:pb-14 max-w-[620px] mx-auto">
+      <div className="relative flex flex-col items-center text-center gap-4 sm:gap-5 px-6 sm:px-12 pt-24 sm:pt-28 pb-10 sm:pb-14 max-w-[620px] mx-auto">
         <p className="font-['Manrope',sans-serif] font-extrabold leading-tight" style={{ color: tk.ctaHeading, fontSize: "clamp(26px, 4.5vw, 48px)" }}>
           Each Stack is different.
         </p>
@@ -947,84 +1052,29 @@ function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 
         <a
           href="mailto:ss.socialstack@gmail.com"
-          className="inline-flex items-center justify-center rounded-[10px] px-6 sm:px-7 py-3 no-underline"
-          style={{ backgroundColor: tk.ctaButtonBg }}
+          className="slice inline-flex items-center justify-center font-['Manrope',sans-serif] tracking-[1.5px] whitespace-nowrap no-underline"
+          style={sliceStyle}
         >
-          <span className="font-['Manrope',sans-serif] font-extrabold text-[13px] sm:text-[14px] tracking-[1.5px]" style={{ color: tk.ctaButtonText }}>
+          <span className="text">
             LET'S PRICE YOUR STACK
           </span>
         </a>
       </div>
-    </section>
-  );
-}
-
-// ─── 6. FooterPlaceholder ───────────────────────────────────────────────────
-
-function FooterPlaceholder({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
-  const gmailIcon = isDark ? imgGmailD : imgGmailL;
-  const igIcon = isDark ? imgInstagramD : imgInstagramL;
-  const liIcon = isDark ? imgLinkedinD : imgLinkedinL;
-
-  return (
-    <footer className="w-full mt-10 sm:mt-16" style={{ backgroundColor: tk.footerBg, transition: TRANSITION_CSS }}>
-      <div className="max-w-[1360px] mx-auto flex flex-col lg:flex-row gap-8 px-6 sm:px-10 lg:px-20 py-10 sm:py-14">
-        <div className="flex flex-col gap-4 flex-1">
-          <div className="flex items-center gap-3">
-            <img alt="SocialStack logo" src={imgLogo} className="w-12 h-12 object-contain" />
-            <span className="font-['Caveat_Brush',sans-serif] text-[26px]" style={{ color: tk.footerText }}>
-              SocialStack
-            </span>
-          </div>
-          <p className="font-['Outfit',sans-serif] font-light max-w-[480px] leading-relaxed text-[16px] sm:text-[18px]" style={{ color: tk.footerText }}>
-            We provide ease in all your tech needs. Contact us today for a quote or reach out to learn more about our services.
-          </p>
-          <div className="flex items-center gap-4 mt-1">
-            <a href="mailto:ss.socialstack@gmail.com" aria-label="Email">
-              <img alt="Email" src={gmailIcon} className="w-8 h-8 object-cover rounded-full" />
-            </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              <img alt="Instagram" src={igIcon} className="w-8 h-8 object-cover rounded-full" />
-            </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-              <img alt="LinkedIn" src={liIcon} className="w-8 h-8 object-cover rounded-full" />
-            </a>
-          </div>
-          <p className="font-['Outfit',sans-serif] font-medium text-[15px] sm:text-[16px]" style={{ color: tk.footerText }}>
-            ss.socialstack@gmail.com
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          {["About Us", "Our Services", "FAQs", "Contact Us"].map((link) => (
-            <a key={link} href="#" className="font-['Outfit',sans-serif] font-light text-[16px] sm:text-[18px] leading-[2.2] no-underline" style={{ color: tk.footerText }}>
-              {link}
-            </a>
-          ))}
-        </div>
-      </div>
-
-      <div className="max-w-[1360px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 px-6 sm:px-10 lg:px-20 pb-6 sm:pb-8">
-        <p className="font-['Outfit',sans-serif] font-extralight text-[13px] sm:text-[14px]" style={{ color: tk.footerText }}>
-          © 2026 SocialStack
-        </p>
-        <p className="font-['Outfit',sans-serif] font-extralight text-[13px] sm:text-[14px]" style={{ color: tk.footerText }}>
-          All rights reserved
-        </p>
-      </div>
-    </footer>
+    </motion.section>
   );
 }
 
 // ─── Root page ──────────────────────────────────────────────────────────────
 
 export default function ServicesPage() {
-  const [isDark, setIsDark] = useState(true);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const isDark = theme === "dark";
   const tk = isDark ? DARK : LIGHT;
 
   return (
     <motion.div animate={{ backgroundColor: tk.pageBg }} transition={{ duration: 0.4 }} className="min-h-screen">
-      <Nav isDark={isDark} onToggle={() => setIsDark((v) => !v)} tk={tk} />
+      <ServiceCardHoverStyles />
+      <Header theme={theme} onThemeChange={setTheme} />
 
       <main className="w-full max-w-[1360px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 pt-8 sm:pt-14 flex flex-col gap-14 sm:gap-20">
         <ServicesHero isDark={isDark} tk={tk} />
@@ -1033,7 +1083,7 @@ export default function ServicesPage() {
         <PricingCTA isDark={isDark} tk={tk} />
       </main>
 
-      <FooterPlaceholder isDark={isDark} tk={tk} />
+      <Footer theme={theme} />
     </motion.div>
   );
 }
