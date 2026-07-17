@@ -504,13 +504,15 @@ function FooterSocialButton({
 function RevealText({
   children,
   className,
+  desktopOnly = false,
 }: {
   children: string;
   className: string;
+  desktopOnly?: boolean;
 }) {
   return (
     <motion.p
-      className={className}
+      className={`${desktopOnly ? "hidden md:block" : ""} ${className}`}
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
@@ -519,15 +521,35 @@ function RevealText({
       {children.split(" ").map((word, index) => (
         <motion.span
           key={`${word}-${index}`}
-          className="inline-block"
+          className="mr-[0.28em] inline-block"
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={viewport}
           transition={{ duration: 0.55, delay: index * 0.018, ease: easeOutExpo }}
         >
-          {word}&nbsp;
+          {word}
         </motion.span>
       ))}
+    </motion.p>
+  );
+}
+
+function MobileStoryText({
+  children,
+  className,
+}: {
+  children: string;
+  className: string;
+}) {
+  return (
+    <motion.p
+      className={`md:hidden ${className}`}
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="show"
+      viewport={viewport}
+    >
+      {children}
     </motion.p>
   );
 }
@@ -756,7 +778,7 @@ function TeamFlipStack({
                                 top: "clamp(2rem, 5.5vw, 2.25rem)",
                                 x: "0%",
                                 y: "0%",
-                                fontSize: "2rem",
+                                fontSize: "clamp(1.5rem, 4.4vw, 2rem)",
                               }
                         }
                         transition={{ duration: 0.72, ease: easeOutExpo }}
@@ -764,7 +786,7 @@ function TeamFlipStack({
                         {member.greeting}
                       </motion.p>
                       <motion.p
-                        className={`max-w-full font-['Inter:Black',sans-serif] font-black text-[2rem] leading-[1.28] tracking-[0.01em] ${dark ? "text-[#e6f2dd]/88" : "text-[#253236]/88"}`}
+                        className={`max-w-full font-['Inter:Black',sans-serif] font-black text-[clamp(1.5rem,4.4vw,2rem)] leading-[1.28] tracking-[0.01em] ${dark ? "text-[#e6f2dd]/88" : "text-[#253236]/88"}`}
                         initial={false}
                         animate={{
                           opacity: cardStage === 2 ? 1 : 0,
@@ -884,6 +906,9 @@ export default function AboutPage() {
   const mobMenuBg  = d ? "bg-[#2e3936]"                : "bg-[#4a5e59]";
   const footerBg   = d ? "bg-[rgba(183,221,103,0.82)]" : "bg-[#3e4f4a]";
   const footerText = d ? "text-[#273338]"              : "text-[rgba(183,221,103,0.85)]";
+  const badgeGlow = d
+    ? ["rgba(34,211,238,0.95)", "rgba(103,232,249,0.92)"]
+    : ["rgba(39,51,56,0.9)", "rgba(63,79,74,0.82)"];
   const socialArr  = d
     ? [imgGmailDark,  imgInstagramDark,  imgLinkedinDark]
     : [imgGmailLight, imgInstagramLight, imgLinkedinLight];
@@ -1091,8 +1116,7 @@ export default function AboutPage() {
             <motion.span
               className="absolute inset-[-80%] rounded-full opacity-90"
               style={{
-                background:
-                  "conic-gradient(from 0deg, transparent 0deg, transparent 64deg, rgba(34,211,238,0.95) 82deg, transparent 104deg, transparent 360deg)",
+                background: `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeGlow[0]} 82deg, transparent 104deg, transparent 360deg)`,
               }}
               animate={{ rotate: 360 }}
               transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
@@ -1100,8 +1124,7 @@ export default function AboutPage() {
             <motion.span
               className="absolute inset-[-80%] rounded-full opacity-75"
               style={{
-                background:
-                  "conic-gradient(from 180deg, transparent 0deg, transparent 64deg, rgba(103,232,249,0.92) 82deg, transparent 104deg, transparent 360deg)",
+                background: `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeGlow[1]} 82deg, transparent 104deg, transparent 360deg)`,
               }}
               animate={{ rotate: 360 }}
               transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
@@ -1120,14 +1143,38 @@ export default function AboutPage() {
         </div>
 
         {/* Body text — centered */}
-        <div className="mx-auto max-w-[21.5rem] space-y-5 text-center sm:max-w-2xl md:max-w-3xl">
-          <RevealText className={`font-['Manrope:Bold',sans-serif] font-bold text-base md:text-xl leading-8 ${aboutText} transition-colors duration-300`}>
+        <div className="mx-auto max-w-[20.75rem] space-y-5 text-center sm:max-w-2xl md:max-w-3xl">
+          <MobileStoryText
+            className={`mx-auto font-['Manrope:Bold',sans-serif] font-bold text-base leading-7 md:text-xl md:leading-8 ${aboutText} transition-colors duration-300`}
+          >
+            The world is online, and your business needs to be too.
+          </MobileStoryText>
+          <RevealText
+            desktopOnly
+            className={`mx-auto font-['Manrope:Bold',sans-serif] font-bold text-base leading-7 md:text-xl md:leading-8 ${aboutText} transition-colors duration-300`}
+          >
             The world is online, and your business needs to be too.
           </RevealText>
-          <RevealText className={`font-['Manrope:Bold',sans-serif] font-bold text-sm md:text-lg leading-7 md:leading-8 ${aboutText} transition-colors duration-300`}>
+          <MobileStoryText
+            className={`mx-auto font-['Manrope:Bold',sans-serif] font-bold text-sm leading-[1.85] md:text-lg md:leading-8 ${aboutText} transition-colors duration-300`}
+          >
+            As a group of students doing our bachelors in Software Engineering, we are no strangers to the tech-related problems everyone faces. Out of a thirst for knowledge, and a burning desire to put ourselves out into the world, we decided to start a personal project: provide our services to the people.
+          </MobileStoryText>
+          <RevealText
+            desktopOnly
+            className={`mx-auto font-['Manrope:Bold',sans-serif] font-bold text-sm leading-[1.85] md:text-lg md:leading-8 ${aboutText} transition-colors duration-300`}
+          >
             As a group of students doing our bachelors in Software Engineering, we are no strangers to the tech-related problems everyone faces. Out of a thirst for knowledge, and a burning desire to put ourselves out into the world, we decided to start a personal project: provide our services to the people.
           </RevealText>
-          <RevealText className={`font-['Manrope:Bold',sans-serif] font-bold text-sm md:text-lg leading-7 ${aboutText} transition-colors duration-300`}>
+          <MobileStoryText
+            className={`mx-auto font-['Manrope:Bold',sans-serif] font-bold text-sm leading-[1.85] md:text-lg md:leading-7 ${aboutText} transition-colors duration-300`}
+          >
+            Here at Social Stack, we provide solutions for all your tech needs.
+          </MobileStoryText>
+          <RevealText
+            desktopOnly
+            className={`mx-auto font-['Manrope:Bold',sans-serif] font-bold text-sm leading-[1.85] md:text-lg md:leading-7 ${aboutText} transition-colors duration-300`}
+          >
             Here at Social Stack, we provide solutions for all your tech needs.
           </RevealText>
         </div>
