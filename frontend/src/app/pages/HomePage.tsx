@@ -3,13 +3,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { cloneElement, useCallback, useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 
 import heroSvgPaths from "../../imports/home-hero-section/paths";
 import heroImgLogo from "../../imports/home-shared/logo-photo.png";
+import heroImgGlobe from "../../imports/home-hero-section/hero-globe-dark.png";
 import whatWeDoSvgPaths from "../../imports/home-what-we-do-section/paths";
 import whatWeDoImgFrame28 from "../../imports/home-what-we-do-section/project-web-dev.png";
 import whatWeDoImgFrame29 from "../../imports/home-what-we-do-section/project-ads-branding.png";
@@ -20,6 +21,7 @@ import howSvgPaths from "../../imports/home-how-social-stack-section/paths";
 import ctaSvgPaths from "../../imports/home-cta-section/paths";
 import lHeroSvgPaths from "../../imports/home-light-hero-section/paths";
 import lHeroImgFrame25 from "../../imports/home-light-hero-section/hero-photo.png";
+import lHeroImgGlobe from "../../imports/home-light-hero-section/hero-globe-light.png";
 import lHeroImgFrame28 from "../../imports/home-light-hero-section/project-web-dev.png";
 import lHeroImgFrame29 from "../../imports/home-light-hero-section/project-ads-branding.png";
 import lHeroImgFrame30 from "../../imports/home-light-hero-section/project-ui-ux.png";
@@ -142,13 +144,85 @@ function Hero_Buttons() {
   );
 }
 
-function Hero_ServiceHeader() {
+// ─── Hero globe visual (shared across both themes and all breakpoints) ────
+// Four animation layers, each on its own DOM node so they never fight over
+// the same element's `transform`:
+//   1. outer <div>        — pure-CSS `floatSlow` bob, loops forever
+//   2. motion.div #2       — scroll-linked drift/tilt (useScroll + useTransform)
+//   3. motion.div #3       — cursor-follow drift: nudges toward the pointer
+//                            wherever it is inside the box, springs back to
+//                            center on mouse leave
+//   4. motion.img          — one-time scale-0 → scale-1 "pop in"
+//
+// The pop-in uses a plain `initial` → `animate` pair (not `whileInView`) so it
+// fires the instant this component mounts — on first page load *and* every
+// time it remounts on theme toggle (that remount happens because the page
+// content sits under a `key={theme}` in `AnimatePresence`). `whileInView`
+// depends on an IntersectionObserver callback that isn't guaranteed to have
+// resolved yet on first paint for content that's already on-screen, which is
+// why the old version only reliably animated on the *second* mount (theme
+// toggle) and not the first (page load).
+function HeroGlobeVisual({ isLight, sizeClassName = "w-[460px] h-[460px]", wrapperClassName = "", floatDelay = 0 }) {
+  const src = isLight ? lHeroImgGlobe : heroImgGlobe;
+
+  const scrollRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: scrollRef, offset: ["start end", "end start"] });
+  const scrollY = useTransform(scrollYProgress, [0, 1], [40, -40]);
+  const scrollRotate = useTransform(scrollYProgress, [0, 1], [-4, 4]);
+
+  // Cursor-follow: raw motion values updated on pointer move, smoothed
+  // through a spring so the globe glides toward the cursor instead of
+  // snapping to it.
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
+  const springConfig = { stiffness: 120, damping: 14, mass: 0.4 };
+  const springX = useSpring(cursorX, springConfig);
+  const springY = useSpring(cursorY, springConfig);
+  const MAX_SHIFT = 22; // px of drift at the very edge of the box
+
+  const handlePointerMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relX = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 → 0.5
+    const relY = (e.clientY - rect.top) / rect.height - 0.5;
+    cursorX.set(relX * 2 * MAX_SHIFT);
+    cursorY.set(relY * 2 * MAX_SHIFT);
+  };
+  const handlePointerLeave = () => {
+    cursorX.set(0);
+    cursorY.set(0);
+  };
+
   return (
-    <div className="content-stretch flex flex-col gap-[30px] h-[669px] items-start overflow-clip p-[10px] relative shrink-0 w-[560px]" data-name="service header">
-      <Hero_WhatWeDo />
-      <Hero_Frame />
-      <p className="[word-break:break-word] font-['Manrope:ExtraBold',sans-serif] font-extrabold h-[132px] leading-[32px] min-w-full relative shrink-0 text-[#c7d1cc] text-[22px] w-[min-content]">We design websites, build apps, craft brands, and create digital experiences that help businesses grow with confidence.</p>
-      <Hero_Buttons />
+    <div
+      className={`relative animate-[floatSlow_6s_ease-in-out_infinite] ${sizeClassName} ${wrapperClassName}`}
+      style={{ animationDelay: `${floatDelay}s` }}
+      onMouseMove={handlePointerMove}
+      onMouseLeave={handlePointerLeave}
+    >
+      <motion.div ref={scrollRef} style={{ y: scrollY, rotate: scrollRotate }} className="relative size-full">
+        {/* soft glow behind the globe so it doesn't feel like a flat sticker */}
+        <div
+          aria-hidden
+          className="absolute inset-[10%] rounded-full blur-3xl -z-10"
+          style={{
+            background: isLight
+              ? "radial-gradient(circle, rgba(111,127,60,0.28), transparent 70%)"
+              : "radial-gradient(circle, rgba(183,221,103,0.22), transparent 70%)",
+          }}
+        />
+        <motion.div style={{ x: springX, y: springY }} className="relative size-full">
+          <motion.img
+            src={src}
+            alt="Illustration of a connected global network"
+            draggable={false}
+            className="relative size-full object-contain select-none drop-shadow-2xl"
+            initial={{ opacity: 0, scale: 0, rotate: -10 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            whileHover={{ scale: 1.04 }}
+            transition={{ duration: 2, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+          />
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
@@ -224,6 +298,12 @@ function HeroMobile({ isLight }) {
           <span className="relative">View our services</span>
         </motion.button>
       </div>
+
+      <HeroGlobeVisual
+        isLight={isLight}
+        sizeClassName="w-[280px] h-[280px] sm:w-[360px] sm:h-[360px]"
+        wrapperClassName="mx-auto mt-1"
+      />
     </div>
   );
 }
@@ -236,11 +316,23 @@ function Hero_HeroHeader() {
   );
 }
 
+function Hero_ServiceHeader() {
+  return (
+    <div className="content-stretch flex flex-col gap-[30px] h-[669px] items-start overflow-clip p-[10px] relative shrink-0 w-[560px]" data-name="service header">
+      <Hero_WhatWeDo />
+      <Hero_Frame />
+      <p className="[word-break:break-word] font-['Manrope:ExtraBold',sans-serif] font-extrabold h-[132px] leading-[32px] min-w-full relative shrink-0 text-[#c7d1cc] text-[22px] w-[min-content]">We design websites, build apps, craft brands, and create digital experiences that help businesses grow with confidence.</p>
+      <Hero_Buttons />
+    </div>
+  );
+}
+
 // Unified Hero alignment
 function HeroOnly() {
   return (
     <div className="content-stretch flex gap-[64px] h-full items-start overflow-clip px-[80px] relative shrink-0 w-[1280px]" data-name="hero">
       <Hero_HeroHeader />
+      <HeroGlobeVisual isLight={false} wrapperClassName="self-start mt-[70px] shrink-0" />
     </div>
   );
 }
@@ -895,6 +987,7 @@ function LHero_HeroOnly() {
   return (
     <div className="content-stretch flex gap-[64px] h-full items-start overflow-clip px-[80px] relative shrink-0 w-[1280px]" data-name="hero">
       <LHero_HeroHeader />
+      <HeroGlobeVisual isLight={true} wrapperClassName="self-start mt-[70px] shrink-0" />
     </div>
   );
 }
@@ -2301,6 +2394,7 @@ export default function HomePage() {
         @keyframes shineSweep { 0% { transform: translateX(-160%) skewX(-12deg); } 100% { transform: translateX(420%) skewX(-12deg); } }
         @keyframes sparkleTwinkle { 0%, 100% { opacity: 0; transform: scale(0.4) rotate(45deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
         @keyframes spin360 { to { transform: rotate(360deg); } }
+        @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
       `}</style>
       <Header theme={theme} onThemeChange={setTheme} />
 
