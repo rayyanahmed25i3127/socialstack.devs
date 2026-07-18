@@ -1536,9 +1536,9 @@ function ServiceCard({ icon, title, desc, isLight, active = true }) {
           {desc}
         </p>
       )}
-      <p className={`relative font-['Manrope:Bold',sans-serif] font-bold text-xs md:text-lg group-hover:underline transition-colors duration-300 ${isLight ? "text-[#6f7f3c]" : "text-[#b7dd67]"}`}>
+      <a href="/services" className={`relative font-['Manrope:Bold',sans-serif] font-bold text-xs md:text-lg no-underline group-hover:underline transition-colors duration-300 ${isLight ? "text-[#6f7f3c]" : "text-[#b7dd67]"}`}>
         Learn more...
-      </p>
+      </a>
       <div
         aria-hidden
         className={`absolute border border-solid inset-0 pointer-events-none rounded-[18px] transition-colors duration-300 ${

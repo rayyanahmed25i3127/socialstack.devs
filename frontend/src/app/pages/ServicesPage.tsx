@@ -111,8 +111,8 @@ const LIGHT = {
 
   ctaHeading: "#1c2528",
   ctaBody: "rgba(28,37,40,0.7)",
-  ctaButtonBg: "#7D9444",
-  ctaButtonText: "#f4f4ef",
+  ctaButtonBg: "#273338",
+  ctaButtonText: "#c8e77b",
   ctaPillBg: "#1c2528",
   ctaPillText: "#c8e77b",
   ctaPaper: "rgba(244,238,227,0.7)",
