@@ -236,6 +236,8 @@ function HeroFrame({ theme = "dark" }) {
 function Hero({ theme = "dark" }) {
   const isLight = theme === "light";
   const svgPaths = isLight ? lightSvgPaths : darkSvgPaths;
+  const badgeSpinPrimary = isLight ? "rgba(39,51,56,0.9)" : "rgba(34,211,238,0.95)";
+  const badgeSpinSecondary = isLight ? "rgba(63,79,74,0.82)" : "rgba(103,232,249,0.92)";
   return (
     <section className="w-full flex flex-col lg:flex-row gap-10 items-center justify-between px-4 md:px-10 pt-2 pb-10 max-w-[1400px] mx-auto">
 
@@ -251,13 +253,13 @@ function Hero({ theme = "dark" }) {
         <motion.div className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
           <motion.span
             className="absolute inset-[-80%] rounded-full opacity-90"
-            style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 64deg, rgba(34,211,238,0.95) 82deg, transparent 104deg, transparent 360deg)" }}
+            style={{ background: `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeSpinPrimary} 82deg, transparent 104deg, transparent 360deg)` }}
             animate={{ rotate: 360 }}
             transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
           />
           <motion.span
             className="absolute inset-[-80%] rounded-full opacity-75"
-            style={{ background: "conic-gradient(from 180deg, transparent 0deg, transparent 64deg, rgba(103,232,249,0.92) 82deg, transparent 104deg, transparent 360deg)" }}
+            style={{ background: `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeSpinSecondary} 82deg, transparent 104deg, transparent 360deg)` }}
             animate={{ rotate: 360 }}
             transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
           />
@@ -324,7 +326,7 @@ function FaqDivider({ theme = "dark" }) {
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className={`relative w-[90vw] ${isLight ? "max-w-[798px]" : "max-w-[528px]"} h-[70px] md:h-[94px] flex items-center justify-center`}
+        className="relative w-[90vw] max-w-[798px] h-[70px] md:h-[94px] flex items-center justify-center"
       >
         {/* Actual Figma brush stroke SVG */}
         <svg
@@ -334,7 +336,7 @@ function FaqDivider({ theme = "dark" }) {
           preserveAspectRatio="none"
         >
 <path d={isLight ? lightSvgPaths.p38a6ba00 : darkSvgPaths.p381f2700} fill={isLight ? "#7D9444" : "#B7DD67"} fillOpacity={isLight ? "0.9" : "0.8"} />        </svg>
-        <p className={`relative font-['Caveat_Brush'] text-[#273338] ${isLight ? "text-2xl md:text-[45px]" : "text-2xl md:text-[34px]"} leading-[32px] text-center z-10 px-4 whitespace-nowrap`}>
+        <p className="relative font-['Caveat_Brush'] text-[#273338] text-2xl md:text-[45px] leading-[32px] text-center z-10 px-4 whitespace-nowrap">
           FREQUENTLY ASKED QUESTIONS
         </p>
       </motion.div>

@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useCallback, useState, type CSSProperties } from "react";
 import { motion } from "motion/react";
 
 import { Header } from "./Header";
@@ -155,7 +155,7 @@ function ServiceCardHoverStyles() {
         .slice::after {
           content: "";
           width: 0;
-          height: calc(300% + 1em);
+          height: calc(340% + 2em);
           position: absolute;
           translate: -50% -50%;
           inset: 50%;
@@ -171,144 +171,12 @@ function ServiceCardHoverStyles() {
 
         .slice:hover::after,
         .slice:focus-visible::after {
-          width: calc(120% + 1em);
+          width: calc(180% + 3em);
         }
 
         .slice:active {
           scale: 0.98;
           filter: brightness(0.9);
-        }
-
-        .service-hover-card {
-          position: relative;
-          isolation: isolate;
-          z-index: 1;
-          border-radius: 24px;
-          overflow: hidden;
-          transform-origin: center;
-          transition:
-            transform 0.22s ease-in-out,
-            filter 0.22s ease-in-out,
-            box-shadow 0.22s ease-in-out,
-            background-color 0.4s ease,
-            border-color 0.4s ease;
-        }
-
-        .service-hover-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          z-index: 0;
-          background:
-            linear-gradient(135deg, var(--service-glass-top), transparent 46%),
-            radial-gradient(circle at 18% 12%, var(--service-glass-glow), transparent 30%),
-            var(--service-glass-bg);
-          opacity: 0;
-          backdrop-filter: blur(22px) saturate(170%);
-          -webkit-backdrop-filter: blur(22px) saturate(170%);
-          transition: opacity 0.24s ease-in-out;
-        }
-
-        .service-hover-card > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .service-hover-card:hover,
-        .service-hover-card:focus-within {
-          z-index: 3;
-          transform: scale(1.04) rotate(-1deg);
-          box-shadow: 0 24px 50px var(--service-card-shadow);
-        }
-
-        .service-hover-card:hover::before,
-        .service-hover-card:focus-within::before {
-          opacity: 1;
-        }
-
-        .service-hover-media {
-          flex: 0 0 auto;
-          width: min(34vw, 300px);
-          transition:
-            transform 0.22s ease-in-out,
-            filter 0.22s ease-in-out,
-            opacity 0.22s ease-in-out;
-        }
-
-        .service-hover-card:hover .service-hover-media,
-        .service-hover-card:focus-within .service-hover-media {
-          transform: scale(1.08);
-          filter: blur(7px);
-          opacity: 0;
-          animation: service-card-float 3s infinite ease-in-out;
-        }
-
-        .service-hover-details {
-          display: grid;
-          grid-template-rows: 0fr;
-          opacity: 0;
-          transform: translateY(14px);
-          margin-top: 0;
-          transition:
-            grid-template-rows 0.26s ease-in-out,
-            margin-top 0.26s ease-in-out,
-            opacity 0.2s ease-in-out,
-            transform 0.22s ease-in-out;
-        }
-
-        .service-hover-card:hover .service-hover-details,
-        .service-hover-card:focus-within .service-hover-details {
-          grid-template-rows: 1fr;
-          opacity: 1;
-          transform: translateY(0);
-          margin-top: 18px;
-        }
-
-        @keyframes service-card-float {
-          0% { transform: translateY(0) scale(1.08); }
-          50% { transform: translateY(-20px) scale(1.08); }
-          100% { transform: translateY(0) scale(1.08); }
-        }
-
-        .services-hover-stage {
-          position: relative;
-          isolation: isolate;
-        }
-
-        .services-hover-stage::before {
-          content: "";
-          position: absolute;
-          inset: -18px;
-          z-index: 2;
-          pointer-events: none;
-          border-radius: 30px;
-          opacity: 0;
-          background: rgba(12, 18, 20, 0.08);
-          backdrop-filter: blur(12px) saturate(140%);
-          -webkit-backdrop-filter: blur(12px) saturate(140%);
-          transition: opacity 0.24s ease-in-out;
-        }
-
-        .services-hover-stage:has(.service-hover-card:hover) .service-hover-card:not(:hover),
-        .services-hover-stage:has(.service-hover-card:focus-within) .service-hover-card:not(:focus-within) {
-          filter: blur(8px);
-        }
-
-        .services-hover-stage:has(.service-hover-card:hover)::before,
-        .services-hover-stage:has(.service-hover-card:focus-within)::before {
-          opacity: 1;
-        }
-
-        @media (max-width: 767px) {
-          .service-hover-media {
-            width: 44%;
-            min-width: 136px;
-          }
-
-          .service-hover-card:hover,
-          .service-hover-card:focus-within {
-            transform: scale(1.01);
-          }
         }
       `}
     </style>
@@ -857,114 +725,318 @@ function ServiceCard({
   service,
   isDark,
   tk,
+  active = false,
 }: {
   service: ServiceItem;
   isDark: boolean;
   tk: Tokens;
+  active?: boolean;
 }) {
   const thumb = isDark ? service.thumbDark : service.thumbLight;
   const visuals = CARD_VISUALS[service.id];
   const cardStyle = {
-    backgroundColor: tk.cardBg,
-    border: `1px solid ${tk.borderColor}`,
+    backgroundColor: isDark ? tk.cardBg : "#eef3e2",
     transition: TRANSITION_CSS,
-    "--service-card-shadow": isDark ? "rgba(0,0,0,0.28)" : "rgba(63,79,74,0.18)",
-    "--service-glass-bg": isDark ? "rgba(37,50,54,0.48)" : "rgba(230,242,221,0.42)",
-    "--service-glass-top": isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.62)",
-    "--service-glass-glow": isDark ? "rgba(183,221,103,0.14)" : "rgba(111,127,60,0.18)",
+    boxShadow: active
+      ? isDark
+        ? "0 28px 70px rgba(0,0,0,0.42)"
+        : "0 28px 70px rgba(63,79,74,0.24)"
+      : isDark
+        ? "0 18px 46px rgba(0,0,0,0.28)"
+        : "0 18px 46px rgba(63,79,74,0.16)",
   } as CSSProperties;
+  const glowColor = isDark ? "rgba(183,221,103,0.98)" : "rgba(47,79,55,0.98)";
+  const glowSoft = isDark ? "rgba(183,221,103,0.28)" : "rgba(47,79,55,0.24)";
+  const glassBorder = isDark ? "rgba(230,242,221,0.28)" : "rgba(255,255,255,0.62)";
 
   return (
-    <motion.article
-      className="service-hover-card w-full rounded-[24px] sm:rounded-[28px]"
-      style={cardStyle}
-      initial="hidden"
-      whileInView="show"
-      viewport={revealViewport}
-      variants={revealUp}
-      tabIndex={0}
+    <article
+      className="relative h-full w-full overflow-hidden rounded-[34px] p-3 text-left shadow-2xl shadow-black/35 outline-none"
+      style={{
+        background: `linear-gradient(135deg, ${glassBorder}, rgba(255,255,255,0.08), ${glassBorder})`,
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+      }}
     >
-      <div className="flex flex-col px-4 py-4 sm:px-6 sm:py-5">
-        <div className="flex items-center gap-4 sm:gap-6">
-          <div className="min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <p className="font-['Manrope',sans-serif] font-extrabold text-[20px] sm:text-[28px] lg:text-[32px] leading-tight tracking-tight shrink-0" style={{ color: tk.cardHeading }}>
-              {service.title}
-            </p>
-            <p className="hidden sm:block font-['Patrick_Hand',sans-serif] text-[18px] lg:text-[22px] leading-tight truncate" style={{ color: tk.accentText }}>
-              {service.tagline}
-            </p>
-          </div>
+      {active && (
+        <motion.div
+          className="absolute inset-[-52%] rounded-full opacity-90 blur-[0.7px]"
+          style={{
+            background: `conic-gradient(from 0deg, transparent 0deg, transparent 58deg, ${glowSoft} 78deg, ${glowColor} 108deg, ${glowColor} 122deg, ${glowSoft} 148deg, transparent 172deg, transparent 360deg)`,
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 6.5, repeat: Infinity, ease: "linear" }}
+        />
+      )}
 
-          <div className="service-hover-media ml-auto">
-            <IllustrationBox crop={visuals.collapsedCrop} src={thumb} alt={service.title}>
-              {visuals.collapsedArrow && <ArrowOverlay arrow={visuals.collapsedArrow} color={tk.doodleStroke} />}
-            </IllustrationBox>
+      <div
+        className="relative flex h-full flex-col overflow-hidden rounded-[24px] px-5 py-6 sm:px-6 sm:py-7"
+        style={cardStyle}
+      >
+        <div className="relative flex items-start justify-between gap-4">
+          <div>
+            <NumberBadge number={service.number} rotation={service.noteRotation} tk={tk} />
           </div>
+          <p className="font-['Patrick_Hand',sans-serif] text-right text-[20px] leading-tight" style={{ color: tk.accentText }}>
+            {service.tagline}
+          </p>
         </div>
 
-        <div className="service-hover-details">
-          <div className="overflow-hidden">
-            <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 pt-2 pb-1">
-            {/* Details column */}
-            <div className="flex flex-col gap-4 flex-1 min-w-0 lg:max-w-[520px]">
-              <p className="font-['Manrope',sans-serif] font-extrabold text-[28px] sm:text-[36px] lg:text-[42px] leading-[1.1] tracking-tight" style={{ color: tk.cardHeading }}>
-                {service.tagline}
-              </p>
-              <div>
-                <p className="font-['Inter',sans-serif] leading-relaxed text-[18px] sm:text-[20px]" style={{ color: tk.descriptionText }}>
-                  {service.description}
-                </p>
-                <svg className="mt-1 w-[180px] h-[10px]" viewBox="0 0 143.633 22.0289" fill="none">
-                  <path d={(isDark ? svgPathsDark : svgPathsLight).p3cf8e00} stroke={tk.limeAccent} strokeLinecap="round" strokeWidth="2" />
-                </svg>
-              </div>
+        <div className="relative mt-5">
+          <IllustrationBox crop={visuals.expandedCrop} src={thumb} alt={service.title} rounded />
+        </div>
 
-              <div className="flex flex-col gap-3 mt-1">
-                <p className="font-['Caveat_Brush',sans-serif] text-[26px] sm:text-[30px]" style={{ color: tk.limeAccent }}>
-                  What's inside
-                </p>
-                <ul className="flex flex-col gap-3">
-                  {service.bullets.map((bullet, i) => (
-                    <li key={i} className="font-['Inter',sans-serif] font-medium text-[17px] sm:text-[19px] leading-relaxed flex items-start gap-2" style={{ color: tk.bulletsText }}>
-                      <span style={{ color: tk.limeAccent }} className="shrink-0 mt-[2px]">
-                        ✓
-                      </span>
-                      <span>{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+        <div className="relative mt-6 flex min-h-0 flex-1 flex-col">
+          <h3 className="font-['Manrope',sans-serif] text-[28px] font-extrabold leading-[1.05] tracking-tight sm:text-[32px]" style={{ color: tk.cardHeading }}>
+            {service.title}
+          </h3>
+          <p className="mt-3 font-['Inter',sans-serif] text-[15px] leading-relaxed sm:text-[16px]" style={{ color: tk.descriptionText }}>
+            {service.description}
+          </p>
 
-            {/* Illustration column — exact per-card crop, no overlay text of any kind */}
-            <div className="service-expanded-media flex flex-col gap-3 flex-1 min-w-0 lg:max-w-[440px]">
-              <IllustrationBox crop={visuals.expandedCrop} src={thumb} alt={service.title} rounded />
+          <ul className="mt-4 flex flex-col gap-2.5">
+            {service.bullets.slice(0, 3).map((bullet, i) => (
+              <li key={i} className="flex items-start gap-2 font-['Inter',sans-serif] text-[13px] font-medium leading-snug sm:text-[14px]" style={{ color: tk.bulletsText }}>
+                <span className="mt-[1px] shrink-0" style={{ color: tk.limeAccent }}>✓</span>
+                <span>{bullet}</span>
+              </li>
+            ))}
+          </ul>
 
-              <p className="font-['Caveat_Brush',sans-serif] text-[22px] sm:text-[26px]" style={{ color: tk.limeAccent }}>
-                {service.toolboxLabel}
-              </p>
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                {service.tools.map((tool, i) => (
-                  <ToolPill key={i} img={tool.img} alt={tool.alt} tk={tk} />
-                ))}
-              </div>
+          <div className="mt-auto pt-5">
+            <p className="font-['Caveat_Brush',sans-serif] text-[22px]" style={{ color: tk.limeAccent }}>
+              {service.toolboxLabel}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2.5">
+              {service.tools.map((tool, i) => (
+                <ToolPill key={i} img={tool.img} alt={tool.alt} tk={tk} />
+              ))}
             </div>
           </div>
         </div>
       </div>
-      </div>
-    </motion.article>
+    </article>
   );
 }
 
 // ─── 4. ServicesSection ─────────────────────────────────────────────────────
 
-function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
+function MobileServicesDeck({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
+  const [open, setOpen] = useState(0);
+
   return (
-    <section className="services-hover-stage flex flex-col gap-4 sm:gap-6 w-full">
-      {SERVICES.map((service) => (
-        <ServiceCard key={service.id} service={service} isDark={isDark} tk={tk} />
-      ))}
+    <div className="flex flex-col gap-4 sm:hidden">
+      {SERVICES.map((service, index) => {
+        const expanded = open === index;
+        const thumb = isDark ? service.thumbDark : service.thumbLight;
+        const visuals = CARD_VISUALS[service.id];
+
+        return (
+          <motion.article
+            key={service.id}
+            layout
+            className="relative overflow-hidden rounded-[28px] p-[1px]"
+            style={{
+              background: expanded
+                ? `linear-gradient(135deg, ${tk.limeAccent}, rgba(255,255,255,0.18), ${tk.limeAccent})`
+                : isDark
+                  ? "rgba(230,242,221,0.16)"
+                  : "rgba(39,51,56,0.16)",
+              boxShadow: expanded
+                ? isDark
+                  ? "0 24px 55px rgba(0,0,0,0.34)"
+                  : "0 24px 55px rgba(63,79,74,0.18)"
+                : "none",
+            }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.42, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <button
+              type="button"
+              onClick={() => setOpen(index)}
+              className="relative block w-full overflow-hidden rounded-[27px] px-4 py-4 text-left"
+              style={{
+                background: isDark ? "rgba(37,50,54,0.92)" : "rgba(238,243,226,0.94)",
+                backdropFilter: "blur(18px)",
+                WebkitBackdropFilter: "blur(18px)",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <NumberBadge number={service.number} rotation={service.noteRotation} tk={tk} />
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-['Manrope',sans-serif] text-[22px] font-extrabold leading-tight" style={{ color: tk.cardHeading }}>
+                    {service.title}
+                  </h3>
+                  <p className="font-['Patrick_Hand',sans-serif] text-[18px] leading-tight" style={{ color: tk.accentText }}>
+                    {service.tagline}
+                  </p>
+                </div>
+                <motion.span
+                  className="grid size-9 shrink-0 place-items-center rounded-full border text-2xl leading-none"
+                  style={{ color: tk.limeAccent, borderColor: tk.toolBorder }}
+                  animate={{ rotate: expanded ? 45 : 0 }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
+                >
+                  +
+                </motion.span>
+              </div>
+
+              <motion.div
+                layout
+                initial={false}
+                animate={{ height: expanded ? "auto" : 0, opacity: expanded ? 1 : 0 }}
+                transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="pt-4">
+                  <IllustrationBox crop={visuals.expandedCrop} src={thumb} alt={service.title} rounded />
+                  <p className="mt-4 font-['Inter',sans-serif] text-[14px] leading-relaxed" style={{ color: tk.descriptionText }}>
+                    {service.description}
+                  </p>
+                  <ul className="mt-3 flex flex-col gap-2">
+                    {service.bullets.slice(0, 3).map((bullet) => (
+                      <li key={bullet} className="flex gap-2 font-['Inter',sans-serif] text-[13px] font-medium leading-snug" style={{ color: tk.bulletsText }}>
+                        <span style={{ color: tk.limeAccent }}>✓</span>
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {service.tools.map((tool) => (
+                      <ToolPill key={tool.alt} img={tool.img} alt={tool.alt} tk={tk} />
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </button>
+          </motion.article>
+        );
+      })}
+    </div>
+  );
+}
+
+function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
+  const [active, setActive] = useState(0);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const total = SERVICES.length;
+
+  const go = useCallback(
+    (dir: number) => setActive((value) => (value + dir + total) % total),
+    [total]
+  );
+
+  const arrowStyle = {
+    borderColor: isDark ? "rgba(230,242,221,0.52)" : "rgba(39,51,56,0.5)",
+    color: isDark ? "#e6f2dd" : "#273338",
+    background: isDark
+      ? "linear-gradient(135deg, rgba(230,242,221,0.12), rgba(255,255,255,0.04))"
+      : "linear-gradient(135deg, rgba(230,242,221,0.72), rgba(255,255,255,0.28))",
+    boxShadow: isDark
+      ? "0 14px 30px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.14)"
+      : "0 14px 30px rgba(63,79,74,0.14), inset 0 1px 0 rgba(255,255,255,0.72)",
+    backdropFilter: "blur(18px) saturate(160%)",
+    WebkitBackdropFilter: "blur(18px) saturate(160%)",
+  } as CSSProperties;
+
+  const arrowButton = (dir: number, label: string, symbol: string, side: "left" | "right") => (
+    <motion.button
+      type="button"
+      aria-label={label}
+      onClick={() => go(dir)}
+      className={`absolute top-1/2 z-30 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border text-3xl leading-none transition-colors duration-300 sm:h-12 sm:w-12 sm:text-4xl ${
+        side === "left" ? "left-4 lg:left-10" : "right-4 lg:right-10"
+      }`}
+      style={arrowStyle}
+      whileHover={{ scale: 1.15 }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+    >
+      <span className="-mt-1">{symbol}</span>
+    </motion.button>
+  );
+
+  return (
+    <section
+      className="services-vertical-stage relative w-full overflow-x-visible overflow-y-hidden px-8 py-10 sm:px-12 sm:py-14"
+      onMouseLeave={() => setHovered(null)}
+    >
+      <h2
+        className="mb-8 text-center font-['Caveat_Brush',sans-serif] text-[4.5rem] font-normal leading-none tracking-normal sm:text-[7rem]"
+        style={{ color: isDark ? "#c8e77b" : "#273338" }}
+      >
+        SERVICES
+      </h2>
+
+      <MobileServicesDeck isDark={isDark} tk={tk} />
+
+      <div className="relative mx-auto hidden h-[820px] w-full max-w-[1320px] sm:block">
+        {arrowButton(-1, "Previous service", "‹", "left")}
+        {arrowButton(1, "Next service", "›", "right")}
+        {SERVICES.map((service, index) => {
+          let offset = index - active;
+          if (offset > total / 2) offset -= total;
+          if (offset < -total / 2) offset += total;
+          const abs = Math.abs(offset);
+          const visible = abs <= 1;
+          const isActive = offset === 0;
+          const isHovered = hovered === index;
+
+          return (
+            <motion.button
+              key={service.id}
+              type="button"
+              aria-label={`Show ${service.title}`}
+              className="absolute left-1/2 top-1/2 cursor-pointer rounded-[34px] text-left outline-none"
+              style={{
+                zIndex: isActive ? total + 5 : isHovered ? total + 2 : total - abs,
+                pointerEvents: visible ? "auto" : "none",
+                transformStyle: "preserve-3d",
+              }}
+              onMouseEnter={() => {
+                setHovered(index);
+              }}
+              onFocus={() => {
+                setHovered(index);
+              }}
+              onBlur={() => setHovered(null)}
+              initial={false}
+              animate={{
+                x: `calc(-50% + ${offset * 205}px)`,
+                y: "-50%",
+                width: isActive ? "min(430px, 86vw)" : "min(340px, 70vw)",
+                height: isActive ? 775 : 660,
+                scale: isActive ? 1 : 0.86,
+                opacity: visible ? 1 : 0,
+                filter: visible ? (isActive ? "blur(0px)" : "blur(4px)") : "blur(8px)",
+                rotateY: isActive ? 0 : offset < 0 ? 8 : -8,
+              }}
+              transition={{ duration: 0.78, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <ServiceCard service={service} isDark={isDark} tk={tk} active={isActive} />
+            </motion.button>
+          );
+        })}
+      </div>
+
+      <div className="relative mt-2 hidden items-center justify-center gap-2 sm:flex">
+        {SERVICES.map((service, index) => (
+          <button
+            key={service.id}
+            type="button"
+            aria-label={`Go to ${service.title}`}
+            aria-current={index === active}
+            onClick={() => setActive(index)}
+            className="h-2.5 rounded-full transition-all duration-300"
+            style={{
+              width: index === active ? 28 : 10,
+              background: index === active ? tk.limeAccent : isDark ? "rgba(230,242,221,0.28)" : "rgba(39,51,56,0.25)",
+            }}
+          />
+        ))}
+      </div>
     </section>
   );
 }
@@ -973,8 +1045,6 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 
 function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
   const paperPath = isDark ? svgPathsDark.p28df1400 : svgPathsLight.p38c75100;
-  const badgeSpinPrimary = isDark ? "rgba(34,211,238,0.95)" : "rgba(39,51,56,0.95)";
-  const badgeSpinSecondary = isDark ? "rgba(103,232,249,0.92)" : "rgba(63,79,74,0.92)";
   const sliceStyle = {
     "--c1": tk.ctaButtonText,
     "--c2": tk.ctaButtonBg,
@@ -982,66 +1052,40 @@ function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 
   return (
     <motion.section
-      className="relative w-full rounded-[24px] sm:rounded-[32px] overflow-hidden"
+      className="w-full"
       initial="hidden"
       whileInView="show"
       viewport={revealViewport}
       variants={revealUp}
     >
-      <div className="absolute inset-0">
-        <svg className="w-full h-full" viewBox="0 0 1236 372" fill="none" preserveAspectRatio="none">
-          <defs>
-            <clipPath id="ctaPaperClip" clipPathUnits="userSpaceOnUse">
-              <path d={paperPath} />
-            </clipPath>
-            {/* Grain/noise texture — density 100%, grain size ~0.5, colour #000000, layered on the paper fill */}
-            <filter id="ctaPaperNoise" x="0" y="0" width="100%" height="100%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="noise" />
-              <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.28 0.28 0.28 0 0" />
-            </filter>
-          </defs>
-          <path d={paperPath} fill={tk.ctaPaper} />
-          <g clipPath="url(#ctaPaperClip)">
-            <rect width="1236" height="372" filter="url(#ctaPaperNoise)" />
-          </g>
-        </svg>
-      </div>
+      <motion.p
+        className="mb-6 text-center font-['Caveat_Brush',sans-serif] text-[4.5rem] font-normal leading-none tracking-normal sm:text-[7rem]"
+        style={{ color: isDark ? "#c8e77b" : "#273338" }}
+      >
+        PRICING
+      </motion.p>
 
-      <div className="absolute left-5 top-5 z-10 sm:left-8 sm:top-8">
-        <motion.div
-          className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default"
-          whileHover={{ scale: 1.05, x: 5 }}
-        >
-          <motion.span
-            className="absolute inset-[-80%] rounded-full opacity-90"
-            style={{
-              background:
-                `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeSpinPrimary} 82deg, transparent 104deg, transparent 360deg)`,
-            }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
-          />
-          <motion.span
-            className="absolute inset-[-80%] rounded-full opacity-75"
-            style={{
-              background:
-                `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeSpinSecondary} 82deg, transparent 104deg, transparent 360deg)`,
-            }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
-          />
-          <span
-            className="relative z-10 inline-flex rounded-full px-8 py-3 border border-[rgba(196,240,107,0.15)] transition-all duration-300"
-            style={{ backgroundColor: tk.ctaPillBg, transition: TRANSITION_CSS }}
-          >
-            <span className="text-[#c8e77b] font-['Manrope',sans-serif] font-medium text-xl tracking-[2px] whitespace-nowrap">
-              PRICING
-            </span>
-          </span>
-        </motion.div>
-      </div>
+      <div className="relative w-full overflow-hidden rounded-[24px] sm:rounded-[32px]">
+        <div className="absolute inset-0">
+          <svg className="w-full h-full" viewBox="0 0 1236 372" fill="none" preserveAspectRatio="none">
+            <defs>
+              <clipPath id="ctaPaperClip" clipPathUnits="userSpaceOnUse">
+                <path d={paperPath} />
+              </clipPath>
+              {/* Grain/noise texture — density 100%, grain size ~0.5, colour #000000, layered on the paper fill */}
+              <filter id="ctaPaperNoise" x="0" y="0" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="noise" />
+                <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.28 0.28 0.28 0 0" />
+              </filter>
+            </defs>
+            <path d={paperPath} fill={tk.ctaPaper} />
+            <g clipPath="url(#ctaPaperClip)">
+              <rect width="1236" height="372" filter="url(#ctaPaperNoise)" />
+            </g>
+          </svg>
+        </div>
 
-      <div className="relative flex flex-col items-center text-center gap-4 sm:gap-5 px-6 sm:px-12 pt-24 sm:pt-28 pb-10 sm:pb-14 max-w-[620px] mx-auto">
+        <div className="relative flex flex-col items-center text-center gap-4 sm:gap-5 px-6 sm:px-12 py-10 sm:py-14 max-w-[620px] mx-auto">
         <p className="font-['Manrope',sans-serif] font-extrabold leading-tight" style={{ color: tk.ctaHeading, fontSize: "clamp(26px, 4.5vw, 48px)" }}>
           Each Stack is different.
         </p>
@@ -1051,7 +1095,7 @@ function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
         </p>
 
         <a
-          href="mailto:ss.socialstack@gmail.com"
+          href="/contact"
           className="slice inline-flex items-center justify-center font-['Manrope',sans-serif] tracking-[1.5px] whitespace-nowrap no-underline"
           style={sliceStyle}
         >
@@ -1059,6 +1103,7 @@ function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
             LET'S PRICE YOUR STACK
           </span>
         </a>
+        </div>
       </div>
     </motion.section>
   );

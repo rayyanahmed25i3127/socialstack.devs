@@ -6,6 +6,12 @@ import imgLogoRecolored from "../../imports/DStory/eef17f758a83029ddf8e98fae373f
 import imgIconPlaceholder from "../../imports/DStory/ca7a4b5d9052afe7cb23b96175cc5d547c211686.png";
 
 const easeOutExpo = [0.16, 1, 0.3, 1] as const;
+const navItems = [
+  { label: "Services", href: "/services" },
+  { label: "About us", href: "/about" },
+  { label: "Projects", href: "/projects" },
+  { label: "FAQs", href: "/faqs" },
+];
 
 export function Header({
   theme,
@@ -74,20 +80,20 @@ export function Header({
           animate={{ x: ["-18%", "18%", "-18%"] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.img
-          src={d ? imgIconPlaceholder : imgLogoRecolored}
-          alt="SocialStack"
-          className="relative z-10 h-10 w-auto object-contain transition-transform duration-200 sm:h-11 md:h-12"
-          whileHover={{ rotate: -3, scale: 1.08, filter: "drop-shadow(0 0 12px rgba(183,221,103,0.48))" }}
-          whileTap={{ scale: 0.96 }}
-        />
+        <motion.a href="/" className="relative z-10 inline-flex" aria-label="Go to home" whileHover={{ rotate: -3, scale: 1.08, filter: "drop-shadow(0 0 12px rgba(183,221,103,0.48))" }} whileTap={{ scale: 0.96 }}>
+          <img
+            src={d ? imgIconPlaceholder : imgLogoRecolored}
+            alt="SocialStack"
+            className="h-10 w-auto object-contain transition-transform duration-200 sm:h-11 md:h-12"
+          />
+        </motion.a>
 
         {/* Desktop links */}
         <div className={`relative z-10 hidden lg:flex gap-2 font-['Manrope:SemiBold',sans-serif] font-semibold text-lg ${navLink} transition-colors duration-300`}>
-          {["Services", "About us", "Projects", "FAQs"].map((l, index) => (
+          {navItems.map((item, index) => (
             <motion.a
-              key={l}
-              href="#"
+              key={item.label}
+              href={item.href}
               className="relative overflow-hidden rounded-full px-4 py-2 transition-colors duration-300 after:absolute after:bottom-1.5 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-[#b7dd67] after:transition-all after:duration-300 hover:after:w-1/2"
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -99,7 +105,7 @@ export function Header({
               }}
               whileTap={{ scale: 0.96 }}
             >
-              {l}
+              {item.label}
             </motion.a>
           ))}
         </div>
@@ -127,7 +133,8 @@ export function Header({
           </motion.button>
 
           {/* Contact — desktop */}
-          <motion.button
+          <motion.a
+            href="/contact"
             className={`${contactBg} text-[#273338] font-['Manrope:Bold',sans-serif] font-bold text-[13px] px-3.5 py-2 rounded-full transition-all duration-200 sm:text-[15px] sm:px-5 sm:py-2.5`}
             whileHover={{
               scale: 1.07,
@@ -138,7 +145,7 @@ export function Header({
             whileTap={{ scale: 0.95 }}
           >
             Contact
-          </motion.button>
+          </motion.a>
 
           {/* Hamburger */}
           <motion.button
@@ -180,22 +187,22 @@ export function Header({
             className={`fixed left-0 right-0 top-[88px] z-40 mx-auto flex w-[calc(100%-1.5rem)] max-w-md flex-col gap-4 overflow-hidden rounded-[28px] border px-6 py-6 font-['Manrope:SemiBold',sans-serif] text-xl font-semibold shadow-[0_20px_45px_rgba(0,0,0,0.22)] lg:hidden ${mobMenuBg} ${drawerText}`}
             style={navGlassStyle}
           >
-            {["Services", "About us", "Projects", "FAQs"].map((l, index) => (
+            {navItems.map((item, index) => (
               <motion.a
-                key={l}
-                href="#"
+                key={item.label}
+                href={item.href}
                 onClick={() => setMenuOpen(false)}
                 className={`py-3 border-b ${d ? "border-white/10" : "border-[#253236]/15"} hover:opacity-70 hover:pl-2 transition-all duration-200`}
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                {l}
+                {item.label}
               </motion.a>
             ))}
-            <button className={`mt-2 ${contactBg} text-[#273338] font-['Manrope:Bold',sans-serif] font-bold text-[15px] px-5 py-2.5 rounded-full self-start hover:scale-105 hover:brightness-110 active:scale-95 transition-all duration-200`}>
+            <a href="/contact" onClick={() => setMenuOpen(false)} className={`mt-2 ${contactBg} text-[#273338] font-['Manrope:Bold',sans-serif] font-bold text-[15px] px-5 py-2.5 rounded-full self-start hover:scale-105 hover:brightness-110 active:scale-95 transition-all duration-200`}>
               Contact
-            </button>
+            </a>
           </motion.div>
         )}
       </AnimatePresence>

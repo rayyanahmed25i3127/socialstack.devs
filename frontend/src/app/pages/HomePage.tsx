@@ -2,7 +2,7 @@
 // HomePage - Modified to remove hero icons, unify theme spacing, and add animations
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { cloneElement, useCallback, useEffect, useRef, useState } from "react";
+import { cloneElement, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 
 import { Header } from "./Header";
@@ -26,6 +26,48 @@ import lHeroImgFrame28 from "../../imports/home-light-hero-section/project-web-d
 import lHeroImgFrame29 from "../../imports/home-light-hero-section/project-ads-branding.png";
 import lHeroImgFrame30 from "../../imports/home-light-hero-section/project-ui-ux.png";
 import lHeroImgFrame31 from "../../imports/home-light-hero-section/project-smm.png";
+
+function HomeSliceButton({
+  children,
+  isLight,
+  className = "",
+  href,
+}: {
+  children: string;
+  isLight: boolean;
+  className?: string;
+  href?: string;
+}) {
+  const style = {
+    "--c1": isLight ? "#e6f2dd" : "#253236",
+    "--c2": isLight ? "rgba(111,127,60,0.9)" : "rgba(183,221,103,0.8)",
+  } as CSSProperties;
+  const classNames = `home-slice inline-flex items-center justify-center font-['Inter',sans-serif] tracking-[0.6px] whitespace-nowrap no-underline ${className}`;
+
+  if (href) {
+    return (
+      <motion.a
+        href={href}
+        className={classNames}
+        style={style}
+        whileTap={{ scale: 0.98 }}
+      >
+        <span className="text">{children}</span>
+      </motion.a>
+    );
+  }
+
+  return (
+    <motion.button
+      type="button"
+      className={classNames}
+      style={style}
+      whileTap={{ scale: 0.98 }}
+    >
+      <span className="text">{children}</span>
+    </motion.button>
+  );
+}
 
 // ─── Hero (dark theme) ─────────────────────────────────────────────────────
 function Hero_WhatWeDo() {
@@ -104,34 +146,13 @@ function Hero_Frame() {
 
 function Hero_Button() {
   return (
-    <motion.button
-      type="button"
-      whileHover={{ scale: 1.05, filter: "brightness(1.1)" }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
-      className="bg-[rgba(183,221,103,0.8)] content-stretch flex items-center justify-center overflow-clip px-[10px] py-[12px] relative rounded-[18px] shrink-0 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="Button1"
-    >
-      <p className="[word-break:break-word] font-['Inter:Bold',sans-serif] font-bold leading-[32px] not-italic relative shrink-0 text-[#253236] text-[20px] text-left tracking-[0.6px] whitespace-nowrap">Start a project</p>
-    </motion.button>
+    <HomeSliceButton isLight={false} href="/contact">Start a project</HomeSliceButton>
   );
 }
 
 function Hero_Button1() {
   return (
-    <motion.button
-      type="button"
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
-      className="h-[56px] relative rounded-[18px] shrink-0 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] group"
-      data-name="Button1"
-    >
-      <div className="content-stretch flex items-center justify-center overflow-clip p-[12px] relative rounded-[inherit] size-full">
-        <p className="[word-break:break-word] font-['Inter:Bold',sans-serif] font-bold h-[30px] leading-[32px] not-italic relative shrink-0 text-[20px] text-[rgba(183,221,103,0.8)] text-left tracking-[0.6px] w-[192px]">View our services</p>
-      </div>
-      <div aria-hidden className="absolute border-4 border-[rgba(183,221,103,0.8)] border-solid inset-0 pointer-events-none rounded-[18px] group-hover:bg-[rgba(183,221,103,0.12)] transition-colors duration-300" />
-    </motion.button>
+    <HomeSliceButton isLight={false} href="/services">View our services</HomeSliceButton>
   );
 }
 
@@ -270,33 +291,12 @@ function HeroMobile({ isLight }) {
       </p>
 
       <div className="flex flex-wrap gap-3 w-full">
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.05, filter: "brightness(1.1)" }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ duration: 0.2, ease: "easeInOut" }}
-          className={`font-['Inter:Bold',sans-serif] font-bold text-base px-6 py-3 rounded-[18px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] ${
-            isLight ? "bg-[rgba(111,127,60,0.9)] text-[#e6f2dd]" : "bg-[rgba(183,221,103,0.8)] text-[#253236]"
-          }`}
-        >
+        <HomeSliceButton isLight={isLight} href="/contact">
           Start a project
-        </motion.button>
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ duration: 0.2, ease: "easeInOut" }}
-          className={`group relative font-['Inter:Bold',sans-serif] font-bold text-base px-6 py-3 rounded-[18px] border-[3px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] ${
-            isLight ? "border-[rgba(111,127,60,0.9)] text-[rgba(111,127,60,0.9)]" : "border-[rgba(183,221,103,0.8)] text-[rgba(183,221,103,0.8)]"
-          }`}
-        >
-          <span
-            className={`absolute inset-0 rounded-[15px] transition-colors duration-300 ${
-              isLight ? "group-hover:bg-[rgba(111,127,60,0.12)]" : "group-hover:bg-[rgba(183,221,103,0.12)]"
-            }`}
-          />
-          <span className="relative">View our services</span>
-        </motion.button>
+        </HomeSliceButton>
+        <HomeSliceButton isLight={isLight} href="/services">
+          View our services
+        </HomeSliceButton>
       </div>
 
       <HeroGlobeVisual
@@ -758,16 +758,9 @@ function Cta_Brush() {
 
 function Cta_Button() {
   return (
-    <motion.button
-      type="button"
-      whileHover={{ scale: 1.05, filter: "brightness(1.1)" }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
-      className="absolute bg-[rgba(183,221,103,0.8)] content-stretch flex items-center justify-center left-[759px] overflow-clip px-[10px] py-[12px] rounded-[18px] top-[155px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="Button1"
-    >
-      <p className="[word-break:break-word] font-['Inter:Bold',sans-serif] font-bold leading-[32px] not-italic relative shrink-0 text-[#253236] text-[20px] tracking-[0.6px] whitespace-nowrap">Start your project</p>
-    </motion.button>
+    <HomeSliceButton isLight={false} href="/contact" className="absolute left-[759px] top-[155px]">
+      Start your project
+    </HomeSliceButton>
   );
 }
 
@@ -853,11 +846,11 @@ function LHero_WhatWeDo() {
     <motion.div className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
       <span
         className="absolute inset-[-80%] rounded-full opacity-90 animate-[spin360_3.8s_linear_infinite]"
-        style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 64deg, rgba(34,211,238,0.95) 82deg, transparent 104deg, transparent 360deg)" }}
+        style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 64deg, rgba(39,51,56,0.9) 82deg, transparent 104deg, transparent 360deg)" }}
       />
       <span
         className="absolute inset-[-80%] rounded-full opacity-75 animate-[spin360_4.6s_linear_infinite]"
-        style={{ background: "conic-gradient(from 180deg, transparent 0deg, transparent 64deg, rgba(103,232,249,0.92) 82deg, transparent 104deg, transparent 360deg)" }}
+        style={{ background: "conic-gradient(from 180deg, transparent 0deg, transparent 64deg, rgba(63,79,74,0.82) 82deg, transparent 104deg, transparent 360deg)" }}
       />
       <span className="relative z-10 inline-flex items-center bg-[#526862] rounded-full px-6 py-2.5 lg:px-8 lg:py-3 border border-[rgba(196,240,107,0.15)]">
         <p className="font-['Manrope:Medium',sans-serif] font-medium text-[#c8e77b] text-base lg:text-xl tracking-[1.8px] lg:tracking-[2px] whitespace-nowrap">
@@ -924,34 +917,13 @@ function LHero_Frame() {
 
 function LHero_Button() {
   return (
-    <motion.button
-      type="button"
-      whileHover={{ scale: 1.05, filter: "brightness(1.1)" }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
-      className="bg-[rgba(111,127,60,0.9)] content-stretch flex items-center justify-center overflow-clip px-[10px] py-[12px] relative rounded-[18px] shrink-0 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="Button1"
-    >
-      <p className="[word-break:break-word] font-['Inter:Bold',sans-serif] font-bold leading-[32px] not-italic relative shrink-0 text-[#e6f2dd] text-[20px] tracking-[0.6px] whitespace-nowrap">Start a project</p>
-    </motion.button>
+    <HomeSliceButton isLight href="/contact">Start a project</HomeSliceButton>
   );
 }
 
 function LHero_Button1() {
   return (
-    <motion.button
-      type="button"
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
-      className="h-[56px] relative rounded-[18px] shrink-0 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] group"
-      data-name="Button1"
-    >
-      <div className="content-stretch flex items-center justify-center overflow-clip p-[12px] relative rounded-[inherit] size-full">
-        <p className="[word-break:break-word] font-['Inter:Bold',sans-serif] font-bold h-[30px] leading-[32px] not-italic relative shrink-0 text-[20px] text-[rgba(111,127,60,0.9)] tracking-[0.6px] w-[192px]">View our services</p>
-      </div>
-      <div aria-hidden className="absolute border-4 border-[rgba(111,127,60,0.9)] border-solid inset-0 pointer-events-none rounded-[18px] group-hover:bg-[rgba(111,127,60,0.12)] transition-colors duration-300" />
-    </motion.button>
+    <HomeSliceButton isLight href="/services">View our services</HomeSliceButton>
   );
 }
 
@@ -1398,16 +1370,9 @@ function LHero_Brush3() {
 
 function LHero_Button2() {
   return (
-    <motion.button
-      type="button"
-      whileHover={{ scale: 1.05, filter: "brightness(1.1)" }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
-      className="absolute bg-[rgba(111,127,60,0.9)] content-stretch flex items-center justify-center left-[759px] overflow-clip px-[10px] py-[12px] rounded-[18px] top-[155px] cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-      data-name="Button1"
-    >
-      <p className="[word-break:break-word] font-['Inter:Bold',sans-serif] font-bold leading-[32px] not-italic relative shrink-0 text-[#e6f2dd] text-[20px] tracking-[0.6px] whitespace-nowrap">Start your project</p>
-    </motion.button>
+    <HomeSliceButton isLight href="/contact" className="absolute left-[759px] top-[155px]">
+      Start your project
+    </HomeSliceButton>
   );
 }
 
@@ -1638,6 +1603,7 @@ function WhyCard({ badge, title, desc, isLight, active = true }) {
 
 function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
   const [dims, setDims] = useState({ w: cardWidth, h: minHeight, spread: 0.62, compact: false });
   const wrapRef = useRef(null);
   const total = items.length;
@@ -1672,6 +1638,42 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
     [total]
   );
 
+  useEffect(() => {
+    if (paused || total <= 1) return;
+    const timer = window.setInterval(() => {
+      go(1);
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [go, paused, total]);
+
+  const arrowStyle = {
+    borderColor: isLight ? "rgba(39,51,56,0.5)" : "rgba(230,242,221,0.52)",
+    color: isLight ? "#273338" : "#e6f2dd",
+    background: isLight
+      ? "linear-gradient(135deg, rgba(230,242,221,0.68), rgba(255,255,255,0.24))"
+      : "linear-gradient(135deg, rgba(230,242,221,0.12), rgba(255,255,255,0.04))",
+    boxShadow: isLight
+      ? "0 14px 30px rgba(63,79,74,0.14), inset 0 1px 0 rgba(255,255,255,0.72)"
+      : "0 14px 30px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.14)",
+    backdropFilter: "blur(18px) saturate(160%)",
+    WebkitBackdropFilter: "blur(18px) saturate(160%)",
+  } as CSSProperties;
+
+  const arrowButton = (dir, label, symbol) => (
+    <motion.button
+      type="button"
+      aria-label={label}
+      onClick={() => go(dir)}
+      className="grid h-11 w-11 place-items-center rounded-full border text-3xl leading-none transition-colors duration-300 touch-manipulation [-webkit-tap-highlight-color:transparent]"
+      style={arrowStyle}
+      whileHover={{ scale: 1.15 }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+    >
+      <span className="-mt-0.5">{symbol}</span>
+    </motion.button>
+  );
+
   return (
     <div
       ref={wrapRef}
@@ -1679,6 +1681,14 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
       role="group"
       aria-roledescription="carousel"
       aria-label="Cards — swipe, or use the left and right arrow keys, to navigate"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+          setPaused(false);
+        }
+      }}
       onKeyDown={(e) => {
         if (e.key === "ArrowRight") {
           e.preventDefault();
@@ -1751,29 +1761,33 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
         </div>
       )}
 
-      {/* Pagination dots */}
-      <div className="flex items-center justify-center gap-2">
-        {items.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setActive(i)}
-            aria-label={`Go to card ${i + 1}`}
-            aria-current={i === active}
-            className="h-2.5 rounded-full transition-all duration-300 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-            style={{
-              width: i === active ? 26 : 10,
-              background:
-                i === active
-                  ? isLight
-                    ? "#6f7f3c"
-                    : "#b7dd67"
-                  : isLight
-                    ? "rgba(111,127,60,0.3)"
-                    : "rgba(230,242,221,0.3)",
-            }}
-          />
-        ))}
+      {/* Navigation controls */}
+      <div className="flex items-center justify-center gap-4">
+        {arrowButton(-1, "Previous card", "‹")}
+        <div className="flex items-center justify-center gap-2">
+          {items.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setActive(i)}
+              aria-label={`Go to card ${i + 1}`}
+              aria-current={i === active}
+              className="h-2.5 rounded-full transition-all duration-300 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
+              style={{
+                width: i === active ? 26 : 10,
+                background:
+                  i === active
+                    ? isLight
+                      ? "#6f7f3c"
+                      : "#b7dd67"
+                    : isLight
+                      ? "rgba(111,127,60,0.3)"
+                      : "rgba(230,242,221,0.3)",
+              }}
+            />
+          ))}
+        </div>
+        {arrowButton(1, "Next card", "›")}
       </div>
     </div>
   );
@@ -2063,17 +2077,9 @@ function CtaMobile({ isLight }) {
         >
           Whether you're starting from scratch or ready to level up, we're here to help bring your ideas to life.
         </p>
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.05, filter: "brightness(1.1)" }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ duration: 0.2, ease: "easeInOut" }}
-          className={`self-start font-['Inter:Bold',sans-serif] font-bold text-[11px] sm:text-xs px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] whitespace-nowrap ${
-            isLight ? "bg-[rgba(111,127,60,0.9)] text-[#e6f2dd]" : "bg-[rgba(183,221,103,0.8)] text-[#253236]"
-          }`}
-        >
+        <HomeSliceButton isLight={isLight} href="/contact" className="self-start scale-90 origin-left">
           Start your project
-        </motion.button>
+        </HomeSliceButton>
       </div>
     </motion.div>
   );
@@ -2395,6 +2401,50 @@ export default function HomePage() {
         @keyframes sparkleTwinkle { 0%, 100% { opacity: 0; transform: scale(0.4) rotate(45deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
         @keyframes spin360 { to { transform: rotate(360deg); } }
         @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        .home-slice {
+          --size-letter: clamp(14px, 1.7vw, 20px);
+          padding: 0.5em 1em;
+          font-size: var(--size-letter);
+          background-color: transparent;
+          border: calc(var(--size-letter) / 6) solid var(--c2);
+          border-radius: 0.55em;
+          cursor: pointer;
+          overflow: hidden;
+          position: relative;
+          transition: 300ms cubic-bezier(0.83, 0, 0.17, 1);
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .home-slice > .text {
+          font-weight: 800;
+          color: var(--c2);
+          position: relative;
+          z-index: 1;
+          transition: color 700ms cubic-bezier(0.83, 0, 0.17, 1);
+        }
+        .home-slice::after {
+          content: "";
+          width: 0;
+          height: calc(300% + 1em);
+          position: absolute;
+          translate: -50% -50%;
+          inset: 50%;
+          rotate: 30deg;
+          background-color: var(--c2);
+          transition: 1000ms cubic-bezier(0.83, 0, 0.17, 1);
+        }
+        .home-slice:hover > .text,
+        .home-slice:focus-visible > .text {
+          color: var(--c1);
+        }
+        .home-slice:hover::after,
+        .home-slice:focus-visible::after {
+          width: calc(120% + 1em);
+        }
+        .home-slice:active {
+          scale: 0.98;
+          filter: brightness(0.9);
+        }
       `}</style>
       <Header theme={theme} onThemeChange={setTheme} />
 

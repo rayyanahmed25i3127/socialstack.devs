@@ -362,7 +362,7 @@ export default function ContactPage() {
                 className="font-['Manrope',sans-serif] font-medium text-[16px] lg:text-[20px] tracking-[2px]"
                 style={{ color: "#c8e77b" }}
               >
-                {dark ? "Contact" : "Contact Us"}
+                Contact
               </span>
             </span>
           </motion.div>
@@ -602,9 +602,9 @@ export default function ContactPage() {
             Socials
           </motion.p>
           <div className="contact-social-stack flex items-center justify-center">
-            <SocialIcon src={dark ? imgInstagramRecolored : imgInstagramDark} alt="Instagram" dark={dark} rotation={-14} />
+            <SocialIcon src={dark ? imgInstagramRecolored : imgInstagramDark} alt="Instagram" href="https://www.instagram.com/socialstack.dev/" dark={dark} rotation={-14} />
             <SocialIcon src={dark ? imgGmailRecolored : imgGmailDark} alt="Mail" href="mailto:ss.socialstack@gmail.com" dark={dark} rotation={4} />
-            <SocialIcon src={dark ? imgLinkedinRecolored : imgLinkedinDark} alt="LinkedIn" dark={dark} rotation={16} />
+            <SocialIcon src={dark ? imgLinkedinRecolored : imgLinkedinDark} alt="LinkedIn" href="https://www.linkedin.com/in/socialstack" dark={dark} rotation={16} />
           </div>
         </motion.div>
       </main>

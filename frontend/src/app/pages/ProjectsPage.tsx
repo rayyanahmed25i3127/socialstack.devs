@@ -286,7 +286,7 @@ function ProjectsCTA({ tk }: { tk: Tokens }) {
 
             <div className="relative">
               <motion.a
-                href="mailto:ss.socialstack@gmail.com"
+                href="/contact"
                 className="slice inline-flex items-center justify-center font-['Inter',sans-serif] tracking-[0.6px] whitespace-nowrap no-underline"
                 style={sliceStyle}
               >

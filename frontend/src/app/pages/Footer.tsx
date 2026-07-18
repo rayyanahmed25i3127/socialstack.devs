@@ -21,6 +21,13 @@ const stagger = {
   hidden: {},
   show: { transition: { staggerChildren: 0.12, delayChildren: 0.12 } },
 };
+const footerLinks = [
+  { label: "About Us", href: "/about" },
+  { label: "Our Services", href: "/services" },
+  { label: "Our Projects", href: "/projects" },
+  { label: "FAQs", href: "/faqs" },
+  { label: "Contact Us", href: "/contact" },
+];
 
 /* Scoped styles for the social icon buttons (only needed by this component) */
 function FooterSocialStyles() {
@@ -216,7 +223,7 @@ export function Footer({ theme }: { theme: "dark" | "light" }) {
                   key={i}
                   src={icon}
                   alt={["Gmail", "Instagram", "LinkedIn"][i]}
-                  href={["mailto:ss.socialstack@gmail.com", "#", "#"][i]}
+                  href={["mailto:ss.socialstack@gmail.com", "https://www.instagram.com/socialstack.dev/", "https://www.linkedin.com/in/socialstack"][i]}
                   dark={d}
                 />
               ))}
@@ -227,15 +234,15 @@ export function Footer({ theme }: { theme: "dark" | "light" }) {
           </motion.div>
 
           <motion.div className="flex flex-col justify-start pt-0 md:pt-2" variants={stagger}>
-            {["About Us", "Our Services", "Our Projects", "FAQs", "Contact Us"].map((link) => (
+            {footerLinks.map((link) => (
               <motion.a
-                key={link}
-                href="#"
+                key={link.label}
+                href={link.href}
                 className={`group relative w-fit overflow-hidden font-['Outfit:Light',sans-serif] font-light text-xl md:text-2xl ${footerText} leading-[50px] transition-all duration-200 hover:opacity-80`}
                 variants={fadeUp}
                 whileHover={{ x: 8 }}
               >
-                <span className="relative z-10">{link}</span>
+                <span className="relative z-10">{link.label}</span>
                 <span
                   className={`absolute bottom-2 left-0 h-[2px] w-full origin-left scale-x-0 rounded-full transition-transform duration-500 ease-out group-hover:scale-x-100 ${
                     d ? "bg-[#273338]" : "bg-[rgba(183,221,103,0.85)]"
