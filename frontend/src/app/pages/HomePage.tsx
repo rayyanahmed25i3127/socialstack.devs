@@ -115,11 +115,27 @@ function Hero_Frame() {
       <div className="absolute h-[20.029px] left-[52px] top-[199px] w-[141.633px]">
         <div className="absolute inset-[-4.99%_-0.71%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 143.633 22.0289">
-            <path d={heroSvgPaths.p3cf8e00} id="Vector 1" stroke="var(--stroke-0, #F4F4EF)" strokeLinecap="round" strokeWidth="2" />
+            <defs>
+              <linearGradient id="digitalDoodleFill" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#8cc9b4" />
+                <stop offset="50%" stopColor="#b7dd67" />
+                <stop offset="100%" stopColor="#e6f2dd" />
+              </linearGradient>
+            </defs>
+            <path
+              d={heroSvgPaths.p3cf8e00}
+              id="Vector 1"
+              stroke="url(#digitalDoodleFill)"
+              strokeLinecap="round"
+              strokeWidth="2"
+              pathLength="1"
+              strokeDasharray="1"
+              className="animate-[doodleFill_2.6s_ease-in-out_infinite]"
+            />
           </svg>
         </div>
       </div>
-      <div className="absolute h-[42.491px] left-[336.97px] top-[80.08px] w-[25.159px]">
+      <div className="absolute h-[42.491px] left-[336.97px] top-[80.08px] w-[25.159px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
         <div className="absolute inset-[-2.35%_-3.98%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 27.1594 44.4912">
             <path d={heroSvgPaths.p2484b380} id="Vector 46" stroke="var(--stroke-0, #F4F4EF)" strokeLinecap="round" strokeWidth="2" />
@@ -133,7 +149,7 @@ function Hero_Frame() {
           </svg>
         </div>
       </div>
-      <div className="absolute h-[14.536px] left-[360.46px] top-[135.99px] w-[67.091px]">
+      <div className="absolute h-[14.536px] left-[360.46px] top-[135.99px] w-[67.091px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
         <div className="absolute inset-[-6.88%_-1.49%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 69.091 16.5366">
             <path d={heroSvgPaths.p2785b2a0} id="Vector 48" stroke="var(--stroke-0, #F4F4EF)" strokeLinecap="round" strokeWidth="2" />
@@ -886,11 +902,27 @@ function LHero_Frame() {
       <div className="absolute h-[20.029px] left-[52px] top-[199px] w-[141.633px]">
         <div className="absolute inset-[-4.99%_-0.71%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 143.633 22.0289">
-            <path d={lHeroSvgPaths.p3cf8e00} id="Vector 1" stroke="var(--stroke-0, #2F372D)" strokeLinecap="round" strokeWidth="2" />
+            <defs>
+              <linearGradient id="digitalDoodleFillLight" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#4f5a4b" />
+                <stop offset="50%" stopColor="#6f7f3c" />
+                <stop offset="100%" stopColor="#b7dd67" />
+              </linearGradient>
+            </defs>
+            <path
+              d={lHeroSvgPaths.p3cf8e00}
+              id="Vector 1"
+              stroke="url(#digitalDoodleFillLight)"
+              strokeLinecap="round"
+              strokeWidth="2"
+              pathLength="1"
+              strokeDasharray="1"
+              className="animate-[doodleFill_2.6s_ease-in-out_infinite]"
+            />
           </svg>
         </div>
       </div>
-      <div className="absolute h-[42.491px] left-[336.97px] top-[80.08px] w-[25.159px]">
+      <div className="absolute h-[42.491px] left-[336.97px] top-[80.08px] w-[25.159px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
         <div className="absolute inset-[-2.35%_-3.98%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 27.1594 44.4912">
             <path d={lHeroSvgPaths.p2484b380} id="Vector 46" stroke="var(--stroke-0, #2F372D)" strokeLinecap="round" strokeWidth="2" />
@@ -904,7 +936,7 @@ function LHero_Frame() {
           </svg>
         </div>
       </div>
-      <div className="absolute h-[14.536px] left-[360.46px] top-[135.99px] w-[67.091px]">
+      <div className="absolute h-[14.536px] left-[360.46px] top-[135.99px] w-[67.091px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
         <div className="absolute inset-[-6.88%_-1.49%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 69.091 16.5366">
             <path d={lHeroSvgPaths.p2785b2a0} id="Vector 48" stroke="var(--stroke-0, #2F372D)" strokeLinecap="round" strokeWidth="2" />
@@ -2396,6 +2428,7 @@ export default function HomePage() {
       <style>{`
         @keyframes doodlePulse { 0% { transform: scale(1.2); } 25% { transform: scale(1); } 100% { transform: scale(1); } }
         @keyframes doodleCenterPulse { 0% { transform: translateX(-50%) scale(1.2); } 25% { transform: translateX(-50%) scale(1); } 100% { transform: translateX(-50%) scale(1); } }
+        @keyframes doodleFill { 0% { stroke-dashoffset: 1; } 45%, 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
         @keyframes dashFlow { to { stroke-dashoffset: -16; } }
         @keyframes shineSweep { 0% { transform: translateX(-160%) skewX(-12deg); } 100% { transform: translateX(420%) skewX(-12deg); } }
         @keyframes sparkleTwinkle { 0%, 100% { opacity: 0; transform: scale(0.4) rotate(45deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }

@@ -11,6 +11,11 @@ import darkSvgPaths from "../../imports/DFaQs-1/svg-hylx692lcq";
 import imgLightStack from "../../imports/LightFaQs/7d701444326e8df96a25df0b6c45d1370c34d2ea.png";
 import lightSvgPaths from "../../imports/LightFaQs/svg-7o19qwhi4o";
 
+// Home page's hero doodle path data — reused here so the FAQ page's "spark"
+// doodles are pixel-identical to the ones next to "Ideas into" on the Home page.
+import heroSvgPaths from "../../imports/home-hero-section/paths";
+import lHeroSvgPaths from "../../imports/home-light-hero-section/paths";
+
 // ─── FAQ data ───────────────────────────────────────────────────────────────
 
 const faqs = [
@@ -155,6 +160,7 @@ function FaqAccordion({ theme = "dark" }) {
 function HeroFrame({ theme = "dark" }) {
   const isLight = theme === "light";
   const svgPaths = isLight ? lightSvgPaths : darkSvgPaths;
+  const sparkPaths = isLight ? lHeroSvgPaths : heroSvgPaths;
   return (
     <div className="w-full flex flex-col overflow-visible">
 
@@ -167,44 +173,42 @@ function HeroFrame({ theme = "dark" }) {
           Questions?
         </p>
 
-        {/* Doodles — sized in em; column font is reduced on mobile so the whole
-            cluster is noticeably smaller on phones, then full-size from md up. */}
-        <div className="flex flex-col items-center shrink-0 pt-[0.06em] relative z-0 gap-[0.06em] text-[0.72em] sm:text-[0.85em] md:text-[1em]">
-          {/* Vector 4 — curve, rotated 90° */}
-          <div className="rotate-90">
-            <svg
-              className="w-[0.39em] h-[0.33em]"
-              fill="none" viewBox="0 0 39.1966 33.4741"
+        {/* Doodles — the same three "spark" strokes used next to "Ideas into"
+            on the Home page hero, reused here at a scale tuned for this
+            heading. Positioned as percentages of a small em-sized box (built
+            from the Home page doodles' relative bounding box) so the cluster
+            scales with the heading at every breakpoint, and pulses the same
+            way the Home page ones do. */}
+        <div className="relative shrink-0 pt-[0.06em] text-[0.72em] sm:text-[0.85em] md:text-[1em]">
+          <div className="relative w-[1.1em] h-[0.73em]">
+            {/* spark stroke 1 — Home page "Vector 46" */}
+            <div
+              className="absolute origin-center animate-[doodlePulse_2s_ease-out_infinite]"
+              style={{ left: "0%", top: "0%", width: "23.68%", height: "60.32%" }}
             >
-              <path d={svgPaths.p3358e300} stroke={isLight ? "#4F5A4B" : "#D9D9D9"} strokeLinecap="round" strokeWidth="2" />
-            </svg>
+              <svg className="block w-full h-full" fill="none" viewBox="0 0 27.1594 44.4912" preserveAspectRatio="none">
+                <path d={sparkPaths.p2484b380} stroke={isLight ? "#2F372D" : "#F4F4EF"} strokeLinecap="round" strokeWidth="2" />
+              </svg>
+            </div>
+            {/* spark stroke 2 — Home page "Vector 47" */}
+            <div
+              className="absolute origin-center animate-[doodlePulse_2s_ease-out_infinite]"
+              style={{ left: "13.69%", top: "13.5%", width: "86.32%", height: "48.42%" }}
+            >
+              <svg className="block w-full h-full" fill="none" viewBox="0 0 93.6912 36.105" preserveAspectRatio="none">
+                <path d={sparkPaths.p13dde6c0} stroke={isLight ? "#2F372D" : "#F4F4EF"} strokeLinecap="round" strokeWidth="2" />
+              </svg>
+            </div>
+            {/* spark stroke 3 — Home page "Vector 48" */}
+            <div
+              className="absolute origin-center animate-[doodlePulse_2s_ease-out_infinite]"
+              style={{ left: "22.12%", top: "79.37%", width: "63.16%", height: "20.64%" }}
+            >
+              <svg className="block w-full h-full" fill="none" viewBox="0 0 69.091 16.5366" preserveAspectRatio="none">
+                <path d={sparkPaths.p2785b2a0} stroke={isLight ? "#2F372D" : "#F4F4EF"} strokeLinecap="round" strokeWidth="2" />
+              </svg>
+            </div>
           </div>
-
-          {/* Vector 6 — animated pulsing wave */}
-          <motion.div
-            className="-rotate-4"
-            initial={{ scaleX: 1.2, scaleY: 1.2 }}
-            animate={{ scaleX: [1.2, 1, 1], scaleY: [1.2, 1, 1] }}
-            transition={{
-              scaleX: { duration: 2, times: [0, 0.25, 1], ease: ["easeOut", "linear"], repeat: Infinity },
-              scaleY: { duration: 2, times: [0, 0.25, 1], ease: ["easeOut", "linear"], repeat: Infinity },
-            }}
-          >
-            <svg
-              className="w-[0.63em] h-[0.24em]"
-              fill="none" viewBox="0 0 62 25"
-            >
-              <path d={svgPaths.p1f3fe04} stroke={isLight ? "#4F5A4B" : "#D9D9D9"} strokeLinecap="round" strokeWidth="2" />
-            </svg>
-          </motion.div>
-
-          {/* Vector 3 — zigzag */}
-          <svg
-            className="w-[0.38em] h-[0.30em]"
-            fill="none" viewBox="0 0 37.7663 30.6131"
-          >
-            <path d={svgPaths.p16352f30} stroke={isLight ? "#4F5A4B" : "#D9D9D9"} strokeLinecap="round" strokeWidth="2" />
-          </svg>
         </div>
       </div>
 
@@ -218,12 +222,39 @@ function HeroFrame({ theme = "dark" }) {
             <span className={`relative z-10 inline-block overflow-visible bg-clip-text bg-gradient-to-b ${isLight ? "from-[rgba(111,127,60,0.9)] to-[rgba(111,127,60,0.9)]" : "from-[rgba(255,255,255,0.8)] to-[rgba(99,119,55,0.8)]"} text-transparent pr-[0.16em] mr-[-0.16em] tracking-[-0.02em]`}>
               answers
             </span>
-            {/* Wavy line — Figma-sized: 141.633×20.029 at 85px type = 1.67em×0.24em */}
+            {/* Wavy line — Figma-sized: 141.633×20.029 at 85px type = 1.67em×0.24em.
+                Same color-fill loop as the Home page's underline doodle: the
+                gradient stroke draws in, holds, then draws back out, forever. */}
             <svg
               className="absolute left-[0.02em] top-[1.18em] z-0 w-[1.67em] h-[0.24em] pointer-events-none overflow-visible"
               fill="none" viewBox="0 0 143.633 22.0289" preserveAspectRatio="none"
             >
-              <path d={svgPaths.p3cf8e00} stroke={isLight ? "#6F7F3C" : "#A8D465"} strokeLinecap="round" strokeWidth="2" />
+              <defs>
+                <linearGradient id={isLight ? "faqAnswersFillLight" : "faqAnswersFillDark"} x1="0%" y1="0%" x2="100%" y2="0%">
+                  {isLight ? (
+                    <>
+                      <stop offset="0%" stopColor="#4f5a4b" />
+                      <stop offset="50%" stopColor="#6f7f3c" />
+                      <stop offset="100%" stopColor="#b7dd67" />
+                    </>
+                  ) : (
+                    <>
+                      <stop offset="0%" stopColor="#8cc9b4" />
+                      <stop offset="50%" stopColor="#b7dd67" />
+                      <stop offset="100%" stopColor="#e6f2dd" />
+                    </>
+                  )}
+                </linearGradient>
+              </defs>
+              <path
+                d={svgPaths.p3cf8e00}
+                stroke={`url(#${isLight ? "faqAnswersFillLight" : "faqAnswersFillDark"})`}
+                strokeLinecap="round"
+                strokeWidth="2"
+                pathLength="1"
+                strokeDasharray="1"
+                className="animate-[doodleFill_2.6s_ease-in-out_infinite]"
+              />
             </svg>
           </span>
         </p>
@@ -352,6 +383,10 @@ export default function FaqPage() {
 
   return (
     <main className={`min-h-screen flex flex-col transition-colors duration-300 ${isLight ? "bg-[#e6f2dd] text-[#273338]" : "bg-[#222d31] text-white"}`}>
+      <style>{`
+        @keyframes doodlePulse { 0% { transform: scale(1.2); } 25% { transform: scale(1); } 100% { transform: scale(1); } }
+        @keyframes doodleFill { 0% { stroke-dashoffset: 1; } 45%, 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
+      `}</style>
       <Header theme={theme} onThemeChange={setTheme} />
       <Hero theme={theme} />
       <FaqDivider theme={theme} />
