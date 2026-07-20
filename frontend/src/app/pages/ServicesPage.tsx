@@ -131,6 +131,9 @@ function ServiceCardHoverStyles() {
   return (
     <style>
       {`
+        @keyframes doodlePulse { 0% { transform: scale(1.2); } 25% { transform: scale(1); } 100% { transform: scale(1); } }
+        @keyframes doodleFill { 0% { stroke-dashoffset: 1; } 45%, 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
+
         .slice {
           --size-letter: clamp(13px, 1.25vw, 14px);
           padding: 0.5em 1em;
@@ -587,7 +590,7 @@ function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
         <div className="relative w-full" style={{ aspectRatio: "511/461" }}>
           {/* Spark rays — exact path, exact position (top-right of "We build") */}
           <svg
-            className="absolute hidden sm:block"
+            className="absolute hidden sm:block origin-center animate-[doodlePulse_2s_ease-out_infinite]"
             style={{ left: "54.29%", top: "6.34%", width: "12.04%", height: "4.97%" }}
             viewBox="0 0 63.5175 24.8902"
             fill="none"
@@ -644,16 +647,43 @@ function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
             </span>
           </div>
 
-          {/* Underline sketch beneath "Stack" */}
+          {/* Underline sketch beneath "Stack" — same draw-in/hold/draw-out
+              gradient fill loop used on the Home page, with matching colors
+              per theme. */}
           <svg className="absolute hidden sm:block" style={{ left: "31.33%", top: "83.92%", width: "27.72%", height: "4.35%" }} viewBox="0 0 143.633 22.0289" fill="none" preserveAspectRatio="none">
-            <path d={svgPaths.p3cf8e00} stroke={tk.underline} strokeLinecap="round" strokeWidth="2" />
+            <defs>
+              <linearGradient id={isDark ? "stackDoodleFillDark" : "stackDoodleFillLight"} x1="0%" y1="0%" x2="100%" y2="0%">
+                {isDark ? (
+                  <>
+                    <stop offset="0%" stopColor="#8cc9b4" />
+                    <stop offset="50%" stopColor="#b7dd67" />
+                    <stop offset="100%" stopColor="#e6f2dd" />
+                  </>
+                ) : (
+                  <>
+                    <stop offset="0%" stopColor="#4f5a4b" />
+                    <stop offset="50%" stopColor="#6f7f3c" />
+                    <stop offset="100%" stopColor="#b7dd67" />
+                  </>
+                )}
+              </linearGradient>
+            </defs>
+            <path
+              d={svgPaths.p3cf8e00}
+              stroke={`url(#${isDark ? "stackDoodleFillDark" : "stackDoodleFillLight"})`}
+              strokeLinecap="round"
+              strokeWidth="2"
+              pathLength="1"
+              strokeDasharray="1"
+              className="animate-[doodleFill_2.6s_ease-in-out_infinite]"
+            />
           </svg>
 
           {/* Two small grey crossing doodle strokes, right of "Stack" */}
-          <svg className="absolute hidden sm:block" style={{ left: "73.05%", top: "65%", width: "7%", height: "6.21%" }} viewBox="0 0 37.7663 30.6131" fill="none" preserveAspectRatio="none">
+          <svg className="absolute hidden sm:block origin-center animate-[doodlePulse_2s_ease-out_infinite]" style={{ left: "73.05%", top: "65%", width: "7%", height: "6.21%" }} viewBox="0 0 37.7663 30.6131" fill="none" preserveAspectRatio="none">
             <path d={svgPaths.p16352f30} stroke={tk.greyDoodle} strokeLinecap="round" strokeWidth="2" />
           </svg>
-          <svg className="absolute hidden sm:block" style={{ left: "69.97%", top: "64.37%", width: "7.28%", height: "6.83%" }} viewBox="0 0 39.1966 33.4741" fill="none" preserveAspectRatio="none">
+          <svg className="absolute hidden sm:block origin-center animate-[doodlePulse_2s_ease-out_infinite]" style={{ left: "69.97%", top: "64.37%", width: "7.28%", height: "6.83%" }} viewBox="0 0 39.1966 33.4741" fill="none" preserveAspectRatio="none">
             <path d={svgPaths.p3358e300} stroke={tk.greyDoodle} strokeLinecap="round" strokeWidth="2" />
           </svg>
         </div>
