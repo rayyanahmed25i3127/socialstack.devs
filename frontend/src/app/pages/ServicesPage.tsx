@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import React, { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { motion } from "motion/react";
 
 import { Header } from "./Header";
@@ -603,7 +603,7 @@ function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
         </div>
 
         {/* Fixed-aspect coordinate frame — exact Figma proportions (511 × 461) */}
-        <div className="relative w-full" style={{ aspectRatio: "511/461" }}>
+        <div className="relative w-full overflow-hidden" style={{ aspectRatio: "511/461" }}>
           {/* Spark rays — exact path, exact position (top-right of "We build") */}
           <svg
             className="absolute hidden sm:block origin-center animate-[doodlePulse_2s_ease-out_infinite]"
@@ -855,7 +855,9 @@ function ServiceCard({
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2.5">
               {service.tools.map((tool, i) => (
-                <ToolPill key={i} img={tool.img} alt={tool.alt} tk={tk} />
+                <React.Fragment key={i}>
+                  <ToolPill img={tool.img} alt={tool.alt} tk={tk} />
+                </React.Fragment>
               ))}
             </div>
           </div>
@@ -950,7 +952,9 @@ function MobileServicesDeck({ isDark, tk, active, onActiveChange }: { isDark: bo
                   </ul>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {service.tools.map((tool) => (
-                      <ToolPill key={tool.alt} img={tool.img} alt={tool.alt} tk={tk} />
+                      <React.Fragment key={tool.alt}>
+                        <ToolPill img={tool.img} alt={tool.alt} tk={tk} />
+                      </React.Fragment>
                     ))}
                   </div>
                 </div>
@@ -1019,7 +1023,7 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
   return (
     <section
       id="services"
-      className="services-vertical-stage relative w-full overflow-x-visible overflow-y-hidden px-8 py-10 sm:px-12 sm:py-14"
+      className="services-vertical-stage relative w-full overflow-x-hidden sm:overflow-x-visible overflow-y-hidden px-8 py-10 sm:px-12 sm:py-14"
       onMouseLeave={() => setHovered(null)}
     >
       <h2
@@ -1190,7 +1194,7 @@ export default function ServicesPage() {
   const tk = isDark ? DARK : LIGHT;
 
   return (
-    <motion.div animate={{ backgroundColor: tk.pageBg }} transition={{ duration: 0.4 }} className="min-h-screen">
+    <div className="min-h-screen w-full overflow-x-hidden" style={{ backgroundColor: tk.pageBg, transition: "background-color 0.4s ease" }}>
       <ServiceCardHoverStyles />
       <Header theme={theme} onThemeChange={setTheme} />
 
@@ -1202,6 +1206,6 @@ export default function ServicesPage() {
       </main>
 
       <Footer theme={theme} />
-    </motion.div>
+    </div>
   );
 }

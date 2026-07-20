@@ -1,4 +1,4 @@
-import { useState, useRef, type CSSProperties } from "react";
+import { useState, useRef, type CSSProperties, type MouseEvent } from "react";
 import { Send } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Header } from "./Header";
@@ -331,7 +331,7 @@ export default function ContactPage() {
 
   // Parallax tilt on the form card
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientY - rect.top) / rect.height - 0.5) * 6;
     const y = ((e.clientX - rect.left) / rect.width - 0.5) * -6;
