@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { usePersistentTheme } from "../usePersistentTheme";
 
 // ─── Assets (Figma "Projects" export — dark + light) ────────────────────────
 // The path data in DProjects/LProjects is pixel-identical between themes
@@ -303,7 +304,7 @@ function ProjectsCTA({ tk }: { tk: Tokens }) {
 // ─── Root page ────────────────────────────────────────────────────────────
 
 export default function ProjectsPage() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = usePersistentTheme();
   const isDark = theme === "dark";
   const tk = isDark ? DARK : LIGHT;
 

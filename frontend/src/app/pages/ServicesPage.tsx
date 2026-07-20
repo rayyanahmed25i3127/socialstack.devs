@@ -1,8 +1,9 @@
-import { useCallback, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { motion } from "motion/react";
 
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { usePersistentTheme } from "../usePersistentTheme";
 
 import svgPathsDark from "../../imports/DServicesExpanded/svg-xnbm573k17";
 import svgPathsLight from "../../imports/LServicesBoth/svg-a37jqh11z0";
@@ -319,6 +320,21 @@ const SERVICES: ServiceItem[] = [
     noteRotation: 6,
   },
 ];
+
+const SERVICE_SLUGS = [
+  "web-development",
+  "ui-ux-design",
+  "social-media-management",
+  "ads-branding",
+  "app-development",
+];
+
+function getServiceIndexFromHash() {
+  if (typeof window === "undefined") return 0;
+  const slug = window.location.hash.replace("#", "").trim().toLowerCase();
+  const index = SERVICE_SLUGS.indexOf(slug);
+  return index >= 0 ? index : 0;
+}
 
 // ─── Exact image crop data, pulled from the Figma Make export ─────────────
 // Each thumbnail PNG is a full illustration (bigger than the card slot, with
@@ -851,13 +867,12 @@ function ServiceCard({
 
 // ─── 4. ServicesSection ─────────────────────────────────────────────────────
 
-function MobileServicesDeck({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
-  const [open, setOpen] = useState(0);
+function MobileServicesDeck({ isDark, tk, active, onActiveChange }: { isDark: boolean; tk: Tokens; active: number; onActiveChange: (index: number) => void }) {
 
   return (
     <div className="flex flex-col gap-4 sm:hidden">
       {SERVICES.map((service, index) => {
-        const expanded = open === index;
+        const expanded = active === index;
         const thumb = isDark ? service.thumbDark : service.thumbLight;
         const visuals = CARD_VISUALS[service.id];
 
@@ -885,7 +900,7 @@ function MobileServicesDeck({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
           >
             <button
               type="button"
-              onClick={() => setOpen(index)}
+              onClick={() => onActiveChange(index)}
               className="relative block w-full overflow-hidden rounded-[27px] px-4 py-4 text-left"
               style={{
                 background: isDark ? "rgba(37,50,54,0.92)" : "rgba(238,243,226,0.94)",
@@ -949,9 +964,22 @@ function MobileServicesDeck({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 }
 
 function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(getServiceIndexFromHash);
   const [hovered, setHovered] = useState<number | null>(null);
   const total = SERVICES.length;
+
+  useEffect(() => {
+    const syncActiveFromHash = () => {
+      setActive(getServiceIndexFromHash());
+      window.setTimeout(() => {
+        document.getElementById("services")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    };
+
+    syncActiveFromHash();
+    window.addEventListener("hashchange", syncActiveFromHash);
+    return () => window.removeEventListener("hashchange", syncActiveFromHash);
+  }, []);
 
   const go = useCallback(
     (dir: number) => setActive((value) => (value + dir + total) % total),
@@ -990,6 +1018,7 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 
   return (
     <section
+      id="services"
       className="services-vertical-stage relative w-full overflow-x-visible overflow-y-hidden px-8 py-10 sm:px-12 sm:py-14"
       onMouseLeave={() => setHovered(null)}
     >
@@ -1000,9 +1029,9 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
         SERVICES
       </h2>
 
-      <MobileServicesDeck isDark={isDark} tk={tk} />
+      <MobileServicesDeck isDark={isDark} tk={tk} active={active} onActiveChange={setActive} />
 
-      <div className="relative mx-auto hidden h-[820px] w-full max-w-[1320px] sm:block">
+      <div className="relative mx-auto hidden h-[590px] w-full max-w-[980px] sm:block">
         {arrowButton(-1, "Previous service", "‹", "left")}
         {arrowButton(1, "Next service", "›", "right")}
         {SERVICES.map((service, index) => {
@@ -1034,11 +1063,11 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
               onBlur={() => setHovered(null)}
               initial={false}
               animate={{
-                x: `calc(-50% + ${offset * 205}px)`,
+                x: `calc(-50% + ${offset * 137}px)`,
                 y: "-50%",
                 width: isActive ? "min(430px, 86vw)" : "min(340px, 70vw)",
                 height: isActive ? 775 : 660,
-                scale: isActive ? 1 : 0.86,
+                scale: isActive ? 0.67 : 0.58,
                 opacity: visible ? 1 : 0,
                 filter: visible ? (isActive ? "blur(0px)" : "blur(4px)") : "blur(8px)",
                 rotateY: isActive ? 0 : offset < 0 ? 8 : -8,
@@ -1074,11 +1103,14 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 // ─── 5. PricingCTA ──────────────────────────────────────────────────────────
 
 function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
-  const paperPath = isDark ? svgPathsDark.p28df1400 : svgPathsLight.p38c75100;
   const sliceStyle = {
     "--c1": tk.ctaButtonText,
     "--c2": tk.ctaButtonBg,
   } as CSSProperties;
+  const panelBg = isDark ? "rgba(37,50,54,0.62)" : "rgba(244,238,227,0.42)";
+  const panelBorder = isDark ? "rgba(200,231,123,0.24)" : "rgba(39,51,56,0.22)";
+  const divider = isDark ? "rgba(230,242,221,0.18)" : "rgba(39,51,56,0.18)";
+  const headingColor = isDark ? "#c8e77b" : "#273338";
 
   return (
     <motion.section
@@ -1088,51 +1120,62 @@ function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
       viewport={revealViewport}
       variants={revealUp}
     >
-      <motion.p
-        className="mb-6 text-center font-['Caveat_Brush',sans-serif] text-[4.5rem] font-normal leading-none tracking-normal sm:text-[7rem]"
-        style={{ color: isDark ? "#c8e77b" : "#273338" }}
+      <div
+        className="relative overflow-hidden rounded-[28px] border px-5 py-8 shadow-2xl sm:rounded-[34px] sm:px-10 sm:py-12 lg:px-14"
+        style={{
+          background: `linear-gradient(135deg, ${panelBg}, ${isDark ? "rgba(34,45,49,0.34)" : "rgba(230,242,221,0.5)"})`,
+          borderColor: panelBorder,
+          boxShadow: isDark ? "0 28px 80px rgba(0,0,0,0.26)" : "0 24px 70px rgba(39,51,56,0.12)",
+          backdropFilter: "blur(18px)",
+          WebkitBackdropFilter: "blur(18px)",
+        }}
       >
-        PRICING
-      </motion.p>
+        <div
+          className="pointer-events-none absolute inset-0 opacity-70"
+          style={{
+            background: isDark
+              ? "linear-gradient(115deg, rgba(200,231,123,0.08), transparent 34%, rgba(140,201,180,0.08))"
+              : "linear-gradient(115deg, rgba(39,51,56,0.06), transparent 34%, rgba(125,148,68,0.1))",
+          }}
+        />
 
-      <div className="relative w-full overflow-hidden rounded-[24px] sm:rounded-[32px]">
-        <div className="absolute inset-0">
-          <svg className="w-full h-full" viewBox="0 0 1236 372" fill="none" preserveAspectRatio="none">
-            <defs>
-              <clipPath id="ctaPaperClip" clipPathUnits="userSpaceOnUse">
-                <path d={paperPath} />
-              </clipPath>
-              {/* Grain/noise texture — density 100%, grain size ~0.5, colour #000000, layered on the paper fill */}
-              <filter id="ctaPaperNoise" x="0" y="0" width="100%" height="100%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="noise" />
-                <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.28 0.28 0.28 0 0" />
-              </filter>
-            </defs>
-            <path d={paperPath} fill={tk.ctaPaper} />
-            <g clipPath="url(#ctaPaperClip)">
-              <rect width="1236" height="372" filter="url(#ctaPaperNoise)" />
-            </g>
-          </svg>
-        </div>
+        <div className="relative grid items-center gap-8 lg:grid-cols-[0.95fr_auto_1.05fr] lg:gap-12">
+          <div className="flex flex-col items-center justify-center text-center lg:items-start lg:text-left">
+            <p
+              className="font-['Caveat_Brush',sans-serif] text-[4.5rem] font-normal leading-none tracking-normal sm:text-[7rem]"
+              style={{ color: headingColor }}
+            >
+              PRICING
+            </p>
+          </div>
 
-        <div className="relative flex flex-col items-center text-center gap-4 sm:gap-5 px-6 sm:px-12 py-10 sm:py-14 max-w-[620px] mx-auto">
-        <p className="font-['Manrope',sans-serif] font-extrabold leading-tight" style={{ color: tk.ctaHeading, fontSize: "clamp(26px, 4.5vw, 48px)" }}>
-          Each Stack is different.
-        </p>
+          <div
+            className="hidden h-full min-h-[190px] w-px justify-self-center lg:block"
+            style={{ backgroundColor: divider }}
+          />
 
-        <p className="font-['Manrope',sans-serif] font-medium max-w-[480px] leading-relaxed text-[14px] sm:text-[16px]" style={{ color: tk.ctaBody }}>
-          Every business has different goals, timelines and requirements. We'll recommend the right services and give you a clear quote, before we build anything.
-        </p>
+          <div className="flex flex-col items-center gap-5 text-center lg:items-start lg:text-left">
+            <p
+              className="font-['Manrope',sans-serif] text-[28px] font-extrabold leading-tight sm:text-[36px] lg:text-[42px]"
+              style={{ color: tk.cardHeading }}
+            >
+              Each Stack is different.
+            </p>
 
-        <a
-          href="/contact"
-          className="slice inline-flex items-center justify-center font-['Manrope',sans-serif] tracking-[1.5px] whitespace-nowrap no-underline"
-          style={sliceStyle}
-        >
-          <span className="text">
-            LET'S PRICE YOUR STACK
-          </span>
-        </a>
+            <p className="max-w-[580px] font-['Manrope',sans-serif] text-[15px] font-medium leading-relaxed sm:text-[17px]" style={{ color: tk.descriptionText }}>
+              Every business has different goals, timelines and requirements. We'll recommend the right services and give you a clear quote before we build anything.
+            </p>
+
+            <a
+              href="/contact"
+              className="slice mt-1 inline-flex items-center justify-center font-['Manrope',sans-serif] tracking-[1.5px] whitespace-nowrap no-underline"
+              style={sliceStyle}
+            >
+              <span className="text">
+                LET'S PRICE YOUR STACK
+              </span>
+            </a>
+          </div>
         </div>
       </div>
     </motion.section>
@@ -1142,7 +1185,7 @@ function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 // ─── Root page ──────────────────────────────────────────────────────────────
 
 export default function ServicesPage() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = usePersistentTheme();
   const isDark = theme === "dark";
   const tk = isDark ? DARK : LIGHT;
 

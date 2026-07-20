@@ -223,7 +223,7 @@ export function Footer({ theme }: { theme: "dark" | "light" }) {
                   key={i}
                   src={icon}
                   alt={["Gmail", "Instagram", "LinkedIn"][i]}
-                  href={["mailto:ss.socialstack@gmail.com", "https://www.instagram.com/socialstack.dev/", "https://www.linkedin.com/in/socialstack"][i]}
+                  href={["mailto:ss.socialstack@gmail.com", "https://www.instagram.com/socialstack.dev/", "https://www.linkedin.com/company/socialstack-dev/"][i]}
                   dark={d}
                 />
               ))}

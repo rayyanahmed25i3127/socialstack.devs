@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { usePersistentTheme } from "../usePersistentTheme";
 
 // ─── Assets (still used directly by this page's Hero / FAQ divider) ────────
 import imgStack from "../../imports/DFaQs-1/7d701444326e8df96a25df0b6c45d1370c34d2ea.png";
@@ -378,7 +379,7 @@ function FaqDivider({ theme = "dark" }) {
 // ─── FAQs Page ──────────────────────────────────────────────────────────────
 
 export default function FaqPage() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = usePersistentTheme();
   const isLight = theme === "light";
 
   return (

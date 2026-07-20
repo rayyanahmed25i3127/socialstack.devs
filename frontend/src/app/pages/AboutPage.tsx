@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type CSSProperties, type Key } from "
 import { Sun, Moon, ChevronLeft, ChevronRight, ExternalLink, Github } from "lucide-react";
 import { motion, AnimatePresence, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 import Vector from "../../imports/Vector";
+import { usePersistentTheme } from "../usePersistentTheme";
 
 import imgRayyan from "../../imports/DStory/1ba56544bea3416d9f45f3730e4ed9415eda98d9.png";
 import imgMuznna from "../../imports/DStory/54b4775e735e8d33aae69e7d977931da932187d7.png";
@@ -881,11 +882,12 @@ function TeamFlipStack({
 }
 
 export default function AboutPage() {
-  const [isDark, setIsDark] = useState(true);
+  const [theme, setTheme] = usePersistentTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [navFloating, setNavFloating] = useState(false);
   const { scrollYProgress } = useScroll();
   const progressScale = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const isDark = theme === "dark";
   const d = isDark;
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
@@ -1001,7 +1003,7 @@ export default function AboutPage() {
         <div className="relative z-10 flex items-center gap-2 sm:gap-3">
           {/* Theme toggle */}
           <motion.button
-            onClick={() => setIsDark(!d)}
+            onClick={() => setTheme(d ? "light" : "dark")}
             aria-label="Toggle theme"
             className={`relative flex h-8 w-16 items-center rounded-full border transition-all duration-300 ${
               d ? "bg-[#2e3936]/80" : "bg-white/30"
@@ -1112,12 +1114,6 @@ export default function AboutPage() {
         whileInView="show"
         viewport={viewport}
       >
-        <motion.div
-          className="absolute right-[-8rem] top-12 h-72 w-72 rounded-full border border-[#b7dd67]/15"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 34, repeat: Infinity, ease: "linear" }}
-        />
-
         {/* Badge — top left */}
         <motion.div className="mb-10 text-left" variants={fadeUp}>
           <motion.div
@@ -1238,7 +1234,7 @@ export default function AboutPage() {
                   key={i}
                   src={icon}
                   alt={["Gmail", "Instagram", "LinkedIn"][i]}
-                  href={["mailto:ss.socialstack@gmail.com", "https://www.instagram.com/socialstack.dev/", "https://www.linkedin.com/in/socialstack"][i]}
+                  href={["mailto:ss.socialstack@gmail.com", "https://www.instagram.com/socialstack.dev/", "https://www.linkedin.com/company/socialstack-dev/"][i]}
                   dark={d}
                   index={i}
                 />

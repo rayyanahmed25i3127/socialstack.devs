@@ -7,6 +7,7 @@ import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSp
 
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { usePersistentTheme } from "../usePersistentTheme";
 
 import heroSvgPaths from "../../imports/home-hero-section/paths";
 import heroImgLogo from "../../imports/home-shared/logo-photo.png";
@@ -1537,7 +1538,7 @@ function NumberBadge({ n, rotate }) {
   );
 }
 
-function ServiceCard({ icon, title, desc, isLight, active = true }) {
+function ServiceCard({ icon, title, desc, isLight, active = true, href = "/services" }) {
   return (
     <motion.div
       whileHover={{ y: -6, scale: 1.04 }}
@@ -1568,7 +1569,7 @@ function ServiceCard({ icon, title, desc, isLight, active = true }) {
           {desc}
         </p>
       )}
-      <a href="/services" className={`relative font-['Manrope:Bold',sans-serif] font-bold text-xs md:text-lg no-underline group-hover:underline transition-colors duration-300 ${isLight ? "text-[#6f7f3c]" : "text-[#b7dd67]"}`}>
+      <a href={href} className={`relative font-['Manrope:Bold',sans-serif] font-bold text-xs md:text-lg no-underline group-hover:underline transition-colors duration-300 ${isLight ? "text-[#6f7f3c]" : "text-[#b7dd67]"}`}>
         Learn more...
       </a>
       <div
@@ -2187,24 +2188,28 @@ function DarkPageContent() {
               title="Web development"
               desc="Fast, scalable websites build for growth"
               isLight={false}
+              href="/services#web-development"
             />,
             <ServiceCard
               icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame29} />}
               title="Ads and Branding"
               desc="Identity that stands out, campaigns that convert"
               isLight={false}
+              href="/services#ads-branding"
             />,
             <ServiceCard
               icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame30} />}
               title="UI UX Design"
               desc="Interfaces that are intuitive and beautiful"
               isLight={false}
+              href="/services#ui-ux-design"
             />,
             <ServiceCard
               icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame31} />}
               title="SMM"
               desc="Content that gets people talking about your brand"
               isLight={false}
+              href="/services#social-media-management"
             />,
           ]}
         />
@@ -2326,24 +2331,28 @@ function LightPageContent() {
               title="Web development"
               desc="Fast, scalable websites build for growth"
               isLight={true}
+              href="/services#web-development"
             />,
             <ServiceCard
               icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame29} />}
               title="Ads and Branding"
               desc="Identity that stands out, campaigns that convert"
               isLight={true}
+              href="/services#ads-branding"
             />,
             <ServiceCard
               icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame30} />}
               title="UI UX Design"
               desc="Interfaces that are intuitive and beautiful"
               isLight={true}
+              href="/services#ui-ux-design"
             />,
             <ServiceCard
               icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame31} />}
               title="SMM"
               desc="Content that gets people talking about your brand"
               isLight={true}
+              href="/services#social-media-management"
             />,
           ]}
         />
@@ -2420,7 +2429,7 @@ function LightPageContent() {
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = usePersistentTheme();
   const isLight = theme === "light";
 
   return (

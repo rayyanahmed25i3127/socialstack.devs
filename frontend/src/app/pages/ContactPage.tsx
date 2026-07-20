@@ -3,6 +3,7 @@ import { Send } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { usePersistentTheme } from "../usePersistentTheme";
 
 // Social icons — recolored/light for dark bg
 import imgGmailRecolored from "../../imports/DContact/6b4ec495fae1c48f0f0ded0d4de376f6d0e25992.png";
@@ -26,6 +27,19 @@ const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
 };
+
+const BUSINESS_TYPES = [
+  "Restaurant or Cafe",
+  "Retail Store",
+  "Education",
+  "Furniture",
+  "Agriculture",
+  "Hotel",
+  "Construction",
+  "Real Estate",
+  "HealthCare",
+  "Other - Tell us about it in the message box below.",
+];
 
 // Floating orb decorations
 function Orb({ style }: { style: CSSProperties }) {
@@ -107,6 +121,7 @@ function FormField({
   dark,
   value,
   onChange,
+  inputMode,
   className = "",
 }: {
   label: string;
@@ -115,6 +130,7 @@ function FormField({
   dark: boolean;
   value: string;
   onChange: (v: string) => void;
+  inputMode?: "text" | "numeric" | "email";
   className?: string;
 }) {
   const [focused, setFocused] = useState(false);
@@ -141,6 +157,7 @@ function FormField({
       >
         <input
           type={type}
+          inputMode={inputMode}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -221,17 +238,88 @@ function TextareaField({
   );
 }
 
+function SelectField({
+  label,
+  dark,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  dark: boolean;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+}) {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <motion.div className="flex flex-col gap-1.5 w-full" variants={fadeUp}>
+      <motion.label
+        className="font-['Outfit',sans-serif] font-medium text-[14px] lg:text-[16px] text-center transition-all duration-200"
+        style={{ color: focused ? (dark ? "#b7dd67" : "#273338") : (dark ? "rgba(230,242,221,0.82)" : "rgba(39,51,56,0.78)") }}
+        animate={{ scale: focused ? 1.02 : 1 }}
+      >
+        {label}
+      </motion.label>
+      <motion.div
+        className="relative rounded-2xl"
+        animate={{
+          boxShadow: focused
+            ? dark
+              ? "0 0 0 1px rgba(183,221,103,0.5), 0 0 24px rgba(183,221,103,0.12)"
+              : "0 0 0 1px rgba(39,51,56,0.4), 0 0 20px rgba(39,51,56,0.1)"
+            : "0 0 0 0px transparent",
+        }}
+        transition={{ duration: 0.2 }}
+      >
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          className="contact-field w-full h-12 appearance-none rounded-2xl border px-4 pr-10 text-center text-[14px] lg:text-[16px] font-['Outfit',sans-serif] font-light outline-none transition-colors duration-200"
+          style={{
+            borderColor: focused
+              ? dark ? "rgba(183,221,103,0.7)" : "rgba(39,51,56,0.55)"
+              : dark ? "rgba(230,242,221,0.18)" : "rgba(39,51,56,0.18)",
+            background: dark ? "rgba(230,242,221,0.08)" : "rgba(255,255,255,0.2)",
+            color: value ? (dark ? "#e6f2dd" : "#273338") : (dark ? "rgba(230,242,221,0.28)" : "rgba(39,51,56,0.28)"),
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+          }}
+        >
+          <option value="">Select your business type...</option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <span
+          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm"
+          style={{ color: dark ? "rgba(230,242,221,0.62)" : "rgba(39,51,56,0.62)" }}
+        >
+          v
+        </span>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function ContactPage() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = usePersistentTheme();
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
   // Controlled form fields
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [businessType, setBusinessType] = useState("");
   const [query, setQuery] = useState("");
 
   const dark = theme === "dark";
@@ -254,9 +342,9 @@ export default function ContactPage() {
   const handleSubmit = async () => {
     setError(null);
 
-    const name = `${firstName.trim()} ${lastName.trim()}`.trim();
-    if (!name || !email.trim() || !query.trim()) {
-      setError("Please fill in your name, email, and query before submitting.");
+    const businessAbout = businessType;
+    if (!fullName.trim() || !contactNumber.trim() || !email.trim() || !businessName.trim() || !businessAbout || !query.trim()) {
+      setError("Please fill in your full name, contact number, email, business details, and message before submitting.");
       return;
     }
 
@@ -265,7 +353,17 @@ export default function ContactPage() {
       const res = await fetch(`${API_BASE}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email: email.trim(), message: query.trim() }),
+        body: JSON.stringify({
+          name: fullName.trim(),
+          email: email.trim(),
+          message: [
+            `Contact Number: ${contactNumber.trim()}`,
+            `Business Name: ${businessName.trim()}`,
+            `Business About: ${businessAbout}`,
+            "",
+            query.trim(),
+          ].join("\n"),
+        }),
       });
 
       const data = await res.json();
@@ -276,9 +374,11 @@ export default function ContactPage() {
 
       setSubmitting(false);
       setSubmitted(true);
-      setFirstName("");
-      setLastName("");
+      setFullName("");
+      setContactNumber("");
       setEmail("");
+      setBusinessName("");
+      setBusinessType("");
       setQuery("");
       setTimeout(() => setSubmitted(false), 3000);
     } catch (err) {
@@ -454,42 +554,63 @@ export default function ContactPage() {
             initial="hidden"
             animate="show"
           >
-            {/* Name row */}
+            {/* Contact details */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
               <FormField
-                label="First Name"
-                placeholder="Please enter your first name..."
+                label="Your Full Name"
+                placeholder="Please enter your full name..."
                 dark={dark}
-                value={firstName}
-                onChange={setFirstName}
+                value={fullName}
+                onChange={(value) => setFullName(value.replace(/[^A-Za-z\s]/g, ""))}
                 className="flex-1"
               />
               <FormField
-                label="Last Name"
-                placeholder="Please enter your last name..."
+                label="Contact Number"
+                type="tel"
+                inputMode="numeric"
+                placeholder="Please enter your contact number..."
                 dark={dark}
-                value={lastName}
-                onChange={setLastName}
+                value={contactNumber}
+                onChange={(value) => setContactNumber(value.replace(/\D/g, ""))}
                 className="flex-1"
               />
             </div>
 
-            {/* Email */}
-            <div className="flex flex-col items-center">
+            {/* Email and business name */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
               <FormField
                 label="Email Address"
                 type="email"
+                inputMode="email"
                 placeholder="Please enter your email..."
                 dark={dark}
                 value={email}
                 onChange={setEmail}
-                className="w-full sm:w-3/4"
+                className="flex-1"
+              />
+              <FormField
+                label="Business Name"
+                placeholder="Please enter your business name..."
+                dark={dark}
+                value={businessName}
+                onChange={setBusinessName}
+                className="flex-1"
               />
             </div>
 
-            {/* Query */}
+            <SelectField
+              label="What is your business about?"
+              dark={dark}
+              value={businessType}
+              onChange={(value) => {
+                setBusinessType(value);
+              }}
+              options={BUSINESS_TYPES}
+            />
+
+            {/* Message */}
             <TextareaField
-              label="Query"
+              label="Message"
               placeholder="Please enter what you have in mind..."
               dark={dark}
               value={query}
@@ -604,7 +725,7 @@ export default function ContactPage() {
           <div className="contact-social-stack flex items-center justify-center">
             <SocialIcon src={dark ? imgInstagramRecolored : imgInstagramDark} alt="Instagram" href="https://www.instagram.com/socialstack.dev/" dark={dark} rotation={-14} />
             <SocialIcon src={dark ? imgGmailRecolored : imgGmailDark} alt="Mail" href="mailto:ss.socialstack@gmail.com" dark={dark} rotation={4} />
-            <SocialIcon src={dark ? imgLinkedinRecolored : imgLinkedinDark} alt="LinkedIn" href="https://www.linkedin.com/in/socialstack" dark={dark} rotation={16} />
+            <SocialIcon src={dark ? imgLinkedinRecolored : imgLinkedinDark} alt="LinkedIn" href="https://www.linkedin.com/company/socialstack-dev/" dark={dark} rotation={16} />
           </div>
         </motion.div>
       </main>
