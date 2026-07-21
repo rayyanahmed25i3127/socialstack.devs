@@ -15,9 +15,6 @@ import imgGmailDark from "../../imports/DContact/bb41079225c7e7e337a305986d06c16
 import imgInstagramDark from "../../imports/DContact/4df4f05f97b46091b25e33867b09dde1cfa65a65.png";
 import imgLinkedinDark from "../../imports/DContact/f061b0dccdf43cbb885fbbf475aa5115a5fee706.png";
 
-// Point this at your deployed backend URL in production (e.g. via import.meta.env.VITE_API_URL)
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
 // Stagger children helper
 const staggerContainer = {
   hidden: {},
@@ -342,27 +339,23 @@ export default function ContactPage() {
   const handleSubmit = async () => {
     setError(null);
 
-    const businessAbout = businessType;
-    if (!fullName.trim() || !contactNumber.trim() || !email.trim() || !businessName.trim() || !businessAbout || !query.trim()) {
+    if (!fullName.trim() || !contactNumber.trim() || !email.trim() || !businessName.trim() || !businessType || !query.trim()) {
       setError("Please fill in your full name, contact number, email, business details, and message before submitting.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/contact`, {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: fullName.trim(),
+          fullName: fullName.trim(),
+          contactNumber: contactNumber.trim(),
           email: email.trim(),
-          message: [
-            `Contact Number: ${contactNumber.trim()}`,
-            `Business Name: ${businessName.trim()}`,
-            `Business About: ${businessAbout}`,
-            "",
-            query.trim(),
-          ].join("\n"),
+          businessName: businessName.trim(),
+          businessType,
+          message: query.trim(),
         }),
       });
 
