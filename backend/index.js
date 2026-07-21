@@ -1,6 +1,6 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
 const app = express();
@@ -9,11 +9,13 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
-
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const contactToEmail = process.env.CONTACT_TO_EMAIL || 'ss.socialstack@gmail.com';
+const contactFromEmail = process.env.CONTACT_FROM_EMAIL || 'Social Stack <onboarding@resend.dev>';
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Social Stack backend is running' });
@@ -21,32 +23,31 @@ app.get('/api/health', (req, res) => {
 
 // Contact Us form submission
 app.post('/api/contact', async (req, res) => {
-  const { name, email, message } = req.body;
+  const name = String(req.body?.name || '').trim();
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const message = String(req.body?.message || '').trim();
 
   if (!name || !email || !message) {
     return res.status(400).json({ error: 'name, email, and message are required' });
   }
 
-  if (!supabase || !resend) {
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+
+  if (!resend) {
     return res.status(500).json({
-      error: 'Server is not configured yet. Add SUPABASE_URL, SUPABASE_ANON_KEY, and RESEND_API_KEY to your .env file.',
+      error: 'Server is not configured yet. Add RESEND_API_KEY to your .env file.',
     });
   }
 
   try {
-    // 1. Save submission to Supabase
-    const { error: dbError } = await supabase
-      .from('contact_submissions')
-      .insert([{ name, email, message }]);
-
-    if (dbError) throw dbError;
-
-    // 2. Send notification email via Resend
     await resend.emails.send({
-      from: 'Social Stack <onboarding@resend.dev>', // replace with your verified domain sender
-      to: 'your-team-inbox@example.com', // replace with the real inbox this should land in
+      from: contactFromEmail,
+      to: contactToEmail,
       subject: `New contact form submission from ${name}`,
       text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
+      replyTo: email,
     });
 
     res.status(200).json({ success: true });
