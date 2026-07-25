@@ -2090,6 +2090,8 @@ function CtaMobile({ isLight }) {
           }`}
         >
           Ready to
+          <br />
+          build
         </p>
         <p
           className={`font-['Caveat_Brush:Regular',sans-serif] leading-[0.95] text-[26px] sm:text-[32px] tracking-[-1.2px] -rotate-3 ${

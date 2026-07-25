@@ -29,7 +29,7 @@ const team = [
     github: "https://github.com/muznna-dev",
     imgPos: "42% 10%",
     greeting: "Hello!",
-    bio: "a frontend developer with a sharp eye for layout, responsiveness, and interaction. Brings designs to life through smooth interfaces and thoughtful user experience.",
+    bio: "a frontend developer with a sharp eye for layout, responsiveness, and interaction. I bring designs to life through smooth interfaces and thoughtful user experience.",
   },
   {
     name: "Rayyan Ahmed",
@@ -39,7 +39,7 @@ const team = [
     github: "https://github.com/rayyanahmed25i3127",
     imgPos: "50% 18%",
     greeting: "Yo !",
-    bio: "a full-stack developer focused on building polished, reliable web experiences. Handles both frontend detail and backend structure, turning ideas into functional products with clean execution.",
+    bio: "a full-stack developer focused on building polished, reliable web experiences. I handle both frontend detail and backend structure, turning ideas into functional products with clean execution.",
   },
   {
     name: "Fatima Akhtar",
@@ -49,7 +49,7 @@ const team = [
     github: "https://github.com/fatima-akhtar-t",
     imgPos: "50% 38%",
     greeting: "Hi !",
-    bio: "a UI/UX and social media creative with a strong sense of aesthetics and storytelling. Works on design clarity, brand presence, and engaging digital content.",
+    bio: "a UI/UX and social media creative with a strong sense of aesthetics and storytelling. I work on design clarity, brand presence, and engaging digital content.",
   },
   {
     name: "Muhammad Anas",
@@ -59,7 +59,7 @@ const team = [
     github: "https://github.com/Anas10171007",
     imgPos: "50% 8%",
     greeting: "SUP !",
-    bio: "a backend developer focused on logic, APIs, and system reliability. Builds the foundation that keeps products fast, secure, and ready to scale.",
+    bio: "a backend developer focused on logic, APIs, and system reliability. I build the foundation that keeps products fast, secure, and ready to scale.",
   },
   {
     name: "Maryam Yousaf",
@@ -69,7 +69,7 @@ const team = [
     github: "https://github.com/meowryam",
     imgPos: "50% 42%",
     greeting: "Hey !",
-    bio: "a UI/UX and social media creative focused on visual identity, content, and user flow. Helps shape how SocialStack looks, feels, and communicates.",
+    bio: "a UI/UX and social media creative focused on visual identity, content, and user flow. I help shape how SocialStack looks, feels, and communicates.",
   },
 ];
 
