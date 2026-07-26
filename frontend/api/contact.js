@@ -3,6 +3,7 @@ import { Resend } from "resend";
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const contactToEmail = process.env.CONTACT_TO_EMAIL || "ss.socialstack@gmail.com";
 const contactFromEmail = process.env.CONTACT_FROM_EMAIL || "Social Stack <onboarding@resend.dev>";
+const crmLeadsApiUrl = process.env.CRM_LEADS_API_URL || "";
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -63,6 +64,33 @@ export default async function handler(req, res) {
   ].join("\n");
 
   try {
+    if (crmLeadsApiUrl) {
+      const crmRes = await fetch(crmLeadsApiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "https://www.social-stack.dev",
+        },
+        body: JSON.stringify({
+          fullName,
+          contactNumber,
+          email,
+          businessName,
+          businessType,
+          message,
+          source: "website",
+        }),
+      });
+
+      if (!crmRes.ok) {
+        const crmError = await crmRes.json().catch(() => null);
+        console.error("CRM lead intake error:", crmError || crmRes.statusText);
+        return res.status(502).json({
+          error: "We could not save your inquiry right now. Please try again later.",
+        });
+      }
+    }
+
     await resend.emails.send({
       from: contactFromEmail,
       to: contactToEmail,
