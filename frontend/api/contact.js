@@ -4,6 +4,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const contactToEmail = process.env.CONTACT_TO_EMAIL || "ss.socialstack@gmail.com";
 const contactFromEmail = process.env.CONTACT_FROM_EMAIL || "Social Stack <onboarding@resend.dev>";
 const crmLeadsApiUrl = process.env.CRM_LEADS_API_URL || "";
+const crmIntakeSecret = process.env.CRM_INTAKE_SECRET || "";
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -70,6 +71,7 @@ export default async function handler(req, res) {
         headers: {
           "Content-Type": "application/json",
           Origin: "https://www.social-stack.dev",
+          ...(crmIntakeSecret ? { "x-crm-intake-secret": crmIntakeSecret } : {}),
         },
         body: JSON.stringify({
           fullName,
