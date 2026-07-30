@@ -93,20 +93,16 @@ function useLowMotionMode() {
 
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const coarsePointer = window.matchMedia("(pointer: coarse)");
-    const lowCoreCount = typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 4;
 
     const update = () => {
-      setLowMotion(reducedMotion.matches || coarsePointer.matches || lowCoreCount);
+      setLowMotion(reducedMotion.matches);
     };
 
     update();
     reducedMotion.addEventListener?.("change", update);
-    coarsePointer.addEventListener?.("change", update);
 
     return () => {
       reducedMotion.removeEventListener?.("change", update);
-      coarsePointer.removeEventListener?.("change", update);
     };
   }, []);
 
@@ -448,7 +444,7 @@ function AnimatedButtonStyles() {
             drop-shadow(0 0 4px rgba(39,51,56,0.42));
         }
 
-        @media (pointer: coarse), (prefers-reduced-motion: reduce) {
+        @media (prefers-reduced-motion: reduce) {
           .about-page-shell *,
           .about-page-shell *::before,
           .about-page-shell *::after {
