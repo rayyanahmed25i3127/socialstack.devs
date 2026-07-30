@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, type CSSProperties } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { motion } from "motion/react";
 
 import { Header } from "./Header";
@@ -128,6 +128,31 @@ const revealUp = {
   show: { opacity: 1, y: 0, filter: "blur(0px)", transition: revealTransition },
 };
 
+function useLowMotionMode() {
+  const [lowMotion, setLowMotion] = useState(false);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const coarsePointer = window.matchMedia("(pointer: coarse)");
+    const lowCoreCount = typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 4;
+
+    const update = () => {
+      setLowMotion(reducedMotion.matches || coarsePointer.matches || lowCoreCount);
+    };
+
+    update();
+    reducedMotion.addEventListener?.("change", update);
+    coarsePointer.addEventListener?.("change", update);
+
+    return () => {
+      reducedMotion.removeEventListener?.("change", update);
+      coarsePointer.removeEventListener?.("change", update);
+    };
+  }, []);
+
+  return lowMotion;
+}
+
 function ServiceCardHoverStyles() {
   return (
     <style>
@@ -181,6 +206,22 @@ function ServiceCardHoverStyles() {
         .slice:active {
           scale: 0.98;
           filter: brightness(0.9);
+        }
+
+        @media (pointer: coarse), (prefers-reduced-motion: reduce) {
+          .services-page-shell * {
+            transition-duration: 220ms !important;
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+          }
+          .services-glass-heavy {
+            backdrop-filter: blur(10px) saturate(135%) !important;
+            -webkit-backdrop-filter: blur(10px) saturate(135%) !important;
+          }
+          .services-card-shell {
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+          }
         }
       `}
     </style>
@@ -437,17 +478,19 @@ const CARD_VISUALS: Record<number, CardVisual> = {
 
 // ─── Illustration renderer (shared by collapsed + expanded states) ────────
 
-function IllustrationBox({
+const IllustrationBox = memo(function IllustrationBox({
   crop,
   src,
   alt,
   rounded = false,
+  priority = false,
   children,
 }: {
   crop: IllustrationCrop;
   src: string;
   alt: string;
   rounded?: boolean;
+  priority?: boolean;
   children?: React.ReactNode;
 }) {
   return (
@@ -466,6 +509,8 @@ function IllustrationBox({
           <img
             alt={alt}
             src={src}
+            loading={priority ? "eager" : "lazy"}
+            decoding="async"
             className="absolute max-w-none"
             style={{
               left: `${crop.inner.left}%`,
@@ -475,15 +520,15 @@ function IllustrationBox({
             }}
           />
         ) : (
-          <img alt={alt} src={src} className="absolute inset-0 w-full h-full object-cover" />
+          <img alt={alt} src={src} loading={priority ? "eager" : "lazy"} decoding="async" className="absolute inset-0 w-full h-full object-cover" />
         )}
       </div>
       {children}
     </div>
   );
-}
+});
 
-function ArrowOverlay({ arrow, color }: { arrow: ArrowDoodle; color: string }) {
+const ArrowOverlay = memo(function ArrowOverlay({ arrow, color }: { arrow: ArrowDoodle; color: string }) {
   return (
     <svg
       className="absolute pointer-events-none hidden lg:block"
@@ -495,26 +540,26 @@ function ArrowOverlay({ arrow, color }: { arrow: ArrowDoodle; color: string }) {
       <path d={arrow.path} stroke={color} strokeOpacity="0.8" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
-}
+});
 
-function FloatingStar({ style, delay = 0, filled = false, tk }: { style: React.CSSProperties; delay?: number; filled?: boolean; tk: Tokens }) {
+const FloatingStar = memo(function FloatingStar({ style, delay = 0, filled = false, tk, lowMotion = false }: { style: React.CSSProperties; delay?: number; filled?: boolean; tk: Tokens; lowMotion?: boolean }) {
   return (
     <motion.div
       className="absolute hidden sm:block"
       style={{ width: 27, height: 22, ...style }}
-      animate={{ y: [-5, 5, -5], rotate: [0, 15, 0, -15, 0] }}
-      transition={{ y: { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay }, rotate: { duration: 5, repeat: Infinity, ease: "easeInOut", delay } }}
+      animate={lowMotion ? { y: 0, rotate: 0 } : { y: [-5, 5, -5], rotate: [0, 15, 0, -15, 0] }}
+      transition={lowMotion ? { duration: 0 } : { y: { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay }, rotate: { duration: 5, repeat: Infinity, ease: "easeInOut", delay } }}
     >
       <svg className="block size-full" fill="none" viewBox="0 0 26.5 22.4017">
         <path d={svgPathsDark.p13e16b80} fill={filled ? tk.underline : "none"} stroke={tk.starStroke} />
       </svg>
     </motion.div>
   );
-}
+});
 
 // ─── Small shared pieces ────────────────────────────────────────────────────
 
-function NumberBadge({ number, rotation, tk }: { number: string; rotation: number; tk: Tokens }) {
+const NumberBadge = memo(function NumberBadge({ number, rotation, tk }: { number: string; rotation: number; tk: Tokens }) {
   return (
     <div className="flex items-center justify-center shrink-0 size-[44px] sm:size-[52px]">
       <div style={{ transform: `rotate(${rotation}deg)` }} className="relative">
@@ -536,15 +581,15 @@ function NumberBadge({ number, rotation, tk }: { number: string; rotation: numbe
       </div>
     </div>
   );
-}
+});
 
-function ToolPill({ img, alt, tk }: { img: string; alt: string; tk: Tokens }) {
+const ToolPill = memo(function ToolPill({ img, alt, tk }: { img: string; alt: string; tk: Tokens }) {
   return (
     <div className="relative rounded-[6px] shrink-0 size-[52px] sm:size-[58px] overflow-hidden bg-white/5" style={{ border: `1px solid ${tk.toolBorder}`, transition: TRANSITION_CSS }}>
-      <img alt={alt} className="absolute inset-0 w-full h-full object-contain p-2" src={img} />
+      <img alt={alt} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-contain p-2" src={img} />
     </div>
   );
-}
+});
 
 // ─── 1. ServicesHero ────────────────────────────────────────────────────────
 // The headline block below is laid out as one fixed-aspect coordinate frame
@@ -552,7 +597,7 @@ function ToolPill({ img, alt, tk }: { img: string; alt: string; tk: Tokens }) {
 // by percentage, exactly as authored in Figma. This is why it now scales
 // correctly instead of the highlight shapes clipping the text.
 
-function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
+const ServicesHero = memo(function ServicesHero({ isDark, tk, lowMotion }: { isDark: boolean; tk: Tokens; lowMotion: boolean }) {
   const svgPaths = isDark ? svgPathsDark : svgPathsLight;
   const stackImg = isDark ? imgStackDark : imgStackLight;
   const badgeSpinPrimary = isDark ? "rgba(34,211,238,0.95)" : "rgba(39,51,56,0.95)";
@@ -579,8 +624,8 @@ function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
                 background:
                   `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeSpinPrimary} 82deg, transparent 104deg, transparent 360deg)`,
               }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
+              animate={lowMotion ? { rotate: 0 } : { rotate: 360 }}
+              transition={lowMotion ? { duration: 0 } : { duration: 3.8, repeat: Infinity, ease: "linear" }}
             />
             <motion.span
               className="absolute inset-[-80%] rounded-full opacity-75"
@@ -588,8 +633,8 @@ function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
                 background:
                   `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeSpinSecondary} 82deg, transparent 104deg, transparent 360deg)`,
               }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
+              animate={lowMotion ? { rotate: 180 } : { rotate: 360 }}
+              transition={lowMotion ? { duration: 0 } : { duration: 4.6, repeat: Infinity, ease: "linear" }}
             />
             <span
               className="relative z-10 inline-flex rounded-full px-8 py-3 border border-[rgba(196,240,107,0.15)] transition-all duration-300"
@@ -719,21 +764,21 @@ function ServicesHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
       {/* Right: stack image */}
       <motion.div
         className="relative shrink-0 w-full max-w-[480px] lg:max-w-none lg:w-[46%] rounded-[32px] lg:rounded-[60px] overflow-hidden aspect-[4/3] lg:aspect-[8/7]"
-        animate={{ y: [0, -14, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        animate={lowMotion ? { y: 0 } : { y: [0, -14, 0] }}
+        transition={lowMotion ? { duration: 0 } : { duration: 5, repeat: Infinity, ease: "easeInOut" }}
       >
-        <img alt="SocialStack portfolio stack" className="absolute inset-0 w-full h-full object-contain pointer-events-none" src={stackImg} />
-        <FloatingStar style={{ left: "8%", top: "42%" }} delay={0} filled tk={tk} />
-        <FloatingStar style={{ left: "30%", bottom: "14%" }} delay={1.2} tk={tk} />
-        <FloatingStar style={{ right: "18%", top: "12%" }} delay={0.6} tk={tk} />
+        <img alt="SocialStack portfolio stack" loading="eager" decoding="async" className="absolute inset-0 w-full h-full object-contain pointer-events-none" src={stackImg} />
+        <FloatingStar style={{ left: "8%", top: "42%" }} delay={0} filled tk={tk} lowMotion={lowMotion} />
+        <FloatingStar style={{ left: "30%", bottom: "14%" }} delay={1.2} tk={tk} lowMotion={lowMotion} />
+        <FloatingStar style={{ right: "18%", top: "12%" }} delay={0.6} tk={tk} lowMotion={lowMotion} />
       </motion.div>
     </motion.section>
   );
-}
+});
 
 // ─── 2. TaglineBanner ───────────────────────────────────────────────────────
 
-function TaglineBanner({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
+const TaglineBanner = memo(function TaglineBanner({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
   const svgPaths = isDark ? svgPathsDark : svgPathsLight;
   return (
     <motion.div
@@ -758,7 +803,7 @@ function TaglineBanner({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
       </div>
     </motion.div>
   );
-}
+});
 
 // ─── 3. ServiceCard ─────────────────────────────────────────────────────────
 // Note: there is intentionally NO caption text, sticky note, or badge overlaid
@@ -767,20 +812,22 @@ function TaglineBanner({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 // adding our own text on top just duplicates/collides with it. Getting the
 // crop right (via IllustrationBox) is what makes the real artwork show correctly.
 
-function ServiceCard({
+const ServiceCard = memo(function ServiceCard({
   service,
   isDark,
   tk,
   active = false,
+  lowMotion = false,
 }: {
   service: ServiceItem;
   isDark: boolean;
   tk: Tokens;
   active?: boolean;
+  lowMotion?: boolean;
 }) {
   const thumb = isDark ? service.thumbDark : service.thumbLight;
   const visuals = CARD_VISUALS[service.id];
-  const cardStyle = {
+  const cardStyle = useMemo(() => ({
     backgroundColor: isDark ? tk.cardBg : "#eef3e2",
     transition: TRANSITION_CSS,
     boxShadow: active
@@ -790,18 +837,18 @@ function ServiceCard({
       : isDark
         ? "0 18px 46px rgba(0,0,0,0.28)"
         : "0 18px 46px rgba(63,79,74,0.16)",
-  } as CSSProperties;
+  } as CSSProperties), [active, isDark, tk.cardBg]);
   const glowColor = isDark ? "rgba(183,221,103,0.98)" : "rgba(47,79,55,0.98)";
   const glowSoft = isDark ? "rgba(183,221,103,0.28)" : "rgba(47,79,55,0.24)";
   const glassBorder = isDark ? "rgba(230,242,221,0.28)" : "rgba(255,255,255,0.62)";
 
   return (
     <article
-      className="relative h-full w-full overflow-hidden rounded-[34px] p-3 text-left shadow-2xl shadow-black/35 outline-none"
+      className="services-card-shell relative h-full w-full overflow-hidden rounded-[34px] p-3 text-left shadow-2xl shadow-black/35 outline-none"
       style={{
         background: `linear-gradient(135deg, ${glassBorder}, rgba(255,255,255,0.08), ${glassBorder})`,
-        backdropFilter: "blur(18px)",
-        WebkitBackdropFilter: "blur(18px)",
+        backdropFilter: lowMotion ? "blur(10px)" : "blur(18px)",
+        WebkitBackdropFilter: lowMotion ? "blur(10px)" : "blur(18px)",
       }}
     >
       {active && (
@@ -810,8 +857,8 @@ function ServiceCard({
           style={{
             background: `conic-gradient(from 0deg, transparent 0deg, transparent 58deg, ${glowSoft} 78deg, ${glowColor} 108deg, ${glowColor} 122deg, ${glowSoft} 148deg, transparent 172deg, transparent 360deg)`,
           }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 6.5, repeat: Infinity, ease: "linear" }}
+          animate={lowMotion ? { rotate: 0 } : { rotate: 360 }}
+          transition={lowMotion ? { duration: 0 } : { duration: 6.5, repeat: Infinity, ease: "linear" }}
         />
       )}
 
@@ -829,7 +876,7 @@ function ServiceCard({
         </div>
 
         <div className="relative mt-5">
-          <IllustrationBox crop={visuals.expandedCrop} src={thumb} alt={service.title} rounded />
+          <IllustrationBox crop={visuals.expandedCrop} src={thumb} alt={service.title} rounded priority={active} />
         </div>
 
         <div className="relative mt-6 flex min-h-0 flex-1 flex-col">
@@ -865,11 +912,11 @@ function ServiceCard({
       </div>
     </article>
   );
-}
+});
 
 // ─── 4. ServicesSection ─────────────────────────────────────────────────────
 
-function MobileServicesDeck({ isDark, tk, active, onActiveChange }: { isDark: boolean; tk: Tokens; active: number; onActiveChange: (index: number) => void }) {
+const MobileServicesDeck = memo(function MobileServicesDeck({ isDark, tk, active, onActiveChange, lowMotion }: { isDark: boolean; tk: Tokens; active: number; onActiveChange: (index: number) => void; lowMotion: boolean }) {
 
   return (
     <div className="flex flex-col gap-4 sm:hidden">
@@ -898,7 +945,7 @@ function MobileServicesDeck({ isDark, tk, active, onActiveChange }: { isDark: bo
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.42, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: lowMotion ? 0.22 : 0.42, delay: lowMotion ? 0 : index * 0.05, ease: [0.16, 1, 0.3, 1] }}
           >
             <button
               type="button"
@@ -906,8 +953,8 @@ function MobileServicesDeck({ isDark, tk, active, onActiveChange }: { isDark: bo
               className="relative block w-full overflow-hidden rounded-[27px] px-4 py-4 text-left"
               style={{
                 background: isDark ? "rgba(37,50,54,0.92)" : "rgba(238,243,226,0.94)",
-                backdropFilter: "blur(18px)",
-                WebkitBackdropFilter: "blur(18px)",
+                backdropFilter: lowMotion ? "blur(10px)" : "blur(18px)",
+                WebkitBackdropFilter: lowMotion ? "blur(10px)" : "blur(18px)",
               }}
             >
               <div className="flex items-center gap-3">
@@ -924,7 +971,7 @@ function MobileServicesDeck({ isDark, tk, active, onActiveChange }: { isDark: bo
                   className="grid size-9 shrink-0 place-items-center rounded-full border text-2xl leading-none"
                   style={{ color: tk.limeAccent, borderColor: tk.toolBorder }}
                   animate={{ rotate: expanded ? 45 : 0 }}
-                  transition={{ duration: 0.28, ease: "easeOut" }}
+                  transition={{ duration: lowMotion ? 0.18 : 0.28, ease: "easeOut" }}
                 >
                   +
                 </motion.span>
@@ -934,11 +981,11 @@ function MobileServicesDeck({ isDark, tk, active, onActiveChange }: { isDark: bo
                 layout
                 initial={false}
                 animate={{ height: expanded ? "auto" : 0, opacity: expanded ? 1 : 0 }}
-                transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: lowMotion ? 0.24 : 0.38, ease: [0.16, 1, 0.3, 1] }}
                 className="overflow-hidden"
               >
                 <div className="pt-4">
-                  <IllustrationBox crop={visuals.expandedCrop} src={thumb} alt={service.title} rounded />
+                  <IllustrationBox crop={visuals.expandedCrop} src={thumb} alt={service.title} rounded priority={expanded} />
                   <p className="mt-4 font-['Inter',sans-serif] text-[14px] leading-relaxed" style={{ color: tk.descriptionText }}>
                     {service.description}
                   </p>
@@ -965,9 +1012,9 @@ function MobileServicesDeck({ isDark, tk, active, onActiveChange }: { isDark: bo
       })}
     </div>
   );
-}
+});
 
-function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
+const ServicesSection = memo(function ServicesSection({ isDark, tk, lowMotion }: { isDark: boolean; tk: Tokens; lowMotion: boolean }) {
   const [active, setActive] = useState(getServiceIndexFromHash);
   const [hovered, setHovered] = useState<number | null>(null);
   const total = SERVICES.length;
@@ -990,7 +1037,7 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
     [total]
   );
 
-  const arrowStyle = {
+  const arrowStyle = useMemo(() => ({
     borderColor: isDark ? "rgba(230,242,221,0.52)" : "rgba(39,51,56,0.5)",
     color: isDark ? "#e6f2dd" : "#273338",
     background: isDark
@@ -999,11 +1046,11 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
     boxShadow: isDark
       ? "0 14px 30px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.14)"
       : "0 14px 30px rgba(63,79,74,0.14), inset 0 1px 0 rgba(255,255,255,0.72)",
-    backdropFilter: "blur(18px) saturate(160%)",
-    WebkitBackdropFilter: "blur(18px) saturate(160%)",
-  } as CSSProperties;
+    backdropFilter: lowMotion ? "blur(10px) saturate(135%)" : "blur(18px) saturate(160%)",
+    WebkitBackdropFilter: lowMotion ? "blur(10px) saturate(135%)" : "blur(18px) saturate(160%)",
+  } as CSSProperties), [isDark, lowMotion]);
 
-  const arrowButton = (dir: number, label: string, symbol: string, side: "left" | "right") => (
+  const arrowButton = useCallback((dir: number, label: string, symbol: string, side: "left" | "right") => (
     <motion.button
       type="button"
       aria-label={label}
@@ -1012,13 +1059,13 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
         side === "left" ? "left-4 lg:left-10" : "right-4 lg:right-10"
       }`}
       style={arrowStyle}
-      whileHover={{ scale: 1.15 }}
+      whileHover={lowMotion ? { scale: 1.04 } : { scale: 1.15 }}
       whileTap={{ scale: 0.96 }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
+      transition={{ duration: lowMotion ? 0.16 : 0.22, ease: "easeOut" }}
     >
       <span className="-mt-1">{symbol}</span>
     </motion.button>
-  );
+  ), [arrowStyle, go, lowMotion]);
 
   return (
     <section
@@ -1033,7 +1080,7 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
         SERVICES
       </h2>
 
-      <MobileServicesDeck isDark={isDark} tk={tk} active={active} onActiveChange={setActive} />
+      <MobileServicesDeck isDark={isDark} tk={tk} active={active} onActiveChange={setActive} lowMotion={lowMotion} />
 
       <div className="relative mx-auto hidden h-[590px] w-full max-w-[980px] sm:block">
         {arrowButton(-1, "Previous service", "‹", "left")}
@@ -1059,12 +1106,12 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
                 transformStyle: "preserve-3d",
               }}
               onMouseEnter={() => {
-                setHovered(index);
+                setHovered((value) => (value === index ? value : index));
               }}
               onFocus={() => {
-                setHovered(index);
+                setHovered((value) => (value === index ? value : index));
               }}
-              onBlur={() => setHovered(null)}
+              onBlur={() => setHovered((value) => (value === null ? value : null))}
               initial={false}
               animate={{
                 x: `calc(-50% + ${offset * 137}px)`,
@@ -1073,12 +1120,12 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
                 height: isActive ? 775 : 660,
                 scale: isActive ? 0.67 : 0.58,
                 opacity: visible ? 1 : 0,
-                filter: visible ? (isActive ? "blur(0px)" : "blur(4px)") : "blur(8px)",
+                filter: visible ? (isActive || lowMotion ? "blur(0px)" : "blur(4px)") : lowMotion ? "blur(0px)" : "blur(8px)",
                 rotateY: isActive ? 0 : offset < 0 ? 8 : -8,
               }}
-              transition={{ duration: 0.78, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: lowMotion ? 0.36 : 0.78, ease: [0.16, 1, 0.3, 1] }}
             >
-              <ServiceCard service={service} isDark={isDark} tk={tk} active={isActive} />
+              <ServiceCard service={service} isDark={isDark} tk={tk} active={isActive} lowMotion={lowMotion} />
             </motion.button>
           );
         })}
@@ -1102,15 +1149,15 @@ function ServicesSection({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
       </div>
     </section>
   );
-}
+});
 
 // ─── 5. PricingCTA ──────────────────────────────────────────────────────────
 
-function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
-  const sliceStyle = {
+const PricingCTA = memo(function PricingCTA({ isDark, tk, lowMotion }: { isDark: boolean; tk: Tokens; lowMotion: boolean }) {
+  const sliceStyle = useMemo(() => ({
     "--c1": tk.ctaButtonText,
     "--c2": tk.ctaButtonBg,
-  } as CSSProperties;
+  } as CSSProperties), [tk.ctaButtonBg, tk.ctaButtonText]);
   const panelBg = isDark ? "rgba(37,50,54,0.62)" : "rgba(244,238,227,0.42)";
   const panelBorder = isDark ? "rgba(200,231,123,0.24)" : "rgba(39,51,56,0.22)";
   const divider = isDark ? "rgba(230,242,221,0.18)" : "rgba(39,51,56,0.18)";
@@ -1130,8 +1177,8 @@ function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
           background: `linear-gradient(135deg, ${panelBg}, ${isDark ? "rgba(34,45,49,0.34)" : "rgba(230,242,221,0.5)"})`,
           borderColor: panelBorder,
           boxShadow: isDark ? "0 28px 80px rgba(0,0,0,0.26)" : "0 24px 70px rgba(39,51,56,0.12)",
-          backdropFilter: "blur(18px)",
-          WebkitBackdropFilter: "blur(18px)",
+          backdropFilter: lowMotion ? "blur(10px)" : "blur(18px)",
+          WebkitBackdropFilter: lowMotion ? "blur(10px)" : "blur(18px)",
         }}
       >
         <div
@@ -1184,25 +1231,26 @@ function PricingCTA({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
       </div>
     </motion.section>
   );
-}
+});
 
 // ─── Root page ──────────────────────────────────────────────────────────────
 
 export default function ServicesPage() {
   const [theme, setTheme] = usePersistentTheme();
+  const lowMotion = useLowMotionMode();
   const isDark = theme === "dark";
-  const tk = isDark ? DARK : LIGHT;
+  const tk = useMemo(() => (isDark ? DARK : LIGHT), [isDark]);
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden" style={{ backgroundColor: tk.pageBg, transition: "background-color 0.4s ease" }}>
+    <div className="services-page-shell min-h-screen w-full overflow-x-hidden" style={{ backgroundColor: tk.pageBg, transition: "background-color 0.4s ease" }}>
       <ServiceCardHoverStyles />
       <Header theme={theme} onThemeChange={setTheme} />
 
       <main className="w-full max-w-[1360px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 pt-8 sm:pt-14 flex flex-col gap-14 sm:gap-20">
-        <ServicesHero isDark={isDark} tk={tk} />
+        <ServicesHero isDark={isDark} tk={tk} lowMotion={lowMotion} />
         <TaglineBanner isDark={isDark} tk={tk} />
-        <ServicesSection isDark={isDark} tk={tk} />
-        <PricingCTA isDark={isDark} tk={tk} />
+        <ServicesSection isDark={isDark} tk={tk} lowMotion={lowMotion} />
+        <PricingCTA isDark={isDark} tk={tk} lowMotion={lowMotion} />
       </main>
 
       <Footer theme={theme} />
