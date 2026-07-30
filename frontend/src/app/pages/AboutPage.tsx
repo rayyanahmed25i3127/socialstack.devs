@@ -88,6 +88,31 @@ const stagger = {
   show: { transition: { staggerChildren: 0.12, delayChildren: 0.12 } },
 };
 
+function useLowMotionMode() {
+  const [lowMotion, setLowMotion] = useState(false);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const coarsePointer = window.matchMedia("(pointer: coarse)");
+    const lowCoreCount = typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 4;
+
+    const update = () => {
+      setLowMotion(reducedMotion.matches || coarsePointer.matches || lowCoreCount);
+    };
+
+    update();
+    reducedMotion.addEventListener?.("change", update);
+    coarsePointer.addEventListener?.("change", update);
+
+    return () => {
+      reducedMotion.removeEventListener?.("change", update);
+      coarsePointer.removeEventListener?.("change", update);
+    };
+  }, []);
+
+  return lowMotion;
+}
+
 function AnimatedButtonStyles() {
   return (
     <style>
@@ -422,6 +447,43 @@ function AnimatedButtonStyles() {
             contrast(88%)
             drop-shadow(0 0 4px rgba(39,51,56,0.42));
         }
+
+        @media (pointer: coarse), (prefers-reduced-motion: reduce) {
+          .about-page-shell *,
+          .about-page-shell *::before,
+          .about-page-shell *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 220ms !important;
+          }
+
+          .ss-uiverse-icon,
+          .ss-uiverse-letter {
+            animation: none !important;
+          }
+
+          .ss-uiverse-btn:hover,
+          .ss-uiverse-btn:focus-visible,
+          .ss-social-btn:hover,
+          .ss-social-btn:focus-visible {
+            transform: translateY(-1px) scale(1.01);
+          }
+
+          .ss-social-btn:hover::before,
+          .ss-social-btn:focus-visible::before {
+            transform: rotate(20deg) translate(7px, 2px);
+          }
+
+          .about-glass-heavy {
+            backdrop-filter: blur(12px) saturate(135%) !important;
+            -webkit-backdrop-filter: blur(12px) saturate(135%) !important;
+          }
+
+          .about-card-back {
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+          }
+        }
       `}
     </style>
   );
@@ -506,11 +568,27 @@ function RevealText({
   children,
   className,
   desktopOnly = false,
+  lowMotion = false,
 }: {
   children: string;
   className: string;
   desktopOnly?: boolean;
+  lowMotion?: boolean;
 }) {
+  if (lowMotion) {
+    return (
+      <motion.p
+        className={`${desktopOnly ? "hidden md:block" : ""} ${className}`}
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={viewport}
+      >
+        {children}
+      </motion.p>
+    );
+  }
+
   return (
     <motion.p
       className={`${desktopOnly ? "hidden md:block" : ""} ${className}`}
@@ -560,10 +638,12 @@ function BrushHeading({
   children,
   textColor,
   brushFill,
+  lowMotion = false,
 }: {
   children: string;
   textColor: string;
   brushFill: string;
+  lowMotion?: boolean;
 }) {
   return (
     /* outer wrapper handles the rotation */
@@ -571,7 +651,7 @@ function BrushHeading({
       initial={{ opacity: 0, rotate: -8, scale: 0.9, y: 22 }}
       whileInView={{ opacity: 1, rotate: -3.82, scale: 1, y: 0 }}
       viewport={viewport}
-      transition={{ duration: 0.8, ease: easeOutExpo }}
+      transition={{ duration: lowMotion ? 0.45 : 0.8, ease: easeOutExpo }}
       className="relative inline-block px-10 sm:px-16 pt-3 pb-5"
     >
       {/* Vector fills the padded container, preserveAspectRatio="none" stretches it to the right pill-like shape */}
@@ -584,10 +664,10 @@ function BrushHeading({
       <motion.span
         className="relative z-10 font-['Caveat_Brush:Regular',sans-serif] not-italic whitespace-nowrap leading-none block"
         style={{ fontSize: "clamp(1.9rem, 6vw, 4rem)", color: textColor }}
-        initial={{ letterSpacing: "0.08em" }}
+        initial={{ letterSpacing: lowMotion ? "0em" : "0.08em" }}
         whileInView={{ letterSpacing: "0em" }}
         viewport={viewport}
-        transition={{ duration: 0.7, delay: 0.15, ease: easeOutExpo }}
+        transition={{ duration: lowMotion ? 0.25 : 0.7, delay: lowMotion ? 0 : 0.15, ease: easeOutExpo }}
       >
         {children}
       </motion.span>
@@ -599,10 +679,12 @@ function TeamFlipStack({
   cardBg,
   cardBorder,
   dark,
+  lowMotion,
 }: {
   cardBg: string;
   cardBorder: string;
   dark: boolean;
+  lowMotion: boolean;
 }) {
   const total = team.length;
   const [current, setCurrent] = useState(0);
@@ -617,11 +699,12 @@ function TeamFlipStack({
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const handler = (event: MediaQueryListEvent) => setReduced(event.matches);
+    const update = () => setReduced(mq.matches || lowMotion);
+    update();
+    const handler = () => update();
     mq.addEventListener?.("change", handler);
     return () => mq.removeEventListener?.("change", handler);
-  }, []);
+  }, [lowMotion]);
 
   const next = useCallback(() => {
     setCardStage(0);
@@ -703,12 +786,13 @@ function TeamFlipStack({
                   opacity,
                   zIndex,
                   background: `linear-gradient(135deg, ${glassBorder}, rgba(255,255,255,0.08), ${glassBorder})`,
-                  backdropFilter: "blur(18px)",
+                  backdropFilter: reduced ? "blur(10px)" : "blur(18px)",
                   transition: reduced
                     ? "opacity 0.4s ease"
                     : `transform 0.85s ${STACK_EASE}, opacity 0.85s ${STACK_EASE}`,
                   transformStyle: "preserve-3d",
                   pointerEvents: isFront ? "auto" : "none",
+                  willChange: reduced ? "auto" : "transform, opacity",
                 }}
                 aria-label={cardStage > 0 && isFront ? `Show photo of ${member.name}` : `Flip card for ${member.name}`}
               >
@@ -718,7 +802,7 @@ function TeamFlipStack({
                     background: `conic-gradient(from 0deg, transparent 0deg, transparent 72deg, ${glowColor} 112deg, transparent 152deg, transparent 360deg)`,
                   }}
                   animate={isFront ? { rotate: 360 } : { rotate: 0 }}
-                  transition={{ duration: 6.5, repeat: Infinity, ease: "linear" }}
+                  transition={reduced ? { duration: 0 } : { duration: 6.5, repeat: Infinity, ease: "linear" }}
                 />
                 <div
                   className={`relative h-full rounded-[25px] ${cardBg}`}
@@ -754,7 +838,7 @@ function TeamFlipStack({
                     </div>
                   </div>
                   <div
-                    className="absolute inset-0 rounded-[25px] backdrop-blur-xl"
+                    className="about-card-back absolute inset-0 rounded-[25px] backdrop-blur-xl"
                     style={{
                       backgroundColor: dark ? "#263238" : "#e6f2dd",
                       backfaceVisibility: "hidden",
@@ -782,7 +866,7 @@ function TeamFlipStack({
                                 fontSize: "clamp(1.5rem, 4.4vw, 2rem)",
                               }
                         }
-                        transition={{ duration: 0.72, ease: easeOutExpo }}
+                        transition={{ duration: reduced ? 0.35 : 0.72, ease: easeOutExpo }}
                       >
                         {member.greeting}
                       </motion.p>
@@ -794,7 +878,7 @@ function TeamFlipStack({
                           y: cardStage === 2 ? 0 : 14,
                           filter: cardStage === 2 ? "blur(0px)" : "blur(8px)",
                         }}
-                        transition={{ duration: 0.58, delay: cardStage === 2 ? 0.28 : 0, ease: easeOutExpo }}
+                        transition={{ duration: reduced ? 0.28 : 0.58, delay: reduced ? 0 : cardStage === 2 ? 0.28 : 0, ease: easeOutExpo }}
                       >
                         <span className="inline-block opacity-0">{member.greeting}&nbsp;</span>
                         I am {member.bio}
@@ -838,8 +922,8 @@ function TeamFlipStack({
           key={active.name}
           initial={{ opacity: 0, x: 28, filter: "blur(10px)" }}
           animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-          exit={{ opacity: 0, x: -20, filter: "blur(8px)" }}
-          transition={{ duration: 0.48, ease: easeOutExpo }}
+          exit={{ opacity: 0, x: -20, filter: lowMotion ? "blur(0px)" : "blur(8px)" }}
+          transition={{ duration: lowMotion ? 0.25 : 0.48, ease: easeOutExpo }}
           className="text-center lg:text-left"
         >
           <p className="mb-4 font-['Manrope:Medium',sans-serif] text-sm font-medium uppercase tracking-[0.32em]" style={{ color: accent }}>
@@ -883,6 +967,7 @@ function TeamFlipStack({
 
 export default function AboutPage() {
   const [theme, setTheme] = usePersistentTheme();
+  const lowMotion = useLowMotionMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const [navFloating, setNavFloating] = useState(false);
   const { scrollYProgress } = useScroll();
@@ -928,10 +1013,10 @@ export default function AboutPage() {
 
   return (
     <motion.div
-      className={`min-h-screen ${pageBg} transition-colors duration-300 overflow-hidden`}
+      className={`about-page-shell min-h-screen ${pageBg} transition-colors duration-300 overflow-hidden`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.55 }}
+      transition={{ duration: lowMotion ? 0.25 : 0.55 }}
     >
       <AnimatedButtonStyles />
       <motion.div
@@ -947,7 +1032,7 @@ export default function AboutPage() {
       <motion.nav
         initial={{ y: -90, opacity: 0, scale: 0.96, filter: "blur(12px)" }}
         animate={{ y: 0, opacity: 1, scale: 1, filter: "blur(0px)" }}
-        transition={{ duration: 0.85, ease: easeOutExpo }}
+        transition={{ duration: lowMotion ? 0.35 : 0.85, ease: easeOutExpo }}
         className={`fixed left-0 right-0 z-50 mx-auto flex items-center justify-between overflow-hidden border px-4 py-3 transition-all duration-500 ease-out md:px-6 ${
           navFloating
             ? "top-2.5 w-[calc(100%-1.5rem)] max-w-6xl rounded-full sm:w-[calc(100%-2.5rem)]"
@@ -956,16 +1041,16 @@ export default function AboutPage() {
         style={navGlassStyle}
       >
         <motion.div
-          className={`pointer-events-none absolute inset-0 opacity-80 transition-[border-radius] duration-500 ${navFloating ? "rounded-full" : "rounded-none"}`}
+          className={`about-glass-heavy pointer-events-none absolute inset-0 opacity-80 transition-[border-radius] duration-500 ${navFloating ? "rounded-full" : "rounded-none"}`}
           style={{
             background: d
               ? "linear-gradient(100deg, rgba(255,255,255,0.13), transparent 34%, rgba(183,221,103,0.1) 72%, transparent)"
               : "linear-gradient(100deg, rgba(255,255,255,0.72), transparent 38%, rgba(111,127,60,0.16) 76%, transparent)",
           }}
-          animate={{ x: ["-18%", "18%", "-18%"] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          animate={lowMotion ? { x: "0%" } : { x: ["-18%", "18%", "-18%"] }}
+          transition={lowMotion ? { duration: 0 } : { duration: 9, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.a href="/" className="relative z-10 inline-flex" aria-label="Go to home" whileHover={{ rotate: -3, scale: 1.08, filter: "drop-shadow(0 0 12px rgba(183,221,103,0.48))" }} whileTap={{ scale: 0.96 }}>
+        <motion.a href="/" className="relative z-10 inline-flex" aria-label="Go to home" whileHover={lowMotion ? { scale: 1.02 } : { rotate: -3, scale: 1.08, filter: "drop-shadow(0 0 12px rgba(183,221,103,0.48))" }} whileTap={{ scale: 0.96 }}>
           <img
             src={d ? imgIconPlaceholder : imgLogoRecolored}
             alt="SocialStack"
@@ -987,8 +1072,10 @@ export default function AboutPage() {
               className="relative overflow-hidden rounded-full px-4 py-2 transition-colors duration-300 after:absolute after:bottom-1.5 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:rounded-full after:bg-[#b7dd67] after:transition-all after:duration-300 hover:after:w-1/2"
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.12 + index * 0.08 }}
-              whileHover={{
+              transition={{ duration: lowMotion ? 0.2 : 0.45, delay: lowMotion ? 0 : 0.12 + index * 0.08 }}
+              whileHover={lowMotion ? {
+                backgroundColor: d ? "rgba(230,242,221,0.08)" : "rgba(111,127,60,0.1)",
+              } : {
                 y: -3,
                 backgroundColor: d ? "rgba(230,242,221,0.08)" : "rgba(111,127,60,0.1)",
                 boxShadow: d ? "0 8px 22px rgba(183,221,103,0.08)" : "0 8px 22px rgba(63,79,74,0.1)",
@@ -1008,7 +1095,7 @@ export default function AboutPage() {
             className={`relative flex h-8 w-16 items-center rounded-full border transition-all duration-300 ${
               d ? "bg-[#2e3936]/80" : "bg-white/30"
             } border-[rgba(200,231,123,0.25)]`}
-            whileHover={{
+            whileHover={lowMotion ? { scale: 1.02 } : {
               scale: 1.06,
               boxShadow: d ? "0 0 20px rgba(183,221,103,0.2)" : "0 0 20px rgba(111,127,60,0.16)",
             }}
@@ -1026,7 +1113,7 @@ export default function AboutPage() {
           <motion.a
             href="/contact"
             className={`${contactBg} text-[#273338] font-['Manrope:Bold',sans-serif] font-bold text-[13px] px-3.5 py-2 rounded-full transition-all duration-200 sm:text-[15px] sm:px-5 sm:py-2.5`}
-            whileHover={{
+            whileHover={lowMotion ? { scale: 1.02 } : {
               scale: 1.07,
               y: -2,
               boxShadow: d ? "0 10px 25px rgba(183,221,103,0.22)" : "0 10px 25px rgba(63,79,74,0.2)",
@@ -1042,7 +1129,7 @@ export default function AboutPage() {
             onClick={() => setMenuOpen(!menuOpen)}
             className={`${navLink} relative grid h-10 w-10 place-items-center rounded-full transition-all duration-200 hover:bg-white/10 hover:opacity-90 lg:hidden`}
             aria-label="Toggle menu"
-            whileHover={{ scale: 1.06 }}
+            whileHover={lowMotion ? { scale: 1.02 } : { scale: 1.06 }}
             whileTap={{ scale: 0.9 }}
           >
             <span className="relative block h-5 w-6">
@@ -1058,7 +1145,7 @@ export default function AboutPage() {
                         ? { y: 9, opacity: menuOpen ? 0 : 1, scaleX: menuOpen ? 0.25 : 1 }
                         : { y: menuOpen ? 9 : 16, rotate: menuOpen ? -45 : 0 }
                   }
-                  transition={{ duration: 0.32, ease: easeOutExpo }}
+                  transition={{ duration: lowMotion ? 0.18 : 0.32, ease: easeOutExpo }}
                 />
               ))}
             </span>
@@ -1074,8 +1161,8 @@ export default function AboutPage() {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.35, ease: easeOutExpo }}
-          className={`fixed left-0 right-0 top-[88px] z-40 mx-auto flex w-[calc(100%-1.5rem)] max-w-md flex-col gap-4 overflow-hidden rounded-[28px] border px-6 py-6 font-['Manrope:SemiBold',sans-serif] text-xl font-semibold shadow-[0_20px_45px_rgba(0,0,0,0.22)] lg:hidden ${mobMenuBg} ${drawerText}`}
+          transition={{ duration: lowMotion ? 0.2 : 0.35, ease: easeOutExpo }}
+          className={`about-glass-heavy fixed left-0 right-0 top-[88px] z-40 mx-auto flex w-[calc(100%-1.5rem)] max-w-md flex-col gap-4 overflow-hidden rounded-[28px] border px-6 py-6 font-['Manrope:SemiBold',sans-serif] text-xl font-semibold shadow-[0_20px_45px_rgba(0,0,0,0.22)] lg:hidden ${mobMenuBg} ${drawerText}`}
           style={navGlassStyle}
         >
           {[
@@ -1091,7 +1178,7 @@ export default function AboutPage() {
               className={`py-3 border-b ${d ? "border-white/10" : "border-[#253236]/15"} hover:opacity-70 hover:pl-2 transition-all duration-200`}
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ delay: lowMotion ? 0 : index * 0.05 }}
             >
               {item.label}
             </motion.a>
@@ -1118,23 +1205,23 @@ export default function AboutPage() {
         <motion.div className="mb-10 text-left" variants={fadeUp}>
           <motion.div
             className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default"
-            whileHover={{ scale: 1.05, x: 5 }}
+            whileHover={lowMotion ? { scale: 1.02 } : { scale: 1.05, x: 5 }}
           >
             <motion.span
               className="absolute inset-[-80%] rounded-full opacity-90"
               style={{
                 background: `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeGlow[0]} 82deg, transparent 104deg, transparent 360deg)`,
               }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
+              animate={lowMotion ? { rotate: 0 } : { rotate: 360 }}
+              transition={lowMotion ? { duration: 0 } : { duration: 3.8, repeat: Infinity, ease: "linear" }}
             />
             <motion.span
               className="absolute inset-[-80%] rounded-full opacity-75"
               style={{
                 background: `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeGlow[1]} 82deg, transparent 104deg, transparent 360deg)`,
               }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
+              animate={lowMotion ? { rotate: 180 } : { rotate: 360 }}
+              transition={lowMotion ? { duration: 0 } : { duration: 4.6, repeat: Infinity, ease: "linear" }}
             />
             <span className={`relative z-10 inline-flex ${badgeBg} rounded-full px-8 py-3 border border-[rgba(196,240,107,0.15)] transition-all duration-300`}>
               <span className="text-[#c8e77b] font-['Manrope:Medium',sans-serif] font-medium text-xl tracking-[2px]">About Us</span>
@@ -1144,7 +1231,7 @@ export default function AboutPage() {
 
         {/* "Our Story" — centered with real Figma brush */}
         <div className="flex justify-center mb-14">
-          <BrushHeading textColor={headingCol} brushFill={brushFill}>
+          <BrushHeading textColor={headingCol} brushFill={brushFill} lowMotion={lowMotion}>
             Our Story
           </BrushHeading>
         </div>
@@ -1158,6 +1245,7 @@ export default function AboutPage() {
           </MobileStoryText>
           <RevealText
             desktopOnly
+            lowMotion={lowMotion}
             className={`mx-auto font-['Manrope:Bold',sans-serif] font-bold text-base leading-7 md:text-xl md:leading-8 ${aboutText} transition-colors duration-300`}
           >
             The world is online, and your business needs to be too.
@@ -1169,6 +1257,7 @@ export default function AboutPage() {
           </MobileStoryText>
           <RevealText
             desktopOnly
+            lowMotion={lowMotion}
             className={`mx-auto font-['Manrope:Bold',sans-serif] font-bold text-sm leading-[1.85] md:text-lg md:leading-8 ${aboutText} transition-colors duration-300`}
           >
             As a group of students doing our bachelors in Software Engineering, we are no strangers to the tech-related problems everyone faces. Out of a thirst for knowledge, and a burning desire to put ourselves out into the world, we decided to start a personal project: provide our services to the people.
@@ -1180,6 +1269,7 @@ export default function AboutPage() {
           </MobileStoryText>
           <RevealText
             desktopOnly
+            lowMotion={lowMotion}
             className={`mx-auto font-['Manrope:Bold',sans-serif] font-bold text-sm leading-[1.85] md:text-lg md:leading-7 ${aboutText} transition-colors duration-300`}
           >
             Here at Social Stack, we provide solutions for all your tech needs.
@@ -1199,12 +1289,12 @@ export default function AboutPage() {
 
         {/* "The Team" — centered with real Figma brush */}
         <div className="flex justify-center mb-12">
-          <BrushHeading textColor={headingCol} brushFill={brushFill}>
+          <BrushHeading textColor={headingCol} brushFill={brushFill} lowMotion={lowMotion}>
             The Team
           </BrushHeading>
         </div>
 
-        <TeamFlipStack cardBg={cardBg} cardBorder={cardBorder} dark={d} />
+        <TeamFlipStack cardBg={cardBg} cardBorder={cardBorder} dark={d} lowMotion={lowMotion} />
       </motion.section>
 
       {/* ─── FOOTER ─── */}
