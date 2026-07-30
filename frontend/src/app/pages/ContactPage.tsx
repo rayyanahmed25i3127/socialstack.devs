@@ -1,4 +1,4 @@
-import { useState, useRef, type CSSProperties, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { Send } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Header } from "./Header";
@@ -38,8 +38,37 @@ const BUSINESS_TYPES = [
   "Other - Tell us about it in the message box below.",
 ];
 
+function useLowMotionMode() {
+  const [lowMotion, setLowMotion] = useState(false);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const coarsePointer = window.matchMedia("(pointer: coarse)");
+    const lowCoreCount = typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 4;
+
+    const update = () => {
+      setLowMotion(reducedMotion.matches || coarsePointer.matches || lowCoreCount);
+    };
+
+    update();
+    reducedMotion.addEventListener?.("change", update);
+    coarsePointer.addEventListener?.("change", update);
+
+    return () => {
+      reducedMotion.removeEventListener?.("change", update);
+      coarsePointer.removeEventListener?.("change", update);
+    };
+  }, []);
+
+  return lowMotion;
+}
+
 // Floating orb decorations
-function Orb({ style }: { style: CSSProperties }) {
+function Orb({ style, lowMotion }: { style: CSSProperties; lowMotion: boolean }) {
+  if (lowMotion) {
+    return <div className="absolute rounded-full pointer-events-none" style={style} />;
+  }
+
   return (
     <motion.div
       className="absolute rounded-full pointer-events-none"
@@ -105,6 +134,27 @@ function ContactFormStyles() {
       .contact-social-stack:focus-within .contact-social-glass {
         margin-inline: 0.35rem;
         transform: rotate(0deg) translateY(-2px);
+      }
+      @media (pointer: coarse), (prefers-reduced-motion: reduce) {
+        .contact-page-shell * {
+          transition-duration: 220ms !important;
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+        }
+        .contact-social-stack .contact-social-glass,
+        .contact-social-stack:hover .contact-social-glass,
+        .contact-social-stack:focus-within .contact-social-glass {
+          margin-inline: -0.45rem;
+          transform: rotate(calc(var(--r) * 0.55deg));
+        }
+        .contact-glass-heavy {
+          backdrop-filter: blur(12px) saturate(135%) !important;
+          -webkit-backdrop-filter: blur(12px) saturate(135%) !important;
+        }
+        .contact-form-inner {
+          backdrop-filter: blur(14px) saturate(135%) !important;
+          -webkit-backdrop-filter: blur(14px) saturate(135%) !important;
+        }
       }
     `}</style>
   );
@@ -306,10 +356,12 @@ function SelectField({
 
 export default function ContactPage() {
   const [theme, setTheme] = usePersistentTheme();
+  const lowMotion = useLowMotionMode();
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  const tiltFrame = useRef<number | null>(null);
 
   // Controlled form fields
   const [fullName, setFullName] = useState("");
@@ -329,12 +381,27 @@ export default function ContactPage() {
   // Parallax tilt on the form card
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (lowMotion) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientY - rect.top) / rect.height - 0.5) * 6;
     const y = ((e.clientX - rect.left) / rect.width - 0.5) * -6;
-    setTilt({ x, y });
+    if (tiltFrame.current) {
+      cancelAnimationFrame(tiltFrame.current);
+    }
+    tiltFrame.current = requestAnimationFrame(() => {
+      setTilt({ x, y });
+      tiltFrame.current = null;
+    });
   };
   const handleMouseLeave = () => setTilt({ x: 0, y: 0 });
+
+  useEffect(() => {
+    return () => {
+      if (tiltFrame.current) {
+        cancelAnimationFrame(tiltFrame.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async () => {
     setError(null);
@@ -382,13 +449,14 @@ export default function ContactPage() {
 
   return (
     <motion.div
-      className="min-h-screen w-full flex flex-col font-['Outfit',sans-serif] relative overflow-x-hidden"
+      className="contact-page-shell min-h-screen w-full flex flex-col font-['Outfit',sans-serif] relative overflow-x-hidden"
       animate={{ backgroundColor: dark ? "#273338" : "#e6f2dd" }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: lowMotion ? 0.2 : 0.5 }}
     >
       <ContactFormStyles />
       {/* Ambient orbs */}
       <Orb
+        lowMotion={lowMotion}
         style={{
           width: 400,
           height: 400,
@@ -400,6 +468,7 @@ export default function ContactPage() {
         }}
       />
       <Orb
+        lowMotion={lowMotion}
         style={{
           width: 300,
           height: 300,
@@ -433,16 +502,16 @@ export default function ContactPage() {
               style={{
                 background: `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeGlow[0]} 82deg, transparent 104deg, transparent 360deg)`,
               }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
+              animate={lowMotion ? { rotate: 0 } : { rotate: 360 }}
+              transition={lowMotion ? { duration: 0 } : { duration: 3.8, repeat: Infinity, ease: "linear" }}
             />
             <motion.span
               className="absolute inset-[-80%] rounded-full opacity-75"
               style={{
                 background: `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeGlow[1]} 82deg, transparent 104deg, transparent 360deg)`,
               }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
+              animate={lowMotion ? { rotate: 180 } : { rotate: 360 }}
+              transition={lowMotion ? { duration: 0 } : { duration: 4.6, repeat: Infinity, ease: "linear" }}
             />
             <span
               className="relative z-10 inline-flex rounded-full px-6 py-2.5 border transition-all duration-300"
@@ -464,7 +533,7 @@ export default function ContactPage() {
         {/* Form card with 3D tilt */}
         <motion.div
           ref={formRef}
-          className="relative w-full max-w-3xl overflow-hidden rounded-[38px] p-[6px] cursor-default"
+          className="contact-glass-heavy relative w-full max-w-3xl overflow-hidden rounded-[38px] p-[6px] cursor-default"
           style={{
             background: `linear-gradient(135deg, ${glassBorder}, rgba(255,255,255,0.08), ${glassBorder})`,
             boxShadow: dark
@@ -473,25 +542,26 @@ export default function ContactPage() {
             backdropFilter: "blur(18px)",
             WebkitBackdropFilter: "blur(18px)",
             transformStyle: "preserve-3d",
+            willChange: lowMotion ? "auto" : "transform",
           }}
           initial={{ opacity: 0, y: 40, scale: 0.97 }}
           animate={{
             opacity: 1,
             y: 0,
             scale: 1,
-            rotateX: tilt.x,
-            rotateY: tilt.y,
+            rotateX: lowMotion ? 0 : tilt.x,
+            rotateY: lowMotion ? 0 : tilt.y,
           }}
           transition={{
             opacity: { delay: 0.4, duration: 0.6 },
             y: { delay: 0.4, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
             scale: { delay: 0.4, duration: 0.6 },
-            rotateX: { type: "spring", stiffness: 120, damping: 20 },
-            rotateY: { type: "spring", stiffness: 120, damping: 20 },
+            rotateX: lowMotion ? { duration: 0 } : { type: "spring", stiffness: 120, damping: 20 },
+            rotateY: lowMotion ? { duration: 0 } : { type: "spring", stiffness: 120, damping: 20 },
           }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          whileHover={{
+          onMouseMove={lowMotion ? undefined : handleMouseMove}
+          onMouseLeave={lowMotion ? undefined : handleMouseLeave}
+          whileHover={lowMotion ? undefined : {
             boxShadow: dark
               ? "0 34px 85px rgba(0,0,0,0.42), 0 0 28px rgba(183,221,103,0.1)"
               : "0 34px 80px rgba(63,79,74,0.24), 0 0 28px rgba(47,79,55,0.1)",
@@ -502,11 +572,11 @@ export default function ContactPage() {
             style={{
               background: `conic-gradient(from 0deg, transparent 0deg, transparent 70deg, ${formGlow} 112deg, transparent 154deg, transparent 360deg)`,
             }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 8.5, repeat: Infinity, ease: "linear" }}
+            animate={lowMotion ? { rotate: 0 } : { rotate: 360 }}
+            transition={lowMotion ? { duration: 0 } : { duration: 8.5, repeat: Infinity, ease: "linear" }}
           />
           <div
-            className="relative z-10 flex flex-col gap-6 rounded-[32px] px-6 py-10 sm:px-10 lg:px-16"
+            className="contact-form-inner relative z-10 flex flex-col gap-6 rounded-[32px] px-6 py-10 sm:px-10 lg:px-16"
             style={{
               background: dark
                 ? "linear-gradient(145deg, #273338 0%, #2e3936 58%, #273338 100%)"
@@ -531,11 +601,15 @@ export default function ContactPage() {
                 WebkitTextFillColor: "transparent",
               }}
               initial={{ opacity: 0, y: 24, backgroundPosition: "0% 50%" }}
-              animate={{ opacity: 1, y: 0, backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                backgroundPosition: lowMotion ? "50% 50%" : ["0% 50%", "100% 50%", "0% 50%"],
+              }}
               transition={{
                 opacity: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
                 y: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-                backgroundPosition: { duration: 5.2, repeat: Infinity, ease: "easeInOut" },
+                backgroundPosition: lowMotion ? { duration: 0 } : { duration: 5.2, repeat: Infinity, ease: "easeInOut" },
               }}
             >
               Get in touch
@@ -673,8 +747,8 @@ export default function ContactPage() {
                       style={{
                         background: "linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.42) 45%, transparent 70%)",
                       }}
-                      animate={{ x: ["-120%", "120%"] }}
-                      transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+                      animate={lowMotion ? { x: "0%" } : { x: ["-120%", "120%"] }}
+                      transition={lowMotion ? { duration: 0 } : { duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
                     />
                     {submitting ? (
                       <motion.div
