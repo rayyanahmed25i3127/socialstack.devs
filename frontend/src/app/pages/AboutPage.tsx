@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties, type Key } from "react";
+import { memo, useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Sun, Moon, ChevronLeft, ChevronRight, ExternalLink, Github } from "lucide-react";
 import { motion, AnimatePresence, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 import Vector from "../../imports/Vector";
@@ -489,7 +489,7 @@ function AnimatedButtonStyles() {
   );
 }
 
-function AnimatedLinkButton({
+const AnimatedLinkButton = memo(function AnimatedLinkButton({
   href,
   label,
   variant,
@@ -526,21 +526,18 @@ function AnimatedLinkButton({
       </span>
     </a>
   );
-}
+});
 
-function FooterSocialButton({
+const FooterSocialButton = memo(function FooterSocialButton({
   src,
   alt,
   href,
   dark,
-  index,
 }: {
   src: string;
   alt: string;
   href: string;
   dark: boolean;
-  index: number;
-   key?: Key; 
 }) {
   const style = {
     "--social-front": dark ? "#273338" : "rgba(183,221,103,0.85)",
@@ -559,12 +556,12 @@ function FooterSocialButton({
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
     >
-      <img src={src} alt="" className={`ss-social-icon ${dark ? "ss-social-icon-dark" : "ss-social-icon-light"}`} />
+      <img src={src} alt="" loading="lazy" decoding="async" className={`ss-social-icon ${dark ? "ss-social-icon-dark" : "ss-social-icon-light"}`} />
     </a>
   );
-}
+});
 
-function RevealText({
+const RevealText = memo(function RevealText({
   children,
   className,
   desktopOnly = false,
@@ -611,9 +608,9 @@ function RevealText({
       ))}
     </motion.p>
   );
-}
+});
 
-function MobileStoryText({
+const MobileStoryText = memo(function MobileStoryText({
   children,
   className,
 }: {
@@ -631,10 +628,10 @@ function MobileStoryText({
       {children}
     </motion.p>
   );
-}
+});
 
 /* Brush-stroke heading — uses the real Figma SVG path via the Vector component */
-function BrushHeading({
+const BrushHeading = memo(function BrushHeading({
   children,
   textColor,
   brushFill,
@@ -673,7 +670,7 @@ function BrushHeading({
       </motion.span>
     </motion.div>
   );
-}
+});
 
 function TeamFlipStack({
   cardBg,
@@ -801,7 +798,7 @@ function TeamFlipStack({
                   style={{
                     background: `conic-gradient(from 0deg, transparent 0deg, transparent 72deg, ${glowColor} 112deg, transparent 152deg, transparent 360deg)`,
                   }}
-                  animate={isFront ? { rotate: 360 } : { rotate: 0 }}
+                  animate={isFront && !reduced ? { rotate: 360 } : { rotate: 0 }}
                   transition={reduced ? { duration: 0 } : { duration: 6.5, repeat: Infinity, ease: "linear" }}
                 />
                 <div
@@ -823,6 +820,8 @@ function TeamFlipStack({
                       src={member.img}
                       alt={member.name}
                       draggable={false}
+                      loading={isFront ? "eager" : "lazy"}
+                      decoding="async"
                       className="h-full w-full select-none object-cover"
                       style={{
                         objectPosition: member.imgPos,
@@ -897,7 +896,7 @@ function TeamFlipStack({
             onClick={prev}
             className="grid h-10 w-10 place-items-center rounded-full border transition-colors"
             style={{ color: accent, borderColor: `${accent}73` }}
-            whileHover={{ scale: 1.08, x: -2 }}
+            whileHover={lowMotion ? { scale: 1.02 } : { scale: 1.08, x: -2 }}
             whileTap={{ scale: 0.94 }}
             aria-label="Previous team member"
           >
@@ -908,7 +907,7 @@ function TeamFlipStack({
             onClick={next}
             className="grid h-10 w-10 place-items-center rounded-full border transition-colors"
             style={{ color: accent, borderColor: `${accent}73` }}
-            whileHover={{ scale: 1.08, x: 2 }}
+            whileHover={lowMotion ? { scale: 1.02 } : { scale: 1.08, x: 2 }}
             whileTap={{ scale: 0.94 }}
             aria-label="Next team member"
           >
@@ -920,7 +919,7 @@ function TeamFlipStack({
       <AnimatePresence mode="wait">
         <motion.div
           key={active.name}
-          initial={{ opacity: 0, x: 28, filter: "blur(10px)" }}
+          initial={lowMotion ? { opacity: 0, x: 0, filter: "blur(0px)" } : { opacity: 0, x: 28, filter: "blur(10px)" }}
           animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
           exit={{ opacity: 0, x: -20, filter: lowMotion ? "blur(0px)" : "blur(8px)" }}
           transition={{ duration: lowMotion ? 0.25 : 0.48, ease: easeOutExpo }}
@@ -976,7 +975,8 @@ export default function AboutPage() {
   const d = isDark;
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    setNavFloating(latest > 0.05);
+    const nextFloating = latest > 0.05;
+    setNavFloating((current) => (current === nextFloating ? current : nextFloating));
   });
 
   // ── theme tokens ──
@@ -993,13 +993,19 @@ export default function AboutPage() {
   const mobMenuBg  = d ? "bg-[#2e3936]"                : "bg-[#4a5e59]";
   const footerBg   = d ? "bg-[rgba(183,221,103,0.82)]" : "bg-[#3e4f4a]";
   const footerText = d ? "text-[#273338]"              : "text-[rgba(183,221,103,0.85)]";
-  const badgeGlow = d
-    ? ["rgba(34,211,238,0.95)", "rgba(103,232,249,0.92)"]
-    : ["rgba(39,51,56,0.9)", "rgba(63,79,74,0.82)"];
-  const socialArr  = d
-    ? [imgGmailDark,  imgInstagramDark,  imgLinkedinDark]
-    : [imgGmailLight, imgInstagramLight, imgLinkedinLight];
-  const navGlassStyle = {
+  const badgeGlow = useMemo(
+    () => d
+      ? ["rgba(34,211,238,0.95)", "rgba(103,232,249,0.92)"]
+      : ["rgba(39,51,56,0.9)", "rgba(63,79,74,0.82)"],
+    [d],
+  );
+  const socialArr = useMemo(
+    () => d
+      ? [imgGmailDark, imgInstagramDark, imgLinkedinDark]
+      : [imgGmailLight, imgInstagramLight, imgLinkedinLight],
+    [d],
+  );
+  const navGlassStyle = useMemo(() => ({
     background: d
       ? "linear-gradient(135deg, rgba(39,51,56,0.58), rgba(46,57,54,0.34))"
       : "linear-gradient(135deg, rgba(230,242,221,0.64), rgba(255,255,255,0.24))",
@@ -1009,7 +1015,7 @@ export default function AboutPage() {
       : "0 20px 55px rgba(63,79,74,0.15), inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(111,127,60,0.12)",
     backdropFilter: "blur(24px) saturate(170%)",
     WebkitBackdropFilter: "blur(24px) saturate(170%)",
-  } as CSSProperties;
+  } as CSSProperties), [d]);
 
   return (
     <motion.div
@@ -1054,6 +1060,7 @@ export default function AboutPage() {
           <img
             src={d ? imgIconPlaceholder : imgLogoRecolored}
             alt="SocialStack"
+            decoding="async"
             className="h-10 w-auto object-contain transition-transform duration-200 sm:h-11 md:h-12"
           />
         </motion.a>
@@ -1309,7 +1316,7 @@ export default function AboutPage() {
 
           <motion.div className="flex-1 max-w-2xl" variants={fadeUp}>
             <div className="flex items-center gap-3 mb-5">
-              <img src={imgLogoRecolored} alt="SocialStack" className="h-16 w-auto object-contain" />
+              <img src={imgLogoRecolored} alt="SocialStack" loading="lazy" decoding="async" className="h-16 w-auto object-contain" />
               <span className={`font-['Caveat_Brush:Regular',sans-serif] not-italic text-4xl ${footerText}`}>
                 SocialStack
               </span>
@@ -1326,7 +1333,6 @@ export default function AboutPage() {
                   alt={["Gmail", "Instagram", "LinkedIn"][i]}
                   href={["mailto:ss.socialstack@gmail.com", "https://www.instagram.com/socialstack.dev/", "https://www.linkedin.com/company/socialstack-dev/"][i]}
                   dark={d}
-                  index={i}
                 />
               ))}
             </div>
@@ -1348,7 +1354,7 @@ export default function AboutPage() {
                 href={link.href}
                 className={`group relative w-fit overflow-hidden font-['Outfit:Light',sans-serif] font-light text-xl md:text-2xl ${footerText} leading-[50px] transition-all duration-200 hover:opacity-80`}
                 variants={fadeUp}
-                whileHover={{ x: 8 }}
+                whileHover={lowMotion ? { x: 2 } : { x: 8 }}
               >
                 <span className="relative z-10">{link.label}</span>
                 <span

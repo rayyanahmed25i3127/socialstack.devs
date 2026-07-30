@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { Send } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Header } from "./Header";
@@ -64,7 +64,7 @@ function useLowMotionMode() {
 }
 
 // Floating orb decorations
-function Orb({ style, lowMotion }: { style: CSSProperties; lowMotion: boolean }) {
+const Orb = memo(function Orb({ style, lowMotion }: { style: CSSProperties; lowMotion: boolean }) {
   if (lowMotion) {
     return <div className="absolute rounded-full pointer-events-none" style={style} />;
   }
@@ -77,10 +77,10 @@ function Orb({ style, lowMotion }: { style: CSSProperties; lowMotion: boolean })
       transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
     />
   );
-}
+});
 
 // Compact stacked glass social icon card
-function SocialIcon({
+const SocialIcon = memo(function SocialIcon({
   src,
   alt,
   href = "#",
@@ -106,7 +106,7 @@ function SocialIcon({
       } as CSSProperties}
       aria-label={alt}
     >
-      <img src={src} alt="" className="relative z-10 h-8 w-8 object-contain transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105" />
+      <img src={src} alt="" loading="lazy" decoding="async" className="relative z-10 h-8 w-8 object-contain transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105" />
       <span
         className="absolute bottom-0 left-0 flex h-7 w-full items-center justify-center text-[10px] font-light tracking-[0.08em]"
         style={{
@@ -118,7 +118,7 @@ function SocialIcon({
       </span>
     </a>
   );
-}
+});
 
 function ContactFormStyles() {
   return (
@@ -161,7 +161,7 @@ function ContactFormStyles() {
 }
 
 // Animated form field
-function FormField({
+const FormField = memo(function FormField({
   label,
   type = "text",
   placeholder,
@@ -224,10 +224,10 @@ function FormField({
       </motion.div>
     </motion.div>
   );
-}
+});
 
 // Animated textarea field
-function TextareaField({
+const TextareaField = memo(function TextareaField({
   label,
   placeholder,
   dark,
@@ -283,9 +283,9 @@ function TextareaField({
       </motion.div>
     </motion.div>
   );
-}
+});
 
-function SelectField({
+const SelectField = memo(function SelectField({
   label,
   dark,
   value,
@@ -352,7 +352,7 @@ function SelectField({
       </motion.div>
     </motion.div>
   );
-}
+});
 
 export default function ContactPage() {
   const [theme, setTheme] = usePersistentTheme();
@@ -372,15 +372,36 @@ export default function ContactPage() {
   const [query, setQuery] = useState("");
 
   const dark = theme === "dark";
-  const badgeGlow = dark
-    ? ["rgba(34,211,238,0.95)", "rgba(103,232,249,0.92)"]
-    : ["rgba(39,51,56,0.9)", "rgba(63,79,74,0.82)"];
-  const formGlow = dark ? "rgba(183,221,103,0.95)" : "rgba(47,79,55,0.95)";
-  const glassBorder = dark ? "rgba(230,242,221,0.28)" : "rgba(255,255,255,0.58)";
+  const badgeGlow = useMemo(
+    () => dark
+      ? ["rgba(34,211,238,0.95)", "rgba(103,232,249,0.92)"]
+      : ["rgba(39,51,56,0.9)", "rgba(63,79,74,0.82)"],
+    [dark],
+  );
+  const formGlow = useMemo(() => (dark ? "rgba(183,221,103,0.95)" : "rgba(47,79,55,0.95)"), [dark]);
+  const glassBorder = useMemo(() => (dark ? "rgba(230,242,221,0.28)" : "rgba(255,255,255,0.58)"), [dark]);
+  const topOrbStyle = useMemo<CSSProperties>(() => ({
+    width: 400,
+    height: 400,
+    top: -80,
+    right: -100,
+    background: dark
+      ? "radial-gradient(circle, rgba(184,221,103,0.07) 0%, transparent 70%)"
+      : "radial-gradient(circle, rgba(111,127,60,0.08) 0%, transparent 70%)",
+  }), [dark]);
+  const bottomOrbStyle = useMemo<CSSProperties>(() => ({
+    width: 300,
+    height: 300,
+    bottom: 200,
+    left: -80,
+    background: dark
+      ? "radial-gradient(circle, rgba(200,231,123,0.05) 0%, transparent 70%)"
+      : "radial-gradient(circle, rgba(82,104,98,0.06) 0%, transparent 70%)",
+  }), [dark]);
 
   // Parallax tilt on the form card
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
     if (lowMotion) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientY - rect.top) / rect.height - 0.5) * 6;
@@ -392,8 +413,8 @@ export default function ContactPage() {
       setTilt({ x, y });
       tiltFrame.current = null;
     });
-  };
-  const handleMouseLeave = () => setTilt({ x: 0, y: 0 });
+  }, [lowMotion]);
+  const handleMouseLeave = useCallback(() => setTilt({ x: 0, y: 0 }), []);
 
   useEffect(() => {
     return () => {
@@ -403,7 +424,19 @@ export default function ContactPage() {
     };
   }, []);
 
-  const handleSubmit = async () => {
+  const handleFullNameChange = useCallback((value: string) => {
+    setFullName(value.replace(/[^A-Za-z\s]/g, ""));
+  }, []);
+
+  const handleContactNumberChange = useCallback((value: string) => {
+    setContactNumber(value.replace(/\D/g, ""));
+  }, []);
+
+  const handleBusinessTypeChange = useCallback((value: string) => {
+    setBusinessType(value);
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
     setError(null);
 
     if (!fullName.trim() || !contactNumber.trim() || !email.trim() || !businessName.trim() || !businessType || !query.trim()) {
@@ -445,7 +478,7 @@ export default function ContactPage() {
       setSubmitting(false);
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again later.");
     }
-  };
+  }, [businessName, businessType, contactNumber, email, fullName, query]);
 
   return (
     <motion.div
@@ -457,27 +490,11 @@ export default function ContactPage() {
       {/* Ambient orbs */}
       <Orb
         lowMotion={lowMotion}
-        style={{
-          width: 400,
-          height: 400,
-          top: -80,
-          right: -100,
-          background: dark
-            ? "radial-gradient(circle, rgba(184,221,103,0.07) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(111,127,60,0.08) 0%, transparent 70%)",
-        }}
+        style={topOrbStyle}
       />
       <Orb
         lowMotion={lowMotion}
-        style={{
-          width: 300,
-          height: 300,
-          bottom: 200,
-          left: -80,
-          background: dark
-            ? "radial-gradient(circle, rgba(200,231,123,0.05) 0%, transparent 70%)"
-            : "radial-gradient(circle, rgba(82,104,98,0.06) 0%, transparent 70%)",
-        }}
+        style={bottomOrbStyle}
       />
 
       <Header theme={theme} onThemeChange={setTheme} />
@@ -628,7 +645,7 @@ export default function ContactPage() {
                 placeholder="Please enter your full name..."
                 dark={dark}
                 value={fullName}
-                onChange={(value) => setFullName(value.replace(/[^A-Za-z\s]/g, ""))}
+                onChange={handleFullNameChange}
                 className="flex-1"
               />
               <FormField
@@ -638,7 +655,7 @@ export default function ContactPage() {
                 placeholder="Please enter your contact number..."
                 dark={dark}
                 value={contactNumber}
-                onChange={(value) => setContactNumber(value.replace(/\D/g, ""))}
+                onChange={handleContactNumberChange}
                 className="flex-1"
               />
             </div>
@@ -669,9 +686,7 @@ export default function ContactPage() {
               label="What is your business about?"
               dark={dark}
               value={businessType}
-              onChange={(value) => {
-                setBusinessType(value);
-              }}
+              onChange={handleBusinessTypeChange}
               options={BUSINESS_TYPES}
             />
 
