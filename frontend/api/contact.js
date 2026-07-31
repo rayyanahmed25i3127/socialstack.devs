@@ -45,6 +45,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Please enter a valid email address." });
   }
 
+  if (message.length < 10 || message.length > 2000) {
+    return res.status(400).json({ error: "Please enter a message between 10 and 2000 characters." });
+  }
+
   if (!resend) {
     return res.status(500).json({
       error: "Server is not configured yet. Add RESEND_API_KEY in Vercel environment variables.",
@@ -87,9 +91,6 @@ export default async function handler(req, res) {
       if (!crmRes.ok) {
         const crmError = await crmRes.json().catch(() => null);
         console.error("CRM lead intake error:", crmError || crmRes.statusText);
-        return res.status(502).json({
-          error: "We could not save your inquiry right now. Please try again later.",
-        });
       }
     }
 

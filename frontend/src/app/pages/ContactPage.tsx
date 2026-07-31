@@ -440,6 +440,11 @@ export default function ContactPage() {
       return;
     }
 
+    if (query.trim().length < 10 || query.trim().length > 2000) {
+      setError("Please enter a message between 10 and 2000 characters.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const res = await fetch("/api/contact", {
