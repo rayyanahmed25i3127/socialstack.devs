@@ -1,0 +1,24 @@
+{
+  "name": "Social Stack",
+  "short_name": "Social Stack",
+  "icons": [
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#223136",
+  "background_color": "#223136",
+  "display": "standalone"
+}
