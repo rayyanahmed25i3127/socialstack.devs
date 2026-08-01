@@ -1,21 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 520" role="img" aria-label="Social Stack">
-  <rect width="420" height="520" fill="#000000"/>
-  <path
-    d="M351 174 L351 122 L210 38 L68 122 L68 218 L99 237 L198 180 C216 169 237 169 255 180 L284 198"
-    fill="none"
-    stroke="#b9e664"
-    stroke-width="34"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <path
-    d="M136 292 C154 304 171 304 189 294 L322 216 L351 234 L351 338 L211 420 L198 413 L138 449 L138 389 L68 348 L68 286"
-    fill="none"
-    stroke="#b9e664"
-    stroke-width="34"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <circle cx="284" cy="198" r="24" fill="#b9e664"/>
-  <circle cx="136" cy="292" r="24" fill="#b9e664"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Social Stack">
+  <rect width="512" height="512" rx="112" fill="#223136"/>
+  <g transform="translate(56 30) scale(0.95 0.95)">
+    <path
+      d="M351 174 L351 122 L210 38 L68 122 L68 218 L99 237 L198 180 C216 169 237 169 255 180 L284 198"
+      fill="none"
+      stroke="#b9e664"
+      stroke-width="34"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M136 292 C154 304 171 304 189 294 L322 216 L351 234 L351 338 L211 420 L198 413 L138 449 L138 389 L68 348 L68 286"
+      fill="none"
+      stroke="#b9e664"
+      stroke-width="34"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="284" cy="198" r="24" fill="#b9e664"/>
+    <circle cx="136" cy="292" r="24" fill="#b9e664"/>
+  </g>
 </svg>
