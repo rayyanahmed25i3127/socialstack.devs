@@ -203,11 +203,11 @@ const heroLogoPathOne =
 const heroLogoPathTwo =
   "M136 292 C154 304 171 304 189 294 L322 216 L351 234 L351 338 L211 420 L198 413 L138 449 L138 389 L68 348 L68 286";
 
-function HeroAnimatedLogo() {
+function HeroAnimatedLogo({ isLight }: { isLight: boolean }) {
   return (
     <svg
       aria-hidden="true"
-      className="hero-animated-logo size-full"
+      className={`hero-animated-logo size-full ${isLight ? "hero-animated-logo-light" : ""}`}
       viewBox="0 0 420 520"
       preserveAspectRatio="none"
       fill="none"
@@ -292,7 +292,7 @@ function HeroGlobeVisual({ isLight, sizeClassName = "w-[460px] h-[460px]", wrapp
             whileHover={{ scale: 1.04 }}
             transition={{ duration: 2, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           >
-            <HeroAnimatedLogo />
+            <HeroAnimatedLogo isLight={isLight} />
           </motion.div>
         </motion.div>
       </motion.div>
@@ -2501,8 +2501,20 @@ export default function HomePage() {
           65%, 100% { opacity: 0.72; transform: scale(1); }
         }
         .hero-animated-logo {
+          --hero-logo-base: #b7dd67;
+          --hero-logo-highlight: #d9ff75;
+          --hero-logo-soft-shadow: rgba(183, 221, 103, 0.18);
+          --hero-logo-strong-shadow: rgba(217, 255, 117, 0.88);
+          --hero-logo-wide-shadow: rgba(183, 221, 103, 0.52);
           overflow: visible;
           background: transparent;
+        }
+        .hero-animated-logo-light {
+          --hero-logo-base: #3f5226;
+          --hero-logo-highlight: #263818;
+          --hero-logo-soft-shadow: rgba(38, 56, 24, 0.2);
+          --hero-logo-strong-shadow: rgba(38, 56, 24, 0.64);
+          --hero-logo-wide-shadow: rgba(63, 82, 38, 0.34);
         }
         .hero-logo-half {
           opacity: 1;
@@ -2511,36 +2523,36 @@ export default function HomePage() {
         .hero-logo-ghost,
         .hero-logo-assemble-line {
           fill: none;
-          stroke: #b7dd67;
+          stroke: var(--hero-logo-base);
           stroke-width: 14;
           stroke-linecap: round;
           stroke-linejoin: round;
         }
         .hero-logo-static {
           opacity: 0.52;
-          filter: drop-shadow(0 0 12px rgba(183, 221, 103, 0.18));
+          filter: drop-shadow(0 0 12px var(--hero-logo-soft-shadow));
         }
         .hero-logo-static-dot {
-          fill: #b7dd67;
+          fill: var(--hero-logo-base);
           opacity: 0.52;
-          filter: drop-shadow(0 0 12px rgba(183, 221, 103, 0.18));
+          filter: drop-shadow(0 0 12px var(--hero-logo-soft-shadow));
         }
         .hero-logo-ghost {
           opacity: 0.9;
-          filter: drop-shadow(0 0 14px rgba(183, 221, 103, 0.18));
+          filter: drop-shadow(0 0 14px var(--hero-logo-soft-shadow));
         }
         .hero-logo-ghost-dot {
-          fill: #b7dd67;
+          fill: var(--hero-logo-base);
           opacity: 0.9;
-          filter: drop-shadow(0 0 14px rgba(183, 221, 103, 0.18));
+          filter: drop-shadow(0 0 14px var(--hero-logo-soft-shadow));
         }
         .hero-logo-assemble-line {
-          stroke: #d9ff75;
+          stroke: var(--hero-logo-highlight);
           stroke-width: 17;
           stroke-dasharray: 1;
           stroke-dashoffset: 1;
           opacity: 0;
-          filter: drop-shadow(0 0 8px rgba(217, 255, 117, 0.88)) drop-shadow(0 0 24px rgba(183, 221, 103, 0.52));
+          filter: drop-shadow(0 0 8px var(--hero-logo-strong-shadow)) drop-shadow(0 0 24px var(--hero-logo-wide-shadow));
         }
         .hero-logo-assemble-line-1 {
           animation: heroLogoLineOne 4.8s cubic-bezier(0.2, 0.9, 0.24, 1) infinite;
@@ -2549,11 +2561,11 @@ export default function HomePage() {
           animation: heroLogoLineTwo 4.8s cubic-bezier(0.2, 0.9, 0.24, 1) infinite;
         }
         .hero-logo-dot {
-          fill: #b7dd67;
+          fill: var(--hero-logo-base);
           opacity: 0.72;
           transform-box: fill-box;
           transform-origin: center;
-          filter: drop-shadow(0 0 10px rgba(183, 221, 103, 0.18));
+          filter: drop-shadow(0 0 10px var(--hero-logo-soft-shadow));
         }
         .hero-logo-dot-1 {
           animation: heroLogoDotOne 4.8s ease-in-out infinite;
