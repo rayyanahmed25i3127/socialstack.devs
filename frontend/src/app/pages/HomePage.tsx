@@ -11,7 +11,6 @@ import { usePersistentTheme } from "../usePersistentTheme";
 
 import heroSvgPaths from "../../imports/home-hero-section/paths";
 import heroImgLogo from "../../imports/home-shared/logo-photo.png";
-import heroImgGlobe from "../../imports/home-hero-section/hero-globe-dark.png";
 import whatWeDoSvgPaths from "../../imports/home-what-we-do-section/paths";
 import whatWeDoImgFrame28 from "../../imports/home-what-we-do-section/project-web-dev.png";
 import whatWeDoImgFrame29 from "../../imports/home-what-we-do-section/project-ads-branding.png";
@@ -22,7 +21,6 @@ import howSvgPaths from "../../imports/home-how-social-stack-section/paths";
 import ctaSvgPaths from "../../imports/home-cta-section/paths";
 import lHeroSvgPaths from "../../imports/home-light-hero-section/paths";
 import lHeroImgFrame25 from "../../imports/home-light-hero-section/hero-photo.png";
-import lHeroImgGlobe from "../../imports/home-light-hero-section/hero-globe-light.png";
 import lHeroImgFrame28 from "../../imports/home-light-hero-section/project-web-dev.png";
 import lHeroImgFrame29 from "../../imports/home-light-hero-section/project-ads-branding.png";
 import lHeroImgFrame30 from "../../imports/home-light-hero-section/project-ui-ux.png";
@@ -200,9 +198,46 @@ function Hero_Buttons() {
 // resolved yet on first paint for content that's already on-screen, which is
 // why the old version only reliably animated on the *second* mount (theme
 // toggle) and not the first (page load).
-function HeroGlobeVisual({ isLight, sizeClassName = "w-[460px] h-[460px]", wrapperClassName = "", floatDelay = 0 }) {
-  const src = isLight ? lHeroImgGlobe : heroImgGlobe;
+const heroLogoPathOne =
+  "M351 174 L351 122 L210 38 L68 122 L68 218 L99 237 L198 180 C216 169 237 169 255 180 L284 198";
+const heroLogoPathTwo =
+  "M136 292 C154 304 171 304 189 294 L322 216 L351 234 L351 338 L211 420 L198 413 L138 449 L138 389 L68 348 L68 286";
 
+function HeroAnimatedLogo() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="hero-animated-logo size-full"
+      viewBox="0 0 420 520"
+      preserveAspectRatio="none"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path className="hero-logo-static" d={heroLogoPathOne} />
+      <path className="hero-logo-static" d={heroLogoPathTwo} />
+      <circle className="hero-logo-static-dot" cx="284" cy="198" r="18" />
+      <circle className="hero-logo-static-dot" cx="136" cy="292" r="18" />
+      <g className="hero-logo-half">
+        <animate attributeName="opacity" dur="4.8s" values="0.45;1;1;0.45" keyTimes="0;0.17;0.84;1" repeatCount="indefinite" />
+        <animateTransform attributeName="transform" type="translate" dur="4.8s" values="42 -18;0 0;0 0;42 -18" keyTimes="0;0.17;0.84;1" repeatCount="indefinite" />
+        <path className="hero-logo-ghost" d={heroLogoPathOne} />
+        <circle className="hero-logo-ghost-dot" cx="284" cy="198" r="18" />
+      </g>
+      <g className="hero-logo-half">
+        <animate attributeName="opacity" dur="4.8s" values="0.45;1;1;0.45" keyTimes="0;0.21;0.84;1" repeatCount="indefinite" />
+        <animateTransform attributeName="transform" type="translate" dur="4.8s" values="-42 18;0 0;0 0;-42 18" keyTimes="0;0.21;0.84;1" repeatCount="indefinite" />
+        <path className="hero-logo-ghost" d={heroLogoPathTwo} />
+        <circle className="hero-logo-ghost-dot" cx="136" cy="292" r="18" />
+      </g>
+      <path className="hero-logo-assemble-line hero-logo-assemble-line-1" pathLength={1} d={heroLogoPathOne} />
+      <path className="hero-logo-assemble-line hero-logo-assemble-line-2" pathLength={1} d={heroLogoPathTwo} />
+      <circle className="hero-logo-dot hero-logo-dot-1" cx="284" cy="198" r="18" />
+      <circle className="hero-logo-dot hero-logo-dot-2" cx="136" cy="292" r="18" />
+    </svg>
+  );
+}
+
+function HeroGlobeVisual({ isLight, sizeClassName = "w-[460px] h-[460px]", wrapperClassName = "", floatDelay = 0 }) {
   const scrollRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: scrollRef, offset: ["start end", "end start"] });
   const scrollY = useTransform(scrollYProgress, [0, 1], [40, -40]);
@@ -249,16 +284,16 @@ function HeroGlobeVisual({ isLight, sizeClassName = "w-[460px] h-[460px]", wrapp
           }}
         />
         <motion.div style={{ x: springX, y: springY }} className="relative size-full">
-          <motion.img
-            src={src}
-            alt="Illustration of a connected global network"
-            draggable={false}
-            className="relative size-full object-contain select-none drop-shadow-2xl"
+          <motion.div
+            aria-label="Animated Social Stack logo"
+            className="relative size-full select-none drop-shadow-2xl"
             initial={{ opacity: 0, scale: 0, rotate: -10 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             whileHover={{ scale: 1.04 }}
             transition={{ duration: 2, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-          />
+          >
+            <HeroAnimatedLogo />
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>
@@ -2445,6 +2480,87 @@ export default function HomePage() {
         @keyframes sparkleTwinkle { 0%, 100% { opacity: 0; transform: scale(0.4) rotate(45deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
         @keyframes spin360 { to { transform: rotate(360deg); } }
         @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes heroLogoLineOne {
+          0%, 20% { opacity: 0; stroke-dashoffset: 1; }
+          40%, 84% { opacity: 1; stroke-dashoffset: 0; }
+          100% { opacity: 0.18; stroke-dashoffset: 0; }
+        }
+        @keyframes heroLogoLineTwo {
+          0%, 26% { opacity: 0; stroke-dashoffset: 1; }
+          48%, 84% { opacity: 1; stroke-dashoffset: 0; }
+          100% { opacity: 0.18; stroke-dashoffset: 0; }
+        }
+        @keyframes heroLogoDotOne {
+          0%, 34% { opacity: 0.72; transform: scale(1); }
+          43% { opacity: 1; transform: scale(1.28); }
+          57%, 100% { opacity: 0.72; transform: scale(1); }
+        }
+        @keyframes heroLogoDotTwo {
+          0%, 42% { opacity: 0.72; transform: scale(1); }
+          51% { opacity: 1; transform: scale(1.28); }
+          65%, 100% { opacity: 0.72; transform: scale(1); }
+        }
+        .hero-animated-logo {
+          overflow: visible;
+          background: transparent;
+        }
+        .hero-logo-half {
+          opacity: 1;
+        }
+        .hero-logo-static,
+        .hero-logo-ghost,
+        .hero-logo-assemble-line {
+          fill: none;
+          stroke: #b7dd67;
+          stroke-width: 14;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+        .hero-logo-static {
+          opacity: 0.52;
+          filter: drop-shadow(0 0 12px rgba(183, 221, 103, 0.18));
+        }
+        .hero-logo-static-dot {
+          fill: #b7dd67;
+          opacity: 0.52;
+          filter: drop-shadow(0 0 12px rgba(183, 221, 103, 0.18));
+        }
+        .hero-logo-ghost {
+          opacity: 0.9;
+          filter: drop-shadow(0 0 14px rgba(183, 221, 103, 0.18));
+        }
+        .hero-logo-ghost-dot {
+          fill: #b7dd67;
+          opacity: 0.9;
+          filter: drop-shadow(0 0 14px rgba(183, 221, 103, 0.18));
+        }
+        .hero-logo-assemble-line {
+          stroke: #d9ff75;
+          stroke-width: 17;
+          stroke-dasharray: 1;
+          stroke-dashoffset: 1;
+          opacity: 0;
+          filter: drop-shadow(0 0 8px rgba(217, 255, 117, 0.88)) drop-shadow(0 0 24px rgba(183, 221, 103, 0.52));
+        }
+        .hero-logo-assemble-line-1 {
+          animation: heroLogoLineOne 4.8s cubic-bezier(0.2, 0.9, 0.24, 1) infinite;
+        }
+        .hero-logo-assemble-line-2 {
+          animation: heroLogoLineTwo 4.8s cubic-bezier(0.2, 0.9, 0.24, 1) infinite;
+        }
+        .hero-logo-dot {
+          fill: #b7dd67;
+          opacity: 0.72;
+          transform-box: fill-box;
+          transform-origin: center;
+          filter: drop-shadow(0 0 10px rgba(183, 221, 103, 0.18));
+        }
+        .hero-logo-dot-1 {
+          animation: heroLogoDotOne 4.8s ease-in-out infinite;
+        }
+        .hero-logo-dot-2 {
+          animation: heroLogoDotTwo 4.8s ease-in-out infinite;
+        }
         .home-slice {
           --size-letter: clamp(14px, 1.7vw, 20px);
           padding: 0.5em 1em;
