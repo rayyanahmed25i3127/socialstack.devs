@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Social Stack">
-  <rect width="512" height="512" rx="112" fill="#223136"/>
+  <rect width="512" height="512" fill="#223136"/>
   <g transform="translate(56 30) scale(0.95 0.95)">
     <path
       d="M351 174 L351 122 L210 38 L68 122 L68 218 L99 237 L198 180 C216 169 237 169 255 180 L284 198"
