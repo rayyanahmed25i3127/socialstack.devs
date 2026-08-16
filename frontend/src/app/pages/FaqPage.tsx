@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 import { Header } from "./Header";
@@ -85,9 +85,13 @@ function FaqAccordion({ theme = "dark" }) {
   const [openIndex, setOpenIndex] = useState(null);
   const isLight = theme === "light";
 
-  const toggle = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
+  // useCallback: keeps a single stable function reference across re-renders
+  // instead of creating a brand-new closure for every one of the 7 items on
+  // every render. Behavior is identical (toggles the clicked index, closes
+  // if already open) — this is purely a re-render optimization.
+  const toggle = useCallback((index) => {
+    setOpenIndex((current) => (current === index ? null : index));
+  }, []);
 
   return (
     <section className="w-full max-w-[1150px] mx-auto px-4 md:px-10 pb-24 flex flex-col gap-4">
@@ -184,7 +188,7 @@ function HeroFrame({ theme = "dark" }) {
           <div className="relative w-[1.1em] h-[0.73em]">
             {/* spark stroke 1 — Home page "Vector 46" */}
             <div
-              className="absolute origin-center animate-[doodlePulse_2s_ease-out_infinite]"
+              className="absolute origin-center motion-safe:animate-[doodlePulse_2s_ease-out_infinite]"
               style={{ left: "0%", top: "0%", width: "23.68%", height: "60.32%" }}
             >
               <svg className="block w-full h-full" fill="none" viewBox="0 0 27.1594 44.4912" preserveAspectRatio="none">
@@ -193,7 +197,7 @@ function HeroFrame({ theme = "dark" }) {
             </div>
             {/* spark stroke 2 — Home page "Vector 47" */}
             <div
-              className="absolute origin-center animate-[doodlePulse_2s_ease-out_infinite]"
+              className="absolute origin-center motion-safe:animate-[doodlePulse_2s_ease-out_infinite]"
               style={{ left: "13.69%", top: "13.5%", width: "86.32%", height: "48.42%" }}
             >
               <svg className="block w-full h-full" fill="none" viewBox="0 0 93.6912 36.105" preserveAspectRatio="none">
@@ -202,7 +206,7 @@ function HeroFrame({ theme = "dark" }) {
             </div>
             {/* spark stroke 3 — Home page "Vector 48" */}
             <div
-              className="absolute origin-center animate-[doodlePulse_2s_ease-out_infinite]"
+              className="absolute origin-center motion-safe:animate-[doodlePulse_2s_ease-out_infinite]"
               style={{ left: "22.12%", top: "79.37%", width: "63.16%", height: "20.64%" }}
             >
               <svg className="block w-full h-full" fill="none" viewBox="0 0 69.091 16.5366" preserveAspectRatio="none">
@@ -254,7 +258,7 @@ function HeroFrame({ theme = "dark" }) {
                 strokeWidth="2"
                 pathLength="1"
                 strokeDasharray="1"
-                className="animate-[doodleFill_2.6s_ease-in-out_infinite]"
+                className="motion-safe:animate-[doodleFill_2.6s_ease-in-out_infinite]"
               />
             </svg>
           </span>
@@ -284,13 +288,13 @@ function Hero({ theme = "dark" }) {
         {/* FAQs badge */}
         <motion.div className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
           <motion.span
-            className="absolute inset-[-80%] rounded-full opacity-90"
+            className="absolute inset-[-80%] rounded-full opacity-90 motion-reduce:animate-none"
             style={{ background: `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeSpinPrimary} 82deg, transparent 104deg, transparent 360deg)` }}
             animate={{ rotate: 360 }}
             transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
           />
           <motion.span
-            className="absolute inset-[-80%] rounded-full opacity-75"
+            className="absolute inset-[-80%] rounded-full opacity-75 motion-reduce:animate-none"
             style={{ background: `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeSpinSecondary} 82deg, transparent 104deg, transparent 360deg)` }}
             animate={{ rotate: 360 }}
             transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
@@ -324,6 +328,7 @@ function Hero({ theme = "dark" }) {
             src={isLight ? imgLightStack : imgStack}
             alt="Social Stack Illustration"
             className="w-full h-full object-contain"
+            decoding="async"
             animate={{ y: [0, -12, 0], rotate: [0, 0.6, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           />

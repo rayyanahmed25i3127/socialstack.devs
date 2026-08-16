@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Sun, Moon, ChevronLeft, ChevronRight, ExternalLink, Github } from "lucide-react";
 import { motion, AnimatePresence, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 import Vector from "../../imports/Vector";
@@ -20,6 +20,7 @@ import imgLinkedinLight from "../../imports/LStory/5ac66073681efe5925013d8e779ef
 import imgLogoRecolored from "../../imports/DStory/eef17f758a83029ddf8e98fae373f5efc3059691.png";
 import imgIconPlaceholder from "../../imports/DStory/ca7a4b5d9052afe7cb23b96175cc5d547c211686.png";
 
+// ─── Module-level constants (never recreated) ───────────────────────────────
 const team = [
   {
     name: "Muznna Majid",
@@ -73,6 +74,8 @@ const team = [
   },
 ];
 
+// ─── Moved to module level — these are pure constants recreated on every
+//     render in the original, causing unnecessary reference churn ─────────────
 const easeOutExpo = [0.16, 1, 0.3, 1] as const;
 const viewport = { once: true, margin: "-90px" };
 const AUTOPLAY_MS = 4200;
@@ -87,6 +90,31 @@ const stagger = {
   hidden: {},
   show: { transition: { staggerChildren: 0.12, delayChildren: 0.12 } },
 };
+
+// ─── Module-level nav/footer link arrays — recreated on every render in
+//     the original because they were inline JSX array literals ────────────────
+const NAV_LINKS = [
+  { label: "Services", href: "/services" },
+  { label: "About us", href: "/about" },
+  { label: "Projects", href: "/projects" },
+  { label: "FAQs", href: "/faqs" },
+] as const;
+
+const FOOTER_LINKS = [
+  { label: "About Us", href: "/about" },
+  { label: "Our Services", href: "/services" },
+  { label: "Our Projects", href: "/projects" },
+  { label: "FAQs", href: "/faqs" },
+  { label: "Contact Us", href: "/contact" },
+] as const;
+
+const SOCIAL_HREFS = [
+  "mailto:ss.socialstack@gmail.com",
+  "https://www.instagram.com/socialstack.dev/",
+  "https://www.linkedin.com/company/socialstack-dev/",
+] as const;
+
+const SOCIAL_ALTS = ["Gmail", "Instagram", "LinkedIn"] as const;
 
 function useLowMotionMode() {
   const [lowMotion, setLowMotion] = useState(false);
@@ -109,7 +137,94 @@ function useLowMotionMode() {
   return lowMotion;
 }
 
-function AnimatedButtonStyles() {
+// ─── NEW: generic "is this element currently on screen" hook, backed by a
+//     single IntersectionObserver. Used to pause infinite/looping animations
+//     (autoplay timers, spinning gradients) while they're scrolled out of
+//     view, and resume them — from wherever they'd naturally be — once back
+//     in view. This does NOT gate entrance animations (those already use
+//     whileInView + once:true) and does NOT unmount/remount anything, so it
+//     cannot cause a "replay" or "reload" effect. It only stops background
+//     work (timers, infinite CSS/JS animation loops) that was previously
+//     running forever regardless of visibility ─────────────────────────────
+function useInViewport<T extends HTMLElement>(rootMargin = "200px") {
+  const ref = useRef<T | null>(null);
+  const [inView, setInView] = useState(true); // default true: don't block initial paint/behavior
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { root: null, rootMargin, threshold: 0 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  return [ref, inView] as const;
+}
+
+// ─── FIX: the badge's two spinning conic-gradient rings previously read
+//     `badgeInView` from AboutPage's own state. Every scroll-triggered
+//     visibility flip therefore re-rendered the entire AboutPage component
+//     (badge, nav, about section, team stack, footer — everything), not just
+//     the badge. This is the same class of bug fixed earlier on ContactPage
+//     and Header: isolate the loop + its useInViewport call into its own
+//     memoized component so a flip only re-renders these two rings ─────────
+const BadgeGlow = memo(function BadgeGlow({
+  lowMotion,
+  colorA,
+  colorB,
+}: {
+  lowMotion: boolean;
+  colorA: string;
+  colorB: string;
+}) {
+  const [ref, inView] = useInViewport<HTMLDivElement>("150px");
+
+  return (
+    <div ref={ref} className="contents">
+      <span
+        className={`absolute inset-[-80%] rounded-full opacity-90 ${!lowMotion ? "about-loop-spin" : ""} ${!lowMotion && inView ? "is-playing" : ""}`}
+        style={{
+          background: `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${colorA} 82deg, transparent 104deg, transparent 360deg)`,
+        }}
+      />
+      <span
+        className={`absolute inset-[-80%] rounded-full opacity-75 ${!lowMotion ? "about-loop-spin-offset" : ""} ${!lowMotion && inView ? "is-playing" : ""}`}
+        style={{
+          background: `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${colorB} 82deg, transparent 104deg, transparent 360deg)`,
+        }}
+      />
+    </div>
+  );
+});
+
+// ─── FIX: same issue as the nav shimmer fixed earlier in Header.tsx — an
+//     always-on infinite Motion `animate` loop with no visibility gating,
+//     running forever behind a heavy backdrop-blur nav bar on every page.
+//     Converted to a paused/running CSS keyframe animation, isolated in its
+//     own component so it can't force the whole nav (or page) to re-render ──
+const NavShimmer = memo(function NavShimmer({ dark, navFloating, lowMotion }: { dark: boolean; navFloating: boolean; lowMotion: boolean }) {
+  const [ref, inView] = useInViewport<HTMLDivElement>("0px");
+
+  return (
+    <div
+      ref={ref}
+      className={`about-glass-heavy pointer-events-none absolute inset-0 opacity-80 transition-[border-radius] duration-500 ${!lowMotion ? "about-loop-nav-shimmer" : ""} ${!lowMotion && inView ? "is-playing" : ""} ${navFloating ? "rounded-full" : "rounded-none"}`}
+      style={{
+        background: dark
+          ? "linear-gradient(100deg, rgba(255,255,255,0.13), transparent 34%, rgba(183,221,103,0.1) 72%, transparent)"
+          : "linear-gradient(100deg, rgba(255,255,255,0.72), transparent 38%, rgba(111,127,60,0.16) 76%, transparent)",
+      }}
+    />
+  );
+});
+
+// ─── Memoized: no props, pure CSS injection. In the original this was a plain
+//     function component that React re-ran on every AboutPage render ──────────
+const AnimatedButtonStyles = memo(function AnimatedButtonStyles() {
   return (
     <style>
       {`
@@ -444,6 +559,34 @@ function AnimatedButtonStyles() {
             drop-shadow(0 0 4px rgba(39,51,56,0.42));
         }
 
+        /* ─── NEW: CSS keyframe replacements for the badge glow rings and nav
+           shimmer, previously driven by Motion's animate prop toggling
+           between two different value shapes on every inView flip. Paused
+           via animation-play-state instead, which freezes/resumes in place
+           with zero visual jump and zero re-render cost ───────────────────── */
+        @keyframes about-spin-cw { to { transform: rotate(360deg); } }
+        @keyframes about-spin-cw-half { to { transform: rotate(180deg); } }
+        @keyframes about-nav-shimmer-pan {
+          0%   { transform: translateX(-18%); }
+          50%  { transform: translateX(18%); }
+          100% { transform: translateX(-18%); }
+        }
+        .about-loop-spin {
+          animation: about-spin-cw 3.8s linear infinite;
+          animation-play-state: paused;
+        }
+        .about-loop-spin.is-playing { animation-play-state: running; }
+        .about-loop-spin-offset {
+          animation: about-spin-cw-half 4.6s linear infinite;
+          animation-play-state: paused;
+        }
+        .about-loop-spin-offset.is-playing { animation-play-state: running; }
+        .about-loop-nav-shimmer {
+          animation: about-nav-shimmer-pan 9s ease-in-out infinite;
+          animation-play-state: paused;
+        }
+        .about-loop-nav-shimmer.is-playing { animation-play-state: running; }
+
         @media (prefers-reduced-motion: reduce) {
           .about-page-shell *,
           .about-page-shell *::before,
@@ -483,7 +626,7 @@ function AnimatedButtonStyles() {
       `}
     </style>
   );
-}
+});
 
 const AnimatedLinkButton = memo(function AnimatedLinkButton({
   href,
@@ -497,12 +640,14 @@ const AnimatedLinkButton = memo(function AnimatedLinkButton({
   dark: boolean;
 }) {
   const Icon = variant === "github" ? Github : ExternalLink;
-  const style = {
+  // ─── useMemo: prevents a new object literal on every render which would
+  //     bypass the outer memo() check ─────────────────────────────────────────
+  const style = useMemo(() => ({
     "--button-color": dark ? "#263238" : "#e6f2dd",
     "--button-text": dark ? "#e6f2dd" : "#253236",
     "--button-muted": dark ? "rgba(230,242,221,0.58)" : "rgba(37,50,54,0.62)",
     "--highlight-color-hue": dark ? "88deg" : "132deg",
-  } as CSSProperties;
+  } as CSSProperties), [dark]);
 
   return (
     <a
@@ -535,13 +680,14 @@ const FooterSocialButton = memo(function FooterSocialButton({
   href: string;
   dark: boolean;
 }) {
-  const style = {
+  // ─── useMemo: same reason as AnimatedLinkButton above ────────────────────
+  const style = useMemo(() => ({
     "--social-front": dark ? "#273338" : "rgba(183,221,103,0.85)",
     "--social-hover-front": dark ? "rgba(39,51,56,0.68)" : "rgba(183,221,103,0.85)",
     "--social-back": dark ? "#273338" : "rgba(183,221,103,0.85)",
     "--social-border": dark ? "rgba(230,242,221,0.22)" : "rgba(39,51,56,0.28)",
     "--social-glow": dark ? "rgba(183,221,103,0.24)" : "rgba(39,51,56,0.18)",
-  } as CSSProperties;
+  } as CSSProperties), [dark]);
 
   return (
     <a
@@ -552,7 +698,15 @@ const FooterSocialButton = memo(function FooterSocialButton({
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
     >
-      <img src={src} alt="" loading="lazy" decoding="async" className={`ss-social-icon ${dark ? "ss-social-icon-dark" : "ss-social-icon-light"}`} />
+      <img
+        src={src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        width={32}
+        height={32}
+        className={`ss-social-icon ${dark ? "ss-social-icon-dark" : "ss-social-icon-light"}`}
+      />
     </a>
   );
 });
@@ -593,7 +747,10 @@ const RevealText = memo(function RevealText({
       {children.split(" ").map((word, index) => (
         <motion.span
           key={`${word}-${index}`}
+          // ─── Added will-change: transform so the browser pre-promotes these
+          //     nodes to their own compositor layer before animation starts ────
           className="mr-[0.28em] inline-block"
+          style={{ willChange: "transform, opacity" }}
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={viewport}
@@ -626,7 +783,6 @@ const MobileStoryText = memo(function MobileStoryText({
   );
 });
 
-/* Brush-stroke heading — uses the real Figma SVG path via the Vector component */
 const BrushHeading = memo(function BrushHeading({
   children,
   textColor,
@@ -638,8 +794,13 @@ const BrushHeading = memo(function BrushHeading({
   brushFill: string;
   lowMotion?: boolean;
 }) {
+  // ─── useMemo: the style object was a new reference every render ──────────
+  const fillStyle = useMemo(
+    () => ({ "--fill-0": brushFill } as CSSProperties),
+    [brushFill],
+  );
+
   return (
-    /* outer wrapper handles the rotation */
     <motion.div
       initial={{ opacity: 0, rotate: -8, scale: 0.9, y: 22 }}
       whileInView={{ opacity: 1, rotate: -3.82, scale: 1, y: 0 }}
@@ -647,10 +808,9 @@ const BrushHeading = memo(function BrushHeading({
       transition={{ duration: lowMotion ? 0.45 : 0.8, ease: easeOutExpo }}
       className="relative inline-block px-10 sm:px-16 pt-3 pb-5"
     >
-      {/* Vector fills the padded container, preserveAspectRatio="none" stretches it to the right pill-like shape */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ "--fill-0": brushFill } as CSSProperties}
+        style={fillStyle}
       >
         <Vector />
       </div>
@@ -685,10 +845,32 @@ function TeamFlipStack({
   const [hovering, setHovering] = useState(false);
   const [cardStage, setCardStage] = useState<0 | 1 | 2>(0);
   const [reduced, setReduced] = useState(false);
+  // ─── NEW: tracks small/mobile screens. Phones have much weaker GPUs than
+  //     desktops, so the front card gets a lighter blur on mobile — still
+  //     looks like glass, just cheaper to render ────────────────────────────
+  const [isMobile, setIsMobile] = useState(false);
+  // ─── NEW: tracks whether the team stack is actually on screen. Backed by
+  //     IntersectionObserver via useInViewport. Used only to pause the
+  //     autoplay interval while scrolled away — does not affect what's
+  //     rendered or how it looks while visible ───────────────────────────────
+  const [sectionRef, sectionInView] = useInViewport<HTMLDivElement>("200px");
   const active = team[current];
-  const glowColor = dark ? "rgba(183,221,103,0.95)" : "rgba(47,79,55,0.95)";
-  const glassBorder = dark ? "rgba(230,242,221,0.28)" : "rgba(255,255,255,0.58)";
-  const accent = dark ? "#b7dd67" : "#3f5f38";
+
+  // ─── useMemo: these three strings were recomputed from scratch on every
+  //     render of TeamFlipStack (which re-renders when hovering/cardStage
+  //     change). Now they only recompute when dark changes ───────────────────
+  const glowColor = useMemo(
+    () => (dark ? "rgba(183,221,103,0.95)" : "rgba(47,79,55,0.95)"),
+    [dark],
+  );
+  const glassBorder = useMemo(
+    () => (dark ? "rgba(230,242,221,0.28)" : "rgba(255,255,255,0.58)"),
+    [dark],
+  );
+  const accent = useMemo(
+    () => (dark ? "#b7dd67" : "#3f5f38"),
+    [dark],
+  );
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -698,6 +880,16 @@ function TeamFlipStack({
     mq.addEventListener?.("change", handler);
     return () => mq.removeEventListener?.("change", handler);
   }, [lowMotion]);
+
+  // ─── NEW: mobile-width check, same pattern (matchMedia + listener +
+  //     cleanup) as the reduced-motion check right above it ─────────────────
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
 
   const next = useCallback(() => {
     setCardStage(0);
@@ -709,24 +901,40 @@ function TeamFlipStack({
     setCurrent((value) => (value - 1 + total) % total);
   }, [total]);
 
+  // ─── FIX: autoplay now also pauses when the section is scrolled out of
+  //     view (sectionInView === false), in addition to the existing hover-
+  //     pause and reduced-motion-pause. Previously this interval kept firing
+  //     every 4.2s forever, re-rendering the whole 5-card stack (and its 5
+  //     <img> tags) even while the user had scrolled far away — this is what
+  //     produced the "images reloading when I scroll back" feeling, since a
+  //     re-render could land mid-tick right as the section came back into
+  //     view. Behavior while visible is 100% unchanged: same interval, same
+  //     duration, same pause-on-hover ─────────────────────────────────────────
   useEffect(() => {
-    if (paused || reduced) return;
+    if (paused || reduced || !sectionInView) return;
     const timer = setInterval(next, AUTOPLAY_MS);
     return () => clearInterval(timer);
-  }, [next, paused, reduced]);
+  }, [next, paused, reduced, sectionInView]);
+
+  // ─── useCallback: these were inline arrow functions recreated on every
+  //     render, forcing the motion.div child to see new prop references ──────
+  const handleMouseEnter = useCallback(() => {
+    setPaused(true);
+    setHovering(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setPaused(false);
+    setHovering(false);
+  }, []);
 
   return (
     <motion.div
+      ref={sectionRef}
       variants={fadeUp}
       className="mx-auto mb-16 grid max-w-6xl items-center gap-12 lg:grid-cols-[minmax(330px,500px)_1fr]"
-      onMouseEnter={() => {
-        setPaused(true);
-        setHovering(true);
-      }}
-      onMouseLeave={() => {
-        setPaused(false);
-        setHovering(false);
-      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="relative mx-auto w-full max-w-[432px]" style={{ perspective: "1800px" }}>
         <div className="relative aspect-[4/5] w-full">
@@ -765,6 +973,16 @@ function TeamFlipStack({
               zIndex = 0;
             }
 
+            // ─── THE FIX (part 1): decide how "expensive" this specific card
+            //     is allowed to be, based on whether it's actually visible.
+            //     isHidden = fully invisible (opacity 0) — no reason to pay
+            //     for blur/glow on something nobody can see.
+            //     isNearFront = the front card + the one directly behind it —
+            //     these are the only ones clear enough that full blur quality
+            //     actually matters ───────────────────────────────────────────
+            const isHidden = opacity === 0;
+            const isNearFront = isFront || depth === 1;
+
             return (
               <button
                 key={member.name}
@@ -779,24 +997,65 @@ function TeamFlipStack({
                   opacity,
                   zIndex,
                   background: `linear-gradient(135deg, ${glassBorder}, rgba(255,255,255,0.08), ${glassBorder})`,
-                  backdropFilter: reduced ? "blur(10px)" : "blur(18px)",
+                  // ─── THE MAIN FIX: blur is one of the most GPU-expensive CSS
+                  //     effects there is. The original code applied a heavy
+                  //     18px blur to all 5 stacked cards at once — including
+                  //     ones almost fully invisible behind the front card.
+                  //     This is very likely why the team section felt laggy,
+                  //     especially on mobile GPUs.
+                  //     Now: fully-invisible cards get NO blur (zero visual
+                  //     difference — you can't see them anyway). The front
+                  //     card + its direct neighbor keep the nice strong blur
+                  //     (lighter on mobile specifically, since phone GPUs are
+                  //     much weaker). Everything else gets a much lighter
+                  //     blur, since they're already faded down to ~30-60%
+                  //     opacity and the visual difference is negligible ──────
+                  backdropFilter: isHidden
+                    ? "none"
+                    : reduced
+                      ? "blur(10px)"
+                      : isNearFront
+                        ? (isMobile ? "blur(10px)" : "blur(18px)")
+                        : "blur(6px)",
                   transition: reduced
                     ? "opacity 0.4s ease"
                     : `transform 0.85s ${STACK_EASE}, opacity 0.85s ${STACK_EASE}`,
                   transformStyle: "preserve-3d",
-                  pointerEvents: isFront ? "auto" : "none",
+                  // ─── willChange on the card itself: tells the browser to
+                  //     keep this on its own compositor layer so card-stack
+                  //     transitions don't trigger layout ──────────────────────
                   willChange: reduced ? "auto" : "transform, opacity",
-                }}
+                  pointerEvents: isFront ? "auto" : "none",
+                  // ─── THE FIX (part 2): tells the browser to fully skip
+                  //     layout/paint work for cards that are 100% invisible.
+                  //     One small side effect worth knowing: this also removes
+                  //     these buttons from the keyboard tab order while
+                  //     hidden. That's arguably more correct (no landing on an
+                  //     invisible, non-clickable button), but flagging it
+                  //     since it's a behavior change, not just visual. If you
+                  //     ever want the old tab behavior back, just delete this
+                  //     one line ───────────────────────────────────────────
+                  contentVisibility: isHidden ? "hidden" : "visible",
+                } as CSSProperties}
                 aria-label={cardStage > 0 && isFront ? `Show photo of ${member.name}` : `Flip card for ${member.name}`}
               >
-                <motion.div
-                  className="absolute inset-[-45%] rounded-full opacity-70"
-                  style={{
-                    background: `conic-gradient(from 0deg, transparent 0deg, transparent 72deg, ${glowColor} 112deg, transparent 152deg, transparent 360deg)`,
-                  }}
-                  animate={isFront && !reduced ? { rotate: 360 } : { rotate: 0 }}
-                  transition={reduced ? { duration: 0 } : { duration: 6.5, repeat: Infinity, ease: "linear" }}
-                />
+                {/* ─── THE FIX (part 3): the spinning glow gradient was
+                    rendered for all 5 cards, but only ever animated for the
+                    front one — the rest just silently painted a static,
+                    unmoving copy of it that the opaque photo on top fully
+                    covers anyway (so it was never actually visible). Now we
+                    just skip creating it at all for non-front cards ──────── */}
+                {isFront && (
+                  <motion.div
+                    className="absolute inset-[-45%] rounded-full opacity-70"
+                    style={{
+                      background: `conic-gradient(from 0deg, transparent 0deg, transparent 72deg, ${glowColor} 112deg, transparent 152deg, transparent 360deg)`,
+                      willChange: reduced ? "auto" : "transform",
+                    }}
+                    animate={!reduced && sectionInView ? { rotate: 360 } : { rotate: 0 }}
+                    transition={reduced || !sectionInView ? { duration: 0 } : { duration: 6.5, repeat: Infinity, ease: "linear" }}
+                  />
+                )}
                 <div
                   className={`relative h-full rounded-[25px] ${cardBg}`}
                   style={{
@@ -816,8 +1075,14 @@ function TeamFlipStack({
                       src={member.img}
                       alt={member.name}
                       draggable={false}
+                      // ─── Non-front card images load lazily: the front card
+                      //     (slot 0) stays eager since it's immediately visible;
+                      //     the stacked cards behind it are offscreen until the
+                      //     user navigates to them ─────────────────────────────
                       loading={isFront ? "eager" : "lazy"}
                       decoding="async"
+                      width={432}
+                      height={540}
                       className="h-full w-full select-none object-cover"
                       style={{
                         objectPosition: member.imgPos,
@@ -833,7 +1098,14 @@ function TeamFlipStack({
                     </div>
                   </div>
                   <div
-                    className="about-card-back absolute inset-0 rounded-[25px] backdrop-blur-xl"
+                    // ─── BONUS FIX: the flip-back face's own blur
+                    //     (backdrop-blur-xl) is only ever visible when THIS
+                    //     card is the front card AND has been clicked to flip.
+                    //     Non-front cards can never show their back face
+                    //     (only the front card's onClick can flip it), so
+                    //     we skip the blur class for them entirely — no
+                    //     visual difference, one less blur layer to paint ───
+                    className={`about-card-back absolute inset-0 rounded-[25px] ${isFront ? "backdrop-blur-xl" : ""}`}
                     style={{
                       backgroundColor: dark ? "#263238" : "#e6f2dd",
                       backfaceVisibility: "hidden",
@@ -970,10 +1242,18 @@ export default function AboutPage() {
   const isDark = theme === "dark";
   const d = isDark;
 
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    const nextFloating = latest > 0.05;
-    setNavFloating((current) => (current === nextFloating ? current : nextFloating));
-  });
+  // ─── useCallback: the scroll handler was an inline arrow function. Framer's
+  //     useMotionValueEvent calls it on every scroll frame, so keeping the
+  //     reference stable avoids re-registering the listener on every render ───
+  const handleScrollChange = useCallback(
+    (latest: number) => {
+      const nextFloating = latest > 0.05;
+      setNavFloating((current) => (current === nextFloating ? current : nextFloating));
+    },
+    [],
+  );
+
+  useMotionValueEvent(scrollYProgress, "change", handleScrollChange);
 
   // ── theme tokens ──
   const pageBg     = d ? "bg-[#273338]"                : "bg-[#e6f2dd]";
@@ -1013,6 +1293,20 @@ export default function AboutPage() {
     WebkitBackdropFilter: "blur(24px) saturate(170%)",
   } as CSSProperties), [d]);
 
+  // ─── useCallback: theme toggle was an inline arrow recreated every render ──
+  const handleThemeToggle = useCallback(() => {
+    setTheme(d ? "light" : "dark");
+  }, [d, setTheme]);
+
+  // ─── useCallback: menu toggle was an inline arrow recreated every render ───
+  const handleMenuToggle = useCallback(() => {
+    setMenuOpen((prev) => !prev);
+  }, []);
+
+  const handleMenuClose = useCallback(() => {
+    setMenuOpen(false);
+  }, []);
+
   return (
     <motion.div
       className={`about-page-shell min-h-screen ${pageBg} transition-colors duration-300 overflow-hidden`}
@@ -1042,33 +1336,23 @@ export default function AboutPage() {
         }`}
         style={navGlassStyle}
       >
-        <motion.div
-          className={`about-glass-heavy pointer-events-none absolute inset-0 opacity-80 transition-[border-radius] duration-500 ${navFloating ? "rounded-full" : "rounded-none"}`}
-          style={{
-            background: d
-              ? "linear-gradient(100deg, rgba(255,255,255,0.13), transparent 34%, rgba(183,221,103,0.1) 72%, transparent)"
-              : "linear-gradient(100deg, rgba(255,255,255,0.72), transparent 38%, rgba(111,127,60,0.16) 76%, transparent)",
-          }}
-          animate={lowMotion ? { x: "0%" } : { x: ["-18%", "18%", "-18%"] }}
-          transition={lowMotion ? { duration: 0 } : { duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <NavShimmer dark={d} navFloating={navFloating} lowMotion={lowMotion} />
         <motion.a href="/" className="relative z-10 inline-flex" aria-label="Go to home" whileHover={lowMotion ? { scale: 1.02 } : { rotate: -3, scale: 1.08, filter: "drop-shadow(0 0 12px rgba(183,221,103,0.48))" }} whileTap={{ scale: 0.96 }}>
           <img
             src={d ? imgIconPlaceholder : imgLogoRecolored}
             alt="SocialStack"
+            // ─── Logo is above the fold and immediately visible — keep eager ─
+            loading="eager"
             decoding="async"
+            width={48}
+            height={48}
             className="h-10 w-auto object-contain transition-transform duration-200 sm:h-11 md:h-12"
           />
         </motion.a>
 
-        {/* Desktop links */}
+        {/* Desktop links — now sourced from the module-level NAV_LINKS constant */}
         <div className={`relative z-10 hidden lg:flex gap-2 font-['Manrope:SemiBold',sans-serif] font-semibold text-lg ${navLink} transition-colors duration-300`}>
-          {[
-            { label: "Services", href: "/services" },
-            { label: "About us", href: "/about" },
-            { label: "Projects", href: "/projects" },
-            { label: "FAQs", href: "/faqs" },
-          ].map((item, index) => (
+          {NAV_LINKS.map((item, index) => (
             <motion.a
               key={item.label}
               href={item.href}
@@ -1093,7 +1377,7 @@ export default function AboutPage() {
         <div className="relative z-10 flex items-center gap-2 sm:gap-3">
           {/* Theme toggle */}
           <motion.button
-            onClick={() => setTheme(d ? "light" : "dark")}
+            onClick={handleThemeToggle}
             aria-label="Toggle theme"
             className={`relative flex h-8 w-16 items-center rounded-full border transition-all duration-300 ${
               d ? "bg-[#2e3936]/80" : "bg-white/30"
@@ -1129,7 +1413,7 @@ export default function AboutPage() {
 
           {/* Hamburger */}
           <motion.button
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={handleMenuToggle}
             className={`${navLink} relative grid h-10 w-10 place-items-center rounded-full transition-all duration-200 hover:bg-white/10 hover:opacity-90 lg:hidden`}
             aria-label="Toggle menu"
             whileHover={lowMotion ? { scale: 1.02 } : { scale: 1.06 }}
@@ -1168,16 +1452,12 @@ export default function AboutPage() {
           className={`about-glass-heavy fixed left-0 right-0 top-[88px] z-40 mx-auto flex w-[calc(100%-1.5rem)] max-w-md flex-col gap-4 overflow-hidden rounded-[28px] border px-6 py-6 font-['Manrope:SemiBold',sans-serif] text-xl font-semibold shadow-[0_20px_45px_rgba(0,0,0,0.22)] lg:hidden ${mobMenuBg} ${drawerText}`}
           style={navGlassStyle}
         >
-          {[
-            { label: "Services", href: "/services" },
-            { label: "About us", href: "/about" },
-            { label: "Projects", href: "/projects" },
-            { label: "FAQs", href: "/faqs" },
-          ].map((item, index) => (
+          {/* Mobile drawer links — now sourced from the module-level NAV_LINKS constant */}
+          {NAV_LINKS.map((item, index) => (
             <motion.a
               key={item.label}
               href={item.href}
-              onClick={() => setMenuOpen(false)}
+              onClick={handleMenuClose}
               className={`py-3 border-b ${d ? "border-white/10" : "border-[#253236]/15"} hover:opacity-70 hover:pl-2 transition-all duration-200`}
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
@@ -1186,7 +1466,7 @@ export default function AboutPage() {
               {item.label}
             </motion.a>
           ))}
-          <a href="/contact" onClick={() => setMenuOpen(false)} className={`mt-2 ${contactBg} text-[#273338] font-['Manrope:Bold',sans-serif] font-bold text-[15px] px-5 py-2.5 rounded-full self-start hover:scale-105 hover:brightness-110 active:scale-95 transition-all duration-200`}>
+          <a href="/contact" onClick={handleMenuClose} className={`mt-2 ${contactBg} text-[#273338] font-['Manrope:Bold',sans-serif] font-bold text-[15px] px-5 py-2.5 rounded-full self-start hover:scale-105 hover:brightness-110 active:scale-95 transition-all duration-200`}>
             Contact
           </a>
         </motion.div>
@@ -1210,22 +1490,7 @@ export default function AboutPage() {
             className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default"
             whileHover={lowMotion ? { scale: 1.02 } : { scale: 1.05, x: 5 }}
           >
-            <motion.span
-              className="absolute inset-[-80%] rounded-full opacity-90"
-              style={{
-                background: `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeGlow[0]} 82deg, transparent 104deg, transparent 360deg)`,
-              }}
-              animate={lowMotion ? { rotate: 0 } : { rotate: 360 }}
-              transition={lowMotion ? { duration: 0 } : { duration: 3.8, repeat: Infinity, ease: "linear" }}
-            />
-            <motion.span
-              className="absolute inset-[-80%] rounded-full opacity-75"
-              style={{
-                background: `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeGlow[1]} 82deg, transparent 104deg, transparent 360deg)`,
-              }}
-              animate={lowMotion ? { rotate: 180 } : { rotate: 360 }}
-              transition={lowMotion ? { duration: 0 } : { duration: 4.6, repeat: Infinity, ease: "linear" }}
-            />
+            <BadgeGlow lowMotion={lowMotion} colorA={badgeGlow[0]} colorB={badgeGlow[1]} />
             <span className={`relative z-10 inline-flex ${badgeBg} rounded-full px-8 py-3 border border-[rgba(196,240,107,0.15)] transition-all duration-300`}>
               <span className="text-[#c8e77b] font-['Manrope:Medium',sans-serif] font-medium text-xl tracking-[2px]">About Us</span>
             </span>
@@ -1312,7 +1577,7 @@ export default function AboutPage() {
 
           <motion.div className="flex-1 max-w-2xl" variants={fadeUp}>
             <div className="flex items-center gap-3 mb-5">
-              <img src={imgLogoRecolored} alt="SocialStack" loading="lazy" decoding="async" className="h-16 w-auto object-contain" />
+              <img src={imgLogoRecolored} alt="SocialStack" loading="lazy" decoding="async" width={64} height={64} className="h-16 w-auto object-contain" />
               <span className={`font-['Caveat_Brush:Regular',sans-serif] not-italic text-4xl ${footerText}`}>
                 SocialStack
               </span>
@@ -1326,8 +1591,8 @@ export default function AboutPage() {
                 <FooterSocialButton
                   key={i}
                   src={icon}
-                  alt={["Gmail", "Instagram", "LinkedIn"][i]}
-                  href={["mailto:ss.socialstack@gmail.com", "https://www.instagram.com/socialstack.dev/", "https://www.linkedin.com/company/socialstack-dev/"][i]}
+                  alt={SOCIAL_ALTS[i]}
+                  href={SOCIAL_HREFS[i]}
                   dark={d}
                 />
               ))}
@@ -1337,14 +1602,9 @@ export default function AboutPage() {
             </p>
           </motion.div>
 
+          {/* Footer nav links — now sourced from module-level FOOTER_LINKS constant */}
           <motion.div className="flex flex-col justify-start pt-0 md:pt-2" variants={stagger}>
-            {[
-              { label: "About Us", href: "/about" },
-              { label: "Our Services", href: "/services" },
-              { label: "Our Projects", href: "/projects" },
-              { label: "FAQs", href: "/faqs" },
-              { label: "Contact Us", href: "/contact" },
-            ].map((link) => (
+            {FOOTER_LINKS.map((link) => (
               <motion.a
                 key={link.label}
                 href={link.href}

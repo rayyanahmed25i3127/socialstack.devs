@@ -1,5 +1,5 @@
-import { useState, type CSSProperties } from "react";
-import { motion } from "motion/react";
+import { useMemo, useRef, type CSSProperties } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
 
 import { Header } from "./Header";
 import { Footer } from "./Footer";
@@ -75,67 +75,84 @@ const LIGHT = {
 type Tokens = typeof DARK;
 const TRANSITION_CSS = "background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease";
 
-function SliceButtonStyles() {
-  return (
-    <style>
-      {`
-        .slice {
-          --size-letter: clamp(16px, 1.7vw, 20px);
-          padding: 0.5em 1em;
-          font-size: var(--size-letter);
-          background-color: transparent;
-          border: calc(var(--size-letter) / 6) solid var(--c2);
-          border-radius: 0.55em;
-          cursor: pointer;
-          overflow: hidden;
-          position: relative;
-          transition: 300ms cubic-bezier(0.83, 0, 0.17, 1);
-        }
+// Hoisted to module scope: this markup never depends on props/theme/state,
+// so it doesn't need to live inside a component that re-renders on every
+// theme toggle. Same DOM output as before, just computed once.
+const SLICE_BUTTON_STYLES = (
+  <style>
+    {`
+      .slice {
+        --size-letter: clamp(16px, 1.7vw, 20px);
+        padding: 0.5em 1em;
+        font-size: var(--size-letter);
+        background-color: transparent;
+        border: calc(var(--size-letter) / 6) solid var(--c2);
+        border-radius: 0.55em;
+        cursor: pointer;
+        overflow: hidden;
+        position: relative;
+        transition: 300ms cubic-bezier(0.83, 0, 0.17, 1);
+      }
 
-        .slice > .text {
-          font-weight: 800;
-          color: var(--c2);
-          position: relative;
-          z-index: 1;
-          transition: color 700ms cubic-bezier(0.83, 0, 0.17, 1);
-        }
+      .slice > .text {
+        font-weight: 800;
+        color: var(--c2);
+        position: relative;
+        z-index: 1;
+        transition: color 700ms cubic-bezier(0.83, 0, 0.17, 1);
+      }
 
-        .slice::after {
-          content: "";
-          width: 0;
-          height: calc(300% + 1em);
-          position: absolute;
-          translate: -50% -50%;
-          inset: 50%;
-          rotate: 30deg;
-          background-color: var(--c2);
-          transition: 1000ms cubic-bezier(0.83, 0, 0.17, 1);
-        }
+      .slice::after {
+        content: "";
+        width: 0;
+        height: calc(300% + 1em);
+        position: absolute;
+        translate: -50% -50%;
+        inset: 50%;
+        rotate: 30deg;
+        background-color: var(--c2);
+        transition: 1000ms cubic-bezier(0.83, 0, 0.17, 1);
+      }
 
-        .slice:hover > .text,
-        .slice:focus-visible > .text {
-          color: var(--c1);
-        }
+      .slice:hover > .text,
+      .slice:focus-visible > .text {
+        color: var(--c1);
+      }
 
-        .slice:hover::after,
-        .slice:focus-visible::after {
-          width: calc(120% + 1em);
-        }
+      .slice:hover::after,
+      .slice:focus-visible::after {
+        width: calc(120% + 1em);
+      }
 
-        .slice:active {
-          scale: 0.98;
-          filter: brightness(0.9);
-        }
-      `}
-    </style>
-  );
-}
+      .slice:active {
+        scale: 0.98;
+        filter: brightness(0.9);
+      }
+    `}
+  </style>
+);
 
 // ─── 1. Hero — badge + headline + subtitle ───────────────────────────────
 
 function ProjectsHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
-  const badgeSpinPrimary = isDark ? "rgba(34,211,238,0.95)" : "rgba(39,51,56,0.95)";
-  const badgeSpinSecondary = isDark ? "rgba(103,232,249,0.92)" : "rgba(63,79,74,0.92)";
+  const badgeRef = useRef<HTMLDivElement>(null);
+  // Gate the infinite conic-gradient spin animations to only run while the
+  // badge is actually visible. Framer Motion's own useInView hook (no new
+  // dependency) — margin matches default viewport behavior elsewhere in
+  // this file. Pausing off-screen is visually identical to letting it run:
+  // there's nothing to see either way, it just stops burning GPU/CPU.
+  const badgeInView = useInView(badgeRef, { once: false, margin: "0px" });
+  const prefersReducedMotion = useReducedMotion();
+  const spinEnabled = badgeInView && !prefersReducedMotion;
+
+  const badgeSpinPrimary = useMemo(
+    () => (isDark ? "rgba(34,211,238,0.95)" : "rgba(39,51,56,0.95)"),
+    [isDark]
+  );
+  const badgeSpinSecondary = useMemo(
+    () => (isDark ? "rgba(103,232,249,0.92)" : "rgba(63,79,74,0.92)"),
+    [isDark]
+  );
 
   return (
     <motion.section
@@ -147,6 +164,7 @@ function ProjectsHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
     >
       <div className="mb-10 text-left">
         <motion.div
+          ref={badgeRef}
           className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default"
           whileHover={{ scale: 1.05, x: 5 }}
         >
@@ -156,7 +174,7 @@ function ProjectsHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
               background:
                 `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeSpinPrimary} 82deg, transparent 104deg, transparent 360deg)`,
             }}
-            animate={{ rotate: 360 }}
+            animate={spinEnabled ? { rotate: 360 } : {}}
             transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
           />
           <motion.span
@@ -165,7 +183,7 @@ function ProjectsHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
               background:
                 `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeSpinSecondary} 82deg, transparent 104deg, transparent 360deg)`,
             }}
-            animate={{ rotate: 360 }}
+            animate={spinEnabled ? { rotate: 360 } : {}}
             transition={{ duration: 4.6, repeat: Infinity, ease: "linear" }}
           />
           <span
@@ -203,9 +221,18 @@ function ProjectsHero({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
 // ─── 2. Illustration — floating notebook ─────────────────────────────────
 
 function ProjectsIllustration({ isDark }: { isDark: boolean }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  // Same treatment as the badge spinners: the float loop only needs to run
+  // while the illustration is on-screen. Identical look while visible,
+  // just no wasted animation frames while scrolled away from it.
+  const inView = useInView(wrapRef, { once: false, margin: "0px" });
+  const prefersReducedMotion = useReducedMotion();
+  const floatEnabled = inView && !prefersReducedMotion;
+
   return (
     <section className="flex justify-center px-2 sm:px-4 py-0 -mt-10 sm:-mt-16 md:-mt-24">
       <motion.div
+        ref={wrapRef}
         initial={{ opacity: 0, scale: 0.94 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
@@ -216,7 +243,9 @@ function ProjectsIllustration({ isDark }: { isDark: boolean }) {
           src={isDark ? imgNotebookDark : imgNotebookLight}
           alt="Open notebook with a PROJECTS header and a checklist — Idea, Planning, Design, and Development checked off, Launch still pending — with a Coming Soon sticky note tag"
           className="w-full h-auto object-contain"
-          animate={{ y: [0, -14, 0] }}
+          loading="lazy"
+          decoding="async"
+          animate={floatEnabled ? { y: [0, -14, 0] } : { y: 0 }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
       </motion.div>
@@ -227,10 +256,14 @@ function ProjectsIllustration({ isDark }: { isDark: boolean }) {
 // ─── 3. CTA — "Ready to build your stack?" ────────────────────────────────
 
 function ProjectsCTA({ tk }: { tk: Tokens }) {
-  const sliceStyle = {
-    "--c1": tk.ctaButtonText,
-    "--c2": tk.ctaButtonBg,
-  } as CSSProperties;
+  const sliceStyle = useMemo(
+    () =>
+      ({
+        "--c1": tk.ctaButtonText,
+        "--c2": tk.ctaButtonBg,
+      } as CSSProperties),
+    [tk.ctaButtonText, tk.ctaButtonBg]
+  );
 
   return (
     <motion.section
@@ -314,7 +347,7 @@ export default function ProjectsPage() {
       transition={{ duration: 0.4 }}
       className="min-h-screen flex flex-col"
     >
-      <SliceButtonStyles />
+      {SLICE_BUTTON_STYLES}
       <Header theme={theme} onThemeChange={setTheme} />
 
       <div className="w-full max-w-[1360px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 flex flex-col gap-0 sm:gap-1 flex-1">

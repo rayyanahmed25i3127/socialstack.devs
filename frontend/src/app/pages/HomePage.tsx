@@ -2,7 +2,7 @@
 // HomePage - Modified to remove hero icons, unify theme spacing, and add animations
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { cloneElement, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { cloneElement, useCallback, useEffect, useMemo, useRef, useState, memo, type CSSProperties } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 
 import { Header } from "./Header";
@@ -26,7 +26,46 @@ import lHeroImgFrame29 from "../../imports/home-light-hero-section/project-ads-b
 import lHeroImgFrame30 from "../../imports/home-light-hero-section/project-ui-ux.png";
 import lHeroImgFrame31 from "../../imports/home-light-hero-section/project-smm.png";
 
-function HomeSliceButton({
+// ─── Perf helper: pause continuous CSS animations when off-screen ─────────
+// Adds an "in-view" class once an element enters the viewport and removes it
+// when it leaves, so infinite CSS animations (spins/pulses/floats/etc.) don't
+// burn CPU while scrolled far away. Also respects prefers-reduced-motion.
+// This does NOT change how anything looks while it IS animating/in view —
+// it only gates *when* the animation runs, exactly like whileInView does for
+// Framer Motion elements elsewhere in this file.
+function useInViewAnimation<T extends HTMLElement>(rootMargin = "200px") {
+  const ref = useRef<T | null>(null);
+  const [inView, setInView] = useState(true); // default true so SSR/first paint is unaffected
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    if (typeof window === "undefined" || typeof IntersectionObserver === "undefined") {
+      return; // fail-open: animations behave exactly as before
+    }
+
+    const reduceMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (reduceMotionQuery?.matches) {
+      setInView(false);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setInView(entry.isIntersecting);
+      },
+      { rootMargin, threshold: 0 }
+    );
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  return { ref, inView };
+}
+
+const HomeSliceButton = memo(function HomeSliceButton({
   children,
   isLight,
   className = "",
@@ -66,18 +105,19 @@ function HomeSliceButton({
       <span className="text">{children}</span>
     </motion.button>
   );
-}
+});
 
 // ─── Hero (dark theme) ─────────────────────────────────────────────────────
 function Hero_WhatWeDo() {
+  const { ref, inView } = useInViewAnimation<HTMLDivElement>();
   return (
-    <motion.div className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
+    <motion.div ref={ref} className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
       <span
-        className="absolute inset-[-80%] rounded-full opacity-90 animate-[spin360_3.8s_linear_infinite]"
+        className={`absolute inset-[-80%] rounded-full opacity-90 ${inView ? "animate-[spin360_3.8s_linear_infinite]" : ""}`}
         style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 64deg, rgba(34,211,238,0.95) 82deg, transparent 104deg, transparent 360deg)" }}
       />
       <span
-        className="absolute inset-[-80%] rounded-full opacity-75 animate-[spin360_4.6s_linear_infinite]"
+        className={`absolute inset-[-80%] rounded-full opacity-75 ${inView ? "animate-[spin360_4.6s_linear_infinite]" : ""}`}
         style={{ background: "conic-gradient(from 180deg, transparent 0deg, transparent 64deg, rgba(103,232,249,0.92) 82deg, transparent 104deg, transparent 360deg)" }}
       />
       <span className="relative z-10 inline-flex items-center bg-[#2e3936] rounded-full px-6 py-2.5 lg:px-8 lg:py-3 border border-[rgba(196,240,107,0.15)]">
@@ -89,9 +129,10 @@ function Hero_WhatWeDo() {
   );
 }
 
-function Hero_Frame() {
+const Hero_Frame = memo(function Hero_Frame() {
+  const { ref, inView } = useInViewAnimation<HTMLDivElement>();
   return (
-    <div className="h-[298px] overflow-clip relative shrink-0 w-full">
+    <div ref={ref} className="h-[298px] overflow-clip relative shrink-0 w-full">
       <div className="absolute flex h-[185.616px] items-center justify-center left-[-3.16px] top-[13.19px] w-[349.325px]">
         <div className="-rotate-3 flex-none">
           <div className="[word-break:break-word] bg-clip-text bg-gradient-to-r font-['Patrick_Hand:Regular',sans-serif] from-white h-[168px] leading-[0] not-italic relative text-[95px] text-[transparent] to-[#8cc9b4] to-[82.031%] tracking-[-3.8px] w-[341px] whitespace-pre-wrap">
@@ -129,26 +170,26 @@ function Hero_Frame() {
               strokeWidth="2"
               pathLength="1"
               strokeDasharray="1"
-              className="animate-[doodleFill_2.6s_ease-in-out_infinite]"
+              className={inView ? "animate-[doodleFill_2.6s_ease-in-out_infinite]" : ""}
             />
           </svg>
         </div>
       </div>
-      <div className="absolute h-[42.491px] left-[336.97px] top-[80.08px] w-[25.159px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
+      <div className={`absolute h-[42.491px] left-[336.97px] top-[80.08px] w-[25.159px] origin-center ${inView ? "animate-[doodlePulse_2s_ease-out_infinite]" : ""}`}>
         <div className="absolute inset-[-2.35%_-3.98%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 27.1594 44.4912">
             <path d={heroSvgPaths.p2484b380} id="Vector 46" stroke="var(--stroke-0, #F4F4EF)" strokeLinecap="round" strokeWidth="2" />
           </svg>
         </div>
       </div>
-      <div className="absolute h-[34.104px] left-[351.51px] top-[89.59px] w-[91.691px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
+      <div className={`absolute h-[34.104px] left-[351.51px] top-[89.59px] w-[91.691px] origin-center ${inView ? "animate-[doodlePulse_2s_ease-out_infinite]" : ""}`}>
         <div className="absolute inset-[-2.93%_-1.09%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 93.6912 36.105">
             <path d={heroSvgPaths.p13dde6c0} id="Vector 47" stroke="var(--stroke-0, #F4F4EF)" strokeLinecap="round" strokeWidth="2" />
           </svg>
         </div>
       </div>
-      <div className="absolute h-[14.536px] left-[360.46px] top-[135.99px] w-[67.091px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
+      <div className={`absolute h-[14.536px] left-[360.46px] top-[135.99px] w-[67.091px] origin-center ${inView ? "animate-[doodlePulse_2s_ease-out_infinite]" : ""}`}>
         <div className="absolute inset-[-6.88%_-1.49%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 69.091 16.5366">
             <path d={heroSvgPaths.p2785b2a0} id="Vector 48" stroke="var(--stroke-0, #F4F4EF)" strokeLinecap="round" strokeWidth="2" />
@@ -157,7 +198,7 @@ function Hero_Frame() {
       </div>
     </div>
   );
-}
+});
 
 function Hero_Button() {
   return (
@@ -180,30 +221,12 @@ function Hero_Buttons() {
   );
 }
 
-// ─── Hero globe visual (shared across both themes and all breakpoints) ────
-// Four animation layers, each on its own DOM node so they never fight over
-// the same element's `transform`:
-//   1. outer <div>        — pure-CSS `floatSlow` bob, loops forever
-//   2. motion.div #2       — scroll-linked drift/tilt (useScroll + useTransform)
-//   3. motion.div #3       — cursor-follow drift: nudges toward the pointer
-//                            wherever it is inside the box, springs back to
-//                            center on mouse leave
-//   4. motion.img          — one-time scale-0 → scale-1 "pop in"
-//
-// The pop-in uses a plain `initial` → `animate` pair (not `whileInView`) so it
-// fires the instant this component mounts — on first page load *and* every
-// time it remounts on theme toggle (that remount happens because the page
-// content sits under a `key={theme}` in `AnimatePresence`). `whileInView`
-// depends on an IntersectionObserver callback that isn't guaranteed to have
-// resolved yet on first paint for content that's already on-screen, which is
-// why the old version only reliably animated on the *second* mount (theme
-// toggle) and not the first (page load).
 const heroLogoPathOne =
   "M351 174 L351 122 L210 38 L68 122 L68 218 L99 237 L198 180 C216 169 237 169 255 180 L284 198";
 const heroLogoPathTwo =
   "M136 292 C154 304 171 304 189 294 L322 216 L351 234 L351 338 L211 420 L198 413 L138 449 L138 389 L68 348 L68 286";
 
-function HeroAnimatedLogo({ isLight }: { isLight: boolean }) {
+const HeroAnimatedLogo = memo(function HeroAnimatedLogo({ isLight, animate = true }: { isLight: boolean; animate?: boolean }) {
   return (
     <svg
       aria-hidden="true"
@@ -218,62 +241,65 @@ function HeroAnimatedLogo({ isLight }: { isLight: boolean }) {
       <circle className="hero-logo-static-dot" cx="284" cy="198" r="18" />
       <circle className="hero-logo-static-dot" cx="136" cy="292" r="18" />
       <g className="hero-logo-half">
-        <animate attributeName="opacity" dur="4.8s" values="0.45;1;1;0.45" keyTimes="0;0.17;0.84;1" repeatCount="indefinite" />
-        <animateTransform attributeName="transform" type="translate" dur="4.8s" values="42 -18;0 0;0 0;42 -18" keyTimes="0;0.17;0.84;1" repeatCount="indefinite" />
+        {animate && <animate attributeName="opacity" dur="4.8s" values="0.45;1;1;0.45" keyTimes="0;0.17;0.84;1" repeatCount="indefinite" />}
+        {animate && <animateTransform attributeName="transform" type="translate" dur="4.8s" values="42 -18;0 0;0 0;42 -18" keyTimes="0;0.17;0.84;1" repeatCount="indefinite" />}
         <path className="hero-logo-ghost" d={heroLogoPathOne} />
         <circle className="hero-logo-ghost-dot" cx="284" cy="198" r="18" />
       </g>
       <g className="hero-logo-half">
-        <animate attributeName="opacity" dur="4.8s" values="0.45;1;1;0.45" keyTimes="0;0.21;0.84;1" repeatCount="indefinite" />
-        <animateTransform attributeName="transform" type="translate" dur="4.8s" values="-42 18;0 0;0 0;-42 18" keyTimes="0;0.21;0.84;1" repeatCount="indefinite" />
+        {animate && <animate attributeName="opacity" dur="4.8s" values="0.45;1;1;0.45" keyTimes="0;0.21;0.84;1" repeatCount="indefinite" />}
+        {animate && <animateTransform attributeName="transform" type="translate" dur="4.8s" values="-42 18;0 0;0 0;-42 18" keyTimes="0;0.21;0.84;1" repeatCount="indefinite" />}
         <path className="hero-logo-ghost" d={heroLogoPathTwo} />
         <circle className="hero-logo-ghost-dot" cx="136" cy="292" r="18" />
       </g>
-      <path className="hero-logo-assemble-line hero-logo-assemble-line-1" pathLength={1} d={heroLogoPathOne} />
-      <path className="hero-logo-assemble-line hero-logo-assemble-line-2" pathLength={1} d={heroLogoPathTwo} />
-      <circle className="hero-logo-dot hero-logo-dot-1" cx="284" cy="198" r="18" />
-      <circle className="hero-logo-dot hero-logo-dot-2" cx="136" cy="292" r="18" />
+      <path className={`hero-logo-assemble-line hero-logo-assemble-line-1 ${animate ? "" : "hero-logo-assemble-line-paused"}`} pathLength={1} d={heroLogoPathOne} />
+      <path className={`hero-logo-assemble-line hero-logo-assemble-line-2 ${animate ? "" : "hero-logo-assemble-line-paused"}`} pathLength={1} d={heroLogoPathTwo} />
+      <circle className={`hero-logo-dot hero-logo-dot-1 ${animate ? "" : "hero-logo-dot-paused"}`} cx="284" cy="198" r="18" />
+      <circle className={`hero-logo-dot hero-logo-dot-2 ${animate ? "" : "hero-logo-dot-paused"}`} cx="136" cy="292" r="18" />
     </svg>
   );
-}
+});
 
-function HeroGlobeVisual({ isLight, sizeClassName = "w-[460px] h-[460px]", wrapperClassName = "", floatDelay = 0 }) {
+const HeroGlobeVisual = memo(function HeroGlobeVisual({ isLight, sizeClassName = "w-[460px] h-[460px]", wrapperClassName = "", floatDelay = 0 }: any) {
   const scrollRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: scrollRef, offset: ["start end", "end start"] });
   const scrollY = useTransform(scrollYProgress, [0, 1], [40, -40]);
   const scrollRotate = useTransform(scrollYProgress, [0, 1], [-4, 4]);
 
-  // Cursor-follow: raw motion values updated on pointer move, smoothed
-  // through a spring so the globe glides toward the cursor instead of
-  // snapping to it.
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
   const springConfig = { stiffness: 120, damping: 14, mass: 0.4 };
   const springX = useSpring(cursorX, springConfig);
   const springY = useSpring(cursorY, springConfig);
-  const MAX_SHIFT = 22; // px of drift at the very edge of the box
+  const MAX_SHIFT = 22; 
 
-  const handlePointerMove = (e) => {
+  const handlePointerMove = useCallback((e: any) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const relX = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 → 0.5
+    const relX = (e.clientX - rect.left) / rect.width - 0.5; 
     const relY = (e.clientY - rect.top) / rect.height - 0.5;
     cursorX.set(relX * 2 * MAX_SHIFT);
     cursorY.set(relY * 2 * MAX_SHIFT);
-  };
-  const handlePointerLeave = () => {
+  }, [cursorX, cursorY]);
+
+  const handlePointerLeave = useCallback(() => {
     cursorX.set(0);
     cursorY.set(0);
-  };
+  }, [cursorX, cursorY]);
+
+  const { ref: inViewRef, inView } = useInViewAnimation<HTMLDivElement>();
+  const setRefs = useCallback((node: HTMLDivElement | null) => {
+    inViewRef.current = node;
+  }, [inViewRef]);
 
   return (
     <div
-      className={`relative animate-[floatSlow_6s_ease-in-out_infinite] ${sizeClassName} ${wrapperClassName}`}
+      ref={setRefs}
+      className={`relative ${inView ? "animate-[floatSlow_6s_ease-in-out_infinite]" : ""} ${sizeClassName} ${wrapperClassName}`}
       style={{ animationDelay: `${floatDelay}s` }}
       onMouseMove={handlePointerMove}
       onMouseLeave={handlePointerLeave}
     >
       <motion.div ref={scrollRef} style={{ y: scrollY, rotate: scrollRotate }} className="relative size-full">
-        {/* soft glow behind the globe so it doesn't feel like a flat sticker */}
         <div
           aria-hidden
           className="absolute inset-[10%] rounded-full blur-3xl -z-10"
@@ -292,19 +318,14 @@ function HeroGlobeVisual({ isLight, sizeClassName = "w-[460px] h-[460px]", wrapp
             whileHover={{ scale: 1.04 }}
             transition={{ duration: 2, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           >
-            <HeroAnimatedLogo isLight={isLight} />
+            <HeroAnimatedLogo isLight={isLight} animate={inView} />
           </motion.div>
         </motion.div>
       </motion.div>
     </div>
   );
-}
+});
 
-// Dedicated mobile Hero — the desktop Hero above is a fixed 1280px Figma
-// canvas that gets uniformly scaled down via ScaleFrame; on phone widths that
-// shrinks everything (badge, headline, paragraph, buttons) by roughly 70%,
-// which is why it read as tiny. This version is built with real responsive
-// Tailwind sizing instead, shared by both themes via `isLight`.
 function HeroMobile({ isLight }) {
   return (
     <div className="flex flex-col items-start gap-5 px-4 pt-3 pb-8">
@@ -379,7 +400,6 @@ function Hero_ServiceHeader() {
   );
 }
 
-// Unified Hero alignment
 function HeroOnly() {
   return (
     <div className="content-stretch flex gap-[64px] h-full items-start overflow-clip px-[80px] relative shrink-0 w-[1280px]" data-name="hero">
@@ -401,44 +421,6 @@ function WhatWeDo_Brush() {
   );
 }
 
-function WhatWeDo_Frame1() {
-  return (
-    <div className="h-[143px] relative shrink-0 w-[270px]">
-      <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={whatWeDoImgFrame28} />
-    </div>
-  );
-}
-
-
-function WhatWeDo_Frame2() {
-  return (
-    <div className="h-[143px] relative shrink-0 w-[270px]">
-      <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={whatWeDoImgFrame29} />
-    </div>
-  );
-}
-
-
-function WhatWeDo_Frame3() {
-  return (
-    <div className="h-[143px] relative shrink-0 w-[270px]">
-      <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={whatWeDoImgFrame30} />
-    </div>
-  );
-}
-
-
-function WhatWeDo_Frame4() {
-  return (
-    <div className="h-[143px] relative shrink-0 w-[270px]">
-      <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={whatWeDoImgFrame31} />
-    </div>
-  );
-}
-
-
-
-
 // ─── Why Social Stack (dark theme) ─────────────────────────────────────────
 function Why_Brush() {
   return (
@@ -452,121 +434,6 @@ function Why_Brush() {
     </div>
   );
 }
-function Why_Stickynote() {
-  return (
-    <div className="absolute flex items-center justify-center left-[13px] size-[51.231px] top-[14px]">
-      <div className="-rotate-4 flex-none">
-        <div className="bg-[rgba(183,221,103,0.8)] overflow-clip relative rounded-[4px] shadow-[0px_4px_10px_0px_rgba(183,221,103,0.12)] size-[48px]" data-name="stickynote">
-          <p className="[word-break:break-word] absolute font-['Manrope:Medium',sans-serif] font-medium leading-[20px] left-[20.02px] text-[20px] text-black top-[14.81px] whitespace-nowrap">1.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Why_Frame2() {
-  return (
-    <div className="absolute h-[65px] left-0 overflow-clip top-[7px] w-[70px]">
-      <Why_Stickynote />
-    </div>
-  );
-}
-
-function Why_Frame3() {
-  return (
-    <div className="absolute h-[116px] left-[70px] overflow-clip top-[14px] w-[280px]">
-      <p className="[word-break:break-word] absolute font-['Manrope:Bold',sans-serif] font-bold h-[94px] leading-[40px] left-[18px] text-[#f4f4ef] text-[30px] top-px tracking-[-1.2px] w-[262px]">Everything under one roof</p>
-    </div>
-  );
-}
-
-function Why_Frame1() {
-  return (
-    <div className="h-[109px] overflow-clip relative shrink-0 w-[337px]">
-      <Why_Frame2 />
-      <Why_Frame3 />
-    </div>
-  );
-}
-
-
-function Why_Stickynote1() {
-  return (
-    <div className="absolute flex items-center justify-center left-[13.39px] size-[50.446px] top-[14.39px]">
-      <div className="flex-none rotate-3">
-        <div className="bg-[rgba(183,221,103,0.8)] overflow-clip relative rounded-[4px] shadow-[0px_4px_10px_0px_rgba(183,221,103,0.12)] size-[48px]" data-name="stickynote">
-          <p className="[word-break:break-word] absolute font-['Manrope:Medium',sans-serif] font-medium leading-[20px] left-[20.02px] text-[20px] text-black top-[14.81px] whitespace-nowrap">2.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Why_Frame5() {
-  return (
-    <div className="absolute h-[65px] left-0 overflow-clip top-[7px] w-[70px]">
-      <Why_Stickynote1 />
-    </div>
-  );
-}
-
-function Why_Frame6() {
-  return (
-    <div className="absolute h-[116px] left-[70px] overflow-clip top-[14px] w-[280px]">
-      <p className="[word-break:break-word] absolute font-['Manrope:Bold',sans-serif] font-bold h-[94px] leading-[40px] left-[18px] text-[#f4f4ef] text-[30px] top-px tracking-[-1.2px] w-[262px]">Fast communication</p>
-    </div>
-  );
-}
-
-function Why_Frame4() {
-  return (
-    <div className="h-[109px] overflow-clip relative shrink-0 w-[337px]">
-      <Why_Frame5 />
-      <Why_Frame6 />
-    </div>
-  );
-}
-
-
-function Why_Stickynote2() {
-  return (
-    <div className="absolute flex items-center justify-center left-[12.24px] size-[52.754px] top-[13.24px]">
-      <div className="-rotate-6 flex-none">
-        <div className="bg-[rgba(183,221,103,0.8)] overflow-clip relative rounded-[4px] shadow-[0px_4px_10px_0px_rgba(183,221,103,0.12)] size-[48px]" data-name="stickynote">
-          <p className="[word-break:break-word] absolute font-['Manrope:Medium',sans-serif] font-medium leading-[20px] left-[20.02px] text-[20px] text-black top-[14.81px] whitespace-nowrap">3.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Why_Frame8() {
-  return (
-    <div className="absolute h-[65px] left-0 overflow-clip top-[7px] w-[70px]">
-      <Why_Stickynote2 />
-    </div>
-  );
-}
-
-function Why_Frame9() {
-  return (
-    <div className="absolute h-[73px] left-[70px] overflow-clip top-[14px] w-[280px]">
-      <p className="[word-break:break-word] absolute font-['Manrope:Bold',sans-serif] font-bold h-[72px] leading-[40px] left-[18px] text-[#f4f4ef] text-[30px] top-[17px] tracking-[-1.2px] w-[262px]">Built for growth</p>
-    </div>
-  );
-}
-
-function Why_Frame7() {
-  return (
-    <div className="h-[87px] overflow-clip relative shrink-0 w-[337px]">
-      <Why_Frame8 />
-      <Why_Frame9 />
-    </div>
-  );
-}
-
-
-
 
 // ─── How Social Stack (dark theme) ─────────────────────────────────────────
 function How_Brush() {
@@ -578,216 +445,6 @@ function How_Brush() {
         </svg>
       </div>
       <p className="[word-break:break-word] absolute font-['Caveat_Brush:Regular',sans-serif] inset-[12.68%_9.59%_13.38%_4.68%] leading-[88px] not-italic text-[#273338] text-[90px] text-center tracking-[-3.6px]">How social stack works</p>
-    </div>
-  );
-}
-
-function How_IconEmojiCategoryEmojiObjectsBlack24Dp({ className = "" }) {
-  return (
-    <div className={className || "absolute h-[56px] left-[18px] overflow-clip top-[13px] w-[46px]"} data-name="Icon / emoji-category / emoji_objects_black_24dp">
-      <div className="absolute inset-[12.5%_20.83%_8.33%_20.82%]" data-name="fill">
-        <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 26.8396 44.3333">
-          <path d={howSvgPaths.p362031c0} fill="var(--fill-0, #B7DD67)" fillOpacity="0.8" id="fill" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function How_Frame2() {
-  return (
-    <div className="absolute border-2 border-[rgba(183,221,103,0.8)] border-solid left-[11px] overflow-clip rounded-[9999999px] size-[85px] top-[104px]">
-      <How_IconEmojiCategoryEmojiObjectsBlack24Dp />
-    </div>
-  );
-}
-
-function How_Frame3() {
-  return (
-    <div className="absolute border-2 border-[#b7dd67] border-solid h-[51px] left-[83px] overflow-clip rounded-[18px] top-[22px] w-[134px]">
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[65px] not-italic text-[#b7dd67] text-[20px] text-center top-[8px] tracking-[-0.8px] whitespace-nowrap">STEP 1</p>
-    </div>
-  );
-}
-
-function How_Step() {
-  return (
-    <div className="absolute h-[221px] left-[10px] overflow-clip top-[24px] w-[300px]" data-name="step 1">
-      <How_Frame2 />
-      <How_Frame3 />
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[164.5px] not-italic text-[20px] text-center text-white top-[107px] tracking-[-0.8px] w-[109px]">Tell us your idea.</p>
-      <div className="absolute h-[5.181px] left-[200px] top-[183px] w-[100px]" data-name="connector-arrow">
-        <div className="absolute inset-[-78.49%_0_-41.4%_-0.17%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 100.174 11.3927">
-            <path d={howSvgPaths.p359a4000} fill="var(--stroke-0, #B7DD67)" fillOpacity="0.8" id="Arrow 2" />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function How_Frame4() {
-  return (
-    <div className="absolute border-2 border-[#b7dd67] border-solid left-[16px] overflow-clip rounded-[9999px] size-[85px] top-[104px]">
-      <div className="absolute left-[2px] size-[78px] top-[-2px]" data-name="tabler/pencil-pause">
-        <div className="absolute inset-[19.46%_19.46%_16.67%_16.67%]" data-name="Vector">
-          <div className="absolute inset-[-3.01%]">
-            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 52.8174 52.8174">
-              <path d={howSvgPaths.p266d080} id="Vector" stroke="var(--stroke-0, #B7DD67)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
-            </svg>
-          </div>
-        </div>
-        <div className="absolute inset-[27.08%_27.08%_56.25%_56.25%]" data-name="Vector">
-          <div className="absolute inset-[-11.54%]">
-            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-              <path d="M1.5 1.5L14.5 14.5" id="Vector" stroke="var(--stroke-0, #B7DD67)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
-            </svg>
-          </div>
-        </div>
-        <div className="absolute inset-[70.83%_29.17%_8.33%_70.83%]" data-name="Vector">
-          <div className="absolute inset-[-6.15%_-1px]">
-            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 2 18.25">
-              <path d="M1 1V17.25" id="Vector" stroke="var(--stroke-0, #B7DD67)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
-          </div>
-        </div>
-        <div className="absolute inset-[70.83%_12.5%_8.33%_87.5%]" data-name="Vector">
-          <div className="absolute inset-[-6.15%_-1px]">
-            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 2 18.25">
-              <path d="M1 1V17.25" id="Vector" stroke="var(--stroke-0, #B7DD67)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function How_Frame5() {
-  return (
-    <div className="absolute border-2 border-[#b7dd67] border-solid h-[51px] left-[83px] overflow-clip rounded-[18px] top-[22px] w-[134px]">
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[65px] not-italic text-[#b7dd67] text-[20px] text-center top-[8px] tracking-[-0.8px] whitespace-nowrap">STEP 2</p>
-    </div>
-  );
-}
-
-function How_Step1() {
-  return (
-    <div className="absolute h-[221px] left-[330px] overflow-clip top-[24px] w-[300px]" data-name="step 2">
-      <How_Frame4 />
-      <How_Frame5 />
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[164.5px] not-italic text-[20px] text-center text-white top-[107px] tracking-[-0.8px] w-[109px]">We plan your stack</p>
-    </div>
-  );
-}
-
-function How_Frame6() {
-  return (
-    <div className="absolute border border-[rgba(183,221,103,0.8)] border-solid left-[16px] overflow-clip rounded-[99999px] size-[85px] top-[94px]">
-      <div className="absolute h-[50px] left-[11px] overflow-clip rounded-[5px] top-[17px] w-[62px]" data-name="Outline / Network, IT, Programming / Code Square">
-        <div className="absolute inset-[5.21%]" data-name="Vector">
-          <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 55.5417 44.7917">
-            <g id="Vector">
-              <path d={howSvgPaths.p1d674e00} fill="var(--fill-0, #B7DD67)" />
-              <path d={howSvgPaths.p37ae180} fill="var(--fill-0, #B7DD67)" />
-              <path d={howSvgPaths.p27471600} fill="var(--fill-0, #B7DD67)" />
-              <path clipRule="evenodd" d={howSvgPaths.p7ea6800} fill="var(--fill-0, #B7DD67)" fillRule="evenodd" />
-            </g>
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function How_Frame7() {
-  return (
-    <div className="absolute border-2 border-[#b7dd67] border-solid h-[51px] left-[83px] overflow-clip rounded-[18px] top-[22px] w-[134px]">
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[65.5px] not-italic text-[#b7dd67] text-[20px] text-center top-[8px] tracking-[-0.8px] whitespace-nowrap">STEP 3</p>
-    </div>
-  );
-}
-
-function How_Step2() {
-  return (
-    <div className="absolute h-[221px] left-[660px] overflow-clip top-[24px] w-[300px]" data-name="step 3">
-      <How_Frame6 />
-      <How_Frame7 />
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[164.5px] not-italic text-[20px] text-center text-white top-[107px] tracking-[-0.8px] w-[109px]">We build it for you</p>
-    </div>
-  );
-}
-
-function How_RocketTakeoff({ className = "" }) {
-  return (
-    <div className={className || "absolute left-[9px] overflow-clip size-[55px] top-[17px]"} data-name="rocket-takeoff">
-      <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 55 55">
-        <g id="Vector">
-          <path d={howSvgPaths.p1423e400} fill="var(--fill-0, #B7DD67)" />
-          <path d={howSvgPaths.p25ebb400} fill="var(--fill-0, #B7DD67)" />
-          <path d={howSvgPaths.p184a4dc0} fill="var(--fill-0, #B7DD67)" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function How_Frame8() {
-  return (
-    <div className="absolute border border-[rgba(183,221,103,0.8)] border-solid left-[16px] overflow-clip rounded-[99999px] size-[85px] top-[94px]">
-      <How_RocketTakeoff />
-    </div>
-  );
-}
-
-function How_Frame9() {
-  return (
-    <div className="absolute border-2 border-[#b7dd67] border-solid h-[51px] left-[83px] overflow-clip rounded-[18px] top-[22px] w-[134px]">
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[65.5px] not-italic text-[#b7dd67] text-[20px] text-center top-[8px] tracking-[-0.8px] whitespace-nowrap">STEP 4</p>
-    </div>
-  );
-}
-
-function How_Step3() {
-  return (
-    <div className="absolute h-[221px] left-[990px] overflow-clip top-[24px] w-[300px]" data-name="step 4">
-      <How_Frame8 />
-      <How_Frame9 />
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[185.5px] not-italic text-[20px] text-center text-white top-[107px] tracking-[-0.8px] w-[151px]">Launch and grow together</p>
-    </div>
-  );
-}
-
-function How_Frame1() {
-  return (
-    <div className="h-[350px] overflow-clip relative shrink-0 w-full" data-name="steps-canvas">
-      <How_Step />
-      <How_Step1 />
-      <How_Step2 />
-      <How_Step3 />
-      <div className="absolute h-[10.728px] left-[549px] top-[138.7px] w-[100px]" data-name="connector-arrow">
-        <div className="absolute inset-[-9.32%_0_-14.53%_-0.29%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 100.292 13.287">
-            <path d={howSvgPaths.p1de58920} fill="var(--stroke-0, #B7DD67)" fillOpacity="0.8" id="Arrow 3" />
-          </svg>
-        </div>
-      </div>
-      <div className="absolute h-[5.766px] left-[879px] top-[212px] w-[100px]" data-name="connector-arrow">
-        <div className="absolute inset-[-59.96%_0_-35.49%_-0.17%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 100.167 11.2699">
-            <path d={howSvgPaths.p3d75600} fill="var(--stroke-0, #B7DD67)" fillOpacity="0.8" id="Arrow 1" />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function How_Frame() {
-  return (
-    <div className="content-stretch flex flex-col h-[350px] items-start relative shrink-0 w-full">
-      <How_Frame1 />
     </div>
   );
 }
@@ -894,14 +551,15 @@ function Cta_Frame() {
 
 // ─── Light theme page (self-contained: its own nav, hero, sections, footer) ─
 function LHero_WhatWeDo() {
+  const { ref, inView } = useInViewAnimation<HTMLDivElement>();
   return (
-    <motion.div className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
+    <motion.div ref={ref} className="relative inline-flex overflow-hidden rounded-full p-[2px] cursor-default" whileHover={{ scale: 1.05, x: 5 }}>
       <span
-        className="absolute inset-[-80%] rounded-full opacity-90 animate-[spin360_3.8s_linear_infinite]"
+        className={`absolute inset-[-80%] rounded-full opacity-90 ${inView ? "animate-[spin360_3.8s_linear_infinite]" : ""}`}
         style={{ background: "conic-gradient(from 0deg, transparent 0deg, transparent 64deg, rgba(39,51,56,0.9) 82deg, transparent 104deg, transparent 360deg)" }}
       />
       <span
-        className="absolute inset-[-80%] rounded-full opacity-75 animate-[spin360_4.6s_linear_infinite]"
+        className={`absolute inset-[-80%] rounded-full opacity-75 ${inView ? "animate-[spin360_4.6s_linear_infinite]" : ""}`}
         style={{ background: "conic-gradient(from 180deg, transparent 0deg, transparent 64deg, rgba(63,79,74,0.82) 82deg, transparent 104deg, transparent 360deg)" }}
       />
       <span className="relative z-10 inline-flex items-center bg-[#526862] rounded-full px-6 py-2.5 lg:px-8 lg:py-3 border border-[rgba(196,240,107,0.15)]">
@@ -913,9 +571,10 @@ function LHero_WhatWeDo() {
   );
 }
 
-function LHero_Frame() {
+const LHero_Frame = memo(function LHero_Frame() {
+  const { ref, inView } = useInViewAnimation<HTMLDivElement>();
   return (
-    <div className="h-[298px] overflow-clip relative shrink-0 w-full">
+    <div ref={ref} className="h-[298px] overflow-clip relative shrink-0 w-full">
       <div className="absolute flex h-[185.616px] items-center justify-center left-[-3.16px] top-[13.19px] w-[349.325px]">
         <div className="-rotate-3 flex-none">
           <div className="[word-break:break-word] bg-clip-text bg-gradient-to-r font-['Patrick_Hand:Regular',sans-serif] from-[#2f372d] h-[168px] leading-[0] not-italic relative text-[95px] text-[transparent] to-[#6e7f3f] to-[82.031%] tracking-[-3.8px] w-[341px] whitespace-pre-wrap">
@@ -953,26 +612,26 @@ function LHero_Frame() {
               strokeWidth="2"
               pathLength="1"
               strokeDasharray="1"
-              className="animate-[doodleFill_2.6s_ease-in-out_infinite]"
+              className={inView ? "animate-[doodleFill_2.6s_ease-in-out_infinite]" : ""}
             />
           </svg>
         </div>
       </div>
-      <div className="absolute h-[42.491px] left-[336.97px] top-[80.08px] w-[25.159px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
+      <div className={`absolute h-[42.491px] left-[336.97px] top-[80.08px] w-[25.159px] origin-center ${inView ? "animate-[doodlePulse_2s_ease-out_infinite]" : ""}`}>
         <div className="absolute inset-[-2.35%_-3.98%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 27.1594 44.4912">
             <path d={lHeroSvgPaths.p2484b380} id="Vector 46" stroke="var(--stroke-0, #2F372D)" strokeLinecap="round" strokeWidth="2" />
           </svg>
         </div>
       </div>
-      <div className="absolute h-[34.104px] left-[351.51px] top-[89.59px] w-[91.691px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
+      <div className={`absolute h-[34.104px] left-[351.51px] top-[89.59px] w-[91.691px] origin-center ${inView ? "animate-[doodlePulse_2s_ease-out_infinite]" : ""}`}>
         <div className="absolute inset-[-2.93%_-1.09%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 93.6912 36.105">
             <path d={lHeroSvgPaths.p13dde6c0} id="Vector 47" stroke="var(--stroke-0, #2F372D)" strokeLinecap="round" strokeWidth="2" />
           </svg>
         </div>
       </div>
-      <div className="absolute h-[14.536px] left-[360.46px] top-[135.99px] w-[67.091px] origin-center animate-[doodlePulse_2s_ease-out_infinite]">
+      <div className={`absolute h-[14.536px] left-[360.46px] top-[135.99px] w-[67.091px] origin-center ${inView ? "animate-[doodlePulse_2s_ease-out_infinite]" : ""}`}>
         <div className="absolute inset-[-6.88%_-1.49%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 69.091 16.5366">
             <path d={lHeroSvgPaths.p2785b2a0} id="Vector 48" stroke="var(--stroke-0, #2F372D)" strokeLinecap="round" strokeWidth="2" />
@@ -981,7 +640,7 @@ function LHero_Frame() {
       </div>
     </div>
   );
-}
+});
 
 function LHero_Button() {
   return (
@@ -1043,44 +702,6 @@ function LHero_Brush() {
   );
 }
 
-function LHero_Frame3() {
-  return (
-    <div className="h-[143px] relative shrink-0 w-[270px]">
-      <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={lHeroImgFrame28} />
-    </div>
-  );
-}
-
-
-function LHero_Frame4() {
-  return (
-    <div className="h-[143px] relative shrink-0 w-[270px]">
-      <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={lHeroImgFrame29} />
-    </div>
-  );
-}
-
-
-function LHero_Frame5() {
-  return (
-    <div className="h-[143px] relative shrink-0 w-[270px]">
-      <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={lHeroImgFrame30} />
-    </div>
-  );
-}
-
-
-function LHero_Frame6() {
-  return (
-    <div className="h-[143px] relative shrink-0 w-[270px]">
-      <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={lHeroImgFrame31} />
-    </div>
-  );
-}
-
-
-
-
 function LHero_Brush1() {
   return (
     <div className="h-[142px] overflow-clip relative shrink-0 w-[834px]" data-name="Brush">
@@ -1094,122 +715,6 @@ function LHero_Brush1() {
   );
 }
 
-function LHero_Stickynote() {
-  return (
-    <div className="absolute flex items-center justify-center left-[13px] size-[51.231px] top-[14px]">
-      <div className="-rotate-4 flex-none">
-        <div className="bg-[rgba(111,127,60,0.9)] overflow-clip relative rounded-[4px] shadow-[0px_4px_10px_0px_rgba(183,221,103,0.12)] size-[48px]" data-name="stickynote">
-          <p className="[word-break:break-word] absolute font-['Manrope:Medium',sans-serif] font-medium leading-[20px] left-[20.02px] text-[#d9d9d9] text-[20px] top-[14.81px] whitespace-nowrap">1.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LHero_Frame9() {
-  return (
-    <div className="absolute h-[65px] left-0 overflow-clip top-[7px] w-[70px]">
-      <LHero_Stickynote />
-    </div>
-  );
-}
-
-function LHero_Frame10() {
-  return (
-    <div className="absolute h-[116px] left-[70px] overflow-clip top-[14px] w-[280px]">
-      <p className="[word-break:break-word] absolute font-['Manrope:Bold',sans-serif] font-bold h-[94px] leading-[40px] left-[18px] text-[#2f372d] text-[30px] top-px tracking-[-1.2px] w-[262px]">Everything under one roof</p>
-    </div>
-  );
-}
-
-function LHero_Frame8() {
-  return (
-    <div className="h-[109px] overflow-clip relative shrink-0 w-[337px]">
-      <LHero_Frame9 />
-      <LHero_Frame10 />
-    </div>
-  );
-}
-
-
-function LHero_Stickynote1() {
-  return (
-    <div className="absolute flex items-center justify-center left-[13.39px] size-[50.446px] top-[14.39px]">
-      <div className="flex-none rotate-3">
-        <div className="bg-[rgba(111,127,60,0.9)] overflow-clip relative rounded-[4px] shadow-[0px_4px_10px_0px_rgba(183,221,103,0.12)] size-[48px]" data-name="stickynote">
-          <p className="[word-break:break-word] absolute font-['Manrope:Medium',sans-serif] font-medium leading-[20px] left-[20.02px] text-[#d9d9d9] text-[20px] top-[14.81px] whitespace-nowrap">2.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LHero_Frame12() {
-  return (
-    <div className="absolute h-[65px] left-0 overflow-clip top-[7px] w-[70px]">
-      <LHero_Stickynote1 />
-    </div>
-  );
-}
-
-function LHero_Frame13() {
-  return (
-    <div className="absolute h-[116px] left-[70px] overflow-clip top-[14px] w-[280px]">
-      <p className="[word-break:break-word] absolute font-['Manrope:Bold',sans-serif] font-bold h-[94px] leading-[40px] left-[18px] text-[#2f372d] text-[30px] top-px tracking-[-1.2px] w-[262px]">Fast communication</p>
-    </div>
-  );
-}
-
-function LHero_Frame11() {
-  return (
-    <div className="h-[109px] overflow-clip relative shrink-0 w-[337px]">
-      <LHero_Frame12 />
-      <LHero_Frame13 />
-    </div>
-  );
-}
-
-
-function LHero_Stickynote2() {
-  return (
-    <div className="absolute flex items-center justify-center left-[12.24px] size-[52.754px] top-[13.24px]">
-      <div className="-rotate-6 flex-none">
-        <div className="bg-[rgba(111,127,60,0.9)] overflow-clip relative rounded-[4px] shadow-[0px_4px_10px_0px_rgba(183,221,103,0.12)] size-[48px]" data-name="stickynote">
-          <p className="[word-break:break-word] absolute font-['Manrope:Medium',sans-serif] font-medium leading-[20px] left-[20.02px] text-[#d9d9d9] text-[20px] top-[14.81px] whitespace-nowrap">3.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LHero_Frame15() {
-  return (
-    <div className="absolute h-[65px] left-0 overflow-clip top-[7px] w-[70px]">
-      <LHero_Stickynote2 />
-    </div>
-  );
-}
-
-function LHero_Frame16() {
-  return (
-    <div className="absolute h-[73px] left-[70px] overflow-clip top-[14px] w-[280px]">
-      <p className="[word-break:break-word] absolute font-['Manrope:Bold',sans-serif] font-bold h-[72px] leading-[40px] left-[18px] text-[#2f372d] text-[30px] top-[17px] tracking-[-1.2px] w-[262px]">Built for growth</p>
-    </div>
-  );
-}
-
-function LHero_Frame14() {
-  return (
-    <div className="h-[87px] overflow-clip relative shrink-0 w-[337px]">
-      <LHero_Frame15 />
-      <LHero_Frame16 />
-    </div>
-  );
-}
-
-
-
-
 function LHero_Brush2() {
   return (
     <div className="h-[142px] overflow-clip relative shrink-0 w-[834px]" data-name="Brush">
@@ -1219,204 +724,6 @@ function LHero_Brush2() {
         </svg>
       </div>
       <p className="[word-break:break-word] absolute font-['Caveat_Brush:Regular',sans-serif] inset-[12.68%_9.59%_13.38%_4.68%] leading-[88px] not-italic text-[#e6f2dd] text-[90px] text-center tracking-[-3.6px]">How social stack works</p>
-    </div>
-  );
-}
-
-function LHero_Frame19() {
-  return (
-    <div className="absolute border-2 border-[rgba(111,127,60,0.9)] border-solid left-[11px] overflow-clip rounded-[9999999px] size-[85px] top-[104px]">
-      <div className="absolute h-[56px] left-[18px] overflow-clip top-[13px] w-[46px]" data-name="Icon / emoji-category / emoji_objects_black_24dp">
-        <div className="absolute inset-[12.5%_20.83%_8.33%_20.82%]" data-name="fill">
-          <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 26.8396 44.3333">
-            <path d={lHeroSvgPaths.p362031c0} fill="var(--fill-0, #6F7F3C)" fillOpacity="0.9" id="fill" />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LHero_Frame20() {
-  return (
-    <div className="absolute border-2 border-[#6f7f3c] border-solid h-[51px] left-[83px] overflow-clip rounded-[18px] top-[22px] w-[134px]">
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[65px] not-italic text-[#6f7f3c] text-[20px] text-center top-[8px] tracking-[-0.8px] whitespace-nowrap">STEP 1</p>
-    </div>
-  );
-}
-
-function LHero_Step() {
-  return (
-    <div className="absolute h-[221px] left-[10px] overflow-clip top-[24px] w-[300px]" data-name="step 1">
-      <LHero_Frame19 />
-      <LHero_Frame20 />
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Semi_Bold',sans-serif] font-semibold h-[68px] leading-[32px] left-[157.5px] not-italic text-[#2f372d] text-[20px] text-center top-[107px] tracking-[-0.8px] w-[123px]">Tell us your idea.</p>
-      <div className="absolute h-[5.181px] left-[200px] top-[183px] w-[100px]" data-name="connector-arrow">
-        <div className="absolute inset-[-78.49%_0_-41.4%_-0.17%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 100.174 11.3927">
-            <path d={lHeroSvgPaths.p359a4000} fill="var(--stroke-0, #6F7F3C)" fillOpacity="0.9" id="Arrow 2" />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LHero_Frame21() {
-  return (
-    <div className="absolute border-2 border-[#6f7f3c] border-solid left-[16px] overflow-clip rounded-[9999px] size-[85px] top-[104px]">
-      <div className="absolute left-[2px] size-[78px] top-[-2px]" data-name="tabler/pencil-pause">
-        <div className="absolute inset-[19.46%_19.46%_16.67%_16.67%]" data-name="Vector">
-          <div className="absolute inset-[-3.01%]">
-            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 52.8174 52.8174">
-              <path d={lHeroSvgPaths.p266d080} id="Vector" stroke="var(--stroke-0, #6F7F3C)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
-            </svg>
-          </div>
-        </div>
-        <div className="absolute inset-[27.08%_27.08%_56.25%_56.25%]" data-name="Vector">
-          <div className="absolute inset-[-11.54%]">
-            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-              <path d="M1.5 1.5L14.5 14.5" id="Vector" stroke="var(--stroke-0, #6F7F3C)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
-            </svg>
-          </div>
-        </div>
-        <div className="absolute inset-[70.83%_29.17%_8.33%_70.83%]" data-name="Vector">
-          <div className="absolute inset-[-6.15%_-1px]">
-            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 2 18.25">
-              <path d="M1 1V17.25" id="Vector" stroke="var(--stroke-0, #6F7F3C)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
-          </div>
-        </div>
-        <div className="absolute inset-[70.83%_12.5%_8.33%_87.5%]" data-name="Vector">
-          <div className="absolute inset-[-6.15%_-1px]">
-            <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 2 18.25">
-              <path d="M1 1V17.25" id="Vector" stroke="var(--stroke-0, #6F7F3C)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LHero_Frame22() {
-  return (
-    <div className="absolute border-2 border-[#6f7f3c] border-solid h-[51px] left-[83px] overflow-clip rounded-[18px] top-[22px] w-[134px]">
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[65px] not-italic text-[#6f7f3c] text-[20px] text-center top-[8px] tracking-[-0.8px] whitespace-nowrap">STEP 2</p>
-    </div>
-  );
-}
-
-function LHero_Step1() {
-  return (
-    <div className="absolute h-[221px] left-[330px] overflow-clip top-[24px] w-[300px]" data-name="step 2">
-      <LHero_Frame21 />
-      <LHero_Frame22 />
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Semi_Bold',sans-serif] font-semibold leading-[32px] left-[164.5px] not-italic text-[#2f372d] text-[20px] text-center top-[107px] tracking-[-0.8px] w-[109px]">We plan your stack</p>
-    </div>
-  );
-}
-
-function LHero_Frame23() {
-  return (
-    <div className="absolute border border-[rgba(111,127,60,0.8)] border-solid left-[16px] overflow-clip rounded-[99999px] size-[85px] top-[94px]">
-      <div className="absolute h-[50px] left-[11px] overflow-clip rounded-[5px] top-[17px] w-[62px]" data-name="Outline / Network, IT, Programming / Code Square">
-        <div className="absolute inset-[5.21%]" data-name="Vector">
-          <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 55.5417 44.7917">
-            <g id="Vector">
-              <path d={lHeroSvgPaths.p1d674e00} fill="var(--fill-0, #6F7F3C)" />
-              <path d={lHeroSvgPaths.p37ae180} fill="var(--fill-0, #6F7F3C)" />
-              <path d={lHeroSvgPaths.p27471600} fill="var(--fill-0, #6F7F3C)" />
-              <path clipRule="evenodd" d={lHeroSvgPaths.p7ea6800} fill="var(--fill-0, #6F7F3C)" fillRule="evenodd" />
-            </g>
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LHero_Frame24() {
-  return (
-    <div className="absolute border-2 border-[#6f7f3c] border-solid h-[51px] left-[83px] overflow-clip rounded-[18px] top-[22px] w-[134px]">
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[65.5px] not-italic text-[#6f7f3c] text-[20px] text-center top-[8px] tracking-[-0.8px] whitespace-nowrap">STEP 3</p>
-    </div>
-  );
-}
-
-function LHero_Step2() {
-  return (
-    <div className="absolute h-[221px] left-[660px] overflow-clip top-[24px] w-[300px]" data-name="step 3">
-      <LHero_Frame23 />
-      <LHero_Frame24 />
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Semi_Bold',sans-serif] font-semibold leading-[32px] left-[164.5px] not-italic text-[#2f372d] text-[20px] text-center top-[107px] tracking-[-0.8px] w-[109px]">We build it for you</p>
-    </div>
-  );
-}
-
-function LHero_Frame25() {
-  return (
-    <div className="absolute border border-[rgba(111,127,60,0.9)] border-solid left-[16px] overflow-clip rounded-[99999px] size-[85px] top-[94px]">
-      <div className="absolute left-[9px] overflow-clip size-[55px] top-[17px]" data-name="rocket-takeoff">
-        <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 55 55">
-          <g id="Vector">
-            <path d={lHeroSvgPaths.p1423e400} fill="var(--fill-0, #6F7F3C)" />
-            <path d={lHeroSvgPaths.p25ebb400} fill="var(--fill-0, #6F7F3C)" />
-            <path d={lHeroSvgPaths.p184a4dc0} fill="var(--fill-0, #6F7F3C)" />
-          </g>
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function LHero_Frame26() {
-  return (
-    <div className="absolute border-2 border-[#6f7f3c] border-solid h-[51px] left-[83px] overflow-clip rounded-[18px] top-[22px] w-[134px]">
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular',sans-serif] font-normal leading-[32px] left-[65.5px] not-italic text-[#6f7f3c] text-[20px] text-center top-[8px] tracking-[-0.8px] whitespace-nowrap">STEP 4</p>
-    </div>
-  );
-}
-
-function LHero_Step3() {
-  return (
-    <div className="absolute h-[221px] left-[990px] overflow-clip top-[24px] w-[300px]" data-name="step 4">
-      <LHero_Frame25 />
-      <LHero_Frame26 />
-      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Semi_Bold',sans-serif] font-semibold leading-[32px] left-[185.5px] not-italic text-[#2f372d] text-[20px] text-center top-[107px] tracking-[-0.8px] w-[151px]">Launch and grow together</p>
-    </div>
-  );
-}
-
-function LHero_Frame18() {
-  return (
-    <div className="h-[350px] overflow-clip relative shrink-0 w-full" data-name="steps-canvas">
-      <LHero_Step />
-      <LHero_Step1 />
-      <LHero_Step2 />
-      <LHero_Step3 />
-      <div className="absolute h-[10.728px] left-[549px] top-[138.7px] w-[100px]" data-name="connector-arrow">
-        <div className="absolute inset-[-9.32%_0_-14.53%_-0.29%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 100.292 13.287">
-            <path d={lHeroSvgPaths.p1de58920} fill="var(--stroke-0, #6F7F3C)" fillOpacity="0.9" id="Arrow 3" />
-          </svg>
-        </div>
-      </div>
-      <div className="absolute h-[5.766px] left-[879px] top-[212px] w-[100px]" data-name="connector-arrow">
-        <div className="absolute inset-[-59.96%_0_-35.49%_-0.17%]">
-          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 100.167 11.2699">
-            <path d={lHeroSvgPaths.p3d75600} fill="var(--stroke-0, #6F7F3C)" fillOpacity="0.9" id="Arrow 1" />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LHero_Frame17() {
-  return (
-    <div className="content-stretch flex flex-col h-[350px] items-start relative shrink-0 w-full">
-      <LHero_Frame18 />
     </div>
   );
 }
@@ -1530,19 +837,12 @@ const doodlePaths = {
     "M25.5324 13.657C-36.9676 13.6571 28.5321 13.6572 125.532 3.15688C181.024 -2.85022 278.623 5.88972 388.532 3.15706",
 };
 
-// Always centers itself horizontally within its relative parent — this is
-// what keeps the little brush-accent squiggle lined up under each heading
-// regardless of theme, breakpoint, or however the parent box gets resized.
-// IMPORTANT: the self-centering shift lives in the `doodlePulse` keyframes
-// (translateX(-50%) baked into every step) rather than in an inline
-// `transform` style — a *running* CSS animation on `transform` overrides any
-// inline `transform` value for that same property, so setting it inline here
-// would get silently clobbered by the pulse animation. `left` is untouched
-// by the animation, so the optional `offsetX` nudge is applied there instead.
-function BrushDoodle({ d, width, height, top, color = "#F4F4EF", offsetX = 0 }) {
+const BrushDoodle = memo(function BrushDoodle({ d, width, height, top, color = "#F4F4EF", offsetX = 0 }: any) {
+  const { ref, inView } = useInViewAnimation<HTMLDivElement>();
   return (
     <div
-      className="absolute pointer-events-none origin-center animate-[doodleCenterPulse_2s_ease-out_infinite]"
+      ref={ref}
+      className={`absolute pointer-events-none origin-center ${inView ? "animate-[doodleCenterPulse_2s_ease-out_infinite]" : ""}`}
       style={{
         left: `calc(50% + ${offsetX}px)`,
         top,
@@ -1560,7 +860,7 @@ function BrushDoodle({ d, width, height, top, color = "#F4F4EF", offsetX = 0 }) 
       </svg>
     </div>
   );
-}
+});
 
 // ─── ScaleFrame ───────────────────────────────────────────────────────────────
 function NumberBadge({ n, rotate }) {
@@ -1573,7 +873,7 @@ function NumberBadge({ n, rotate }) {
   );
 }
 
-function ServiceCard({ icon, title, desc, isLight, active = true, href = "/services" }) {
+const ServiceCard = memo(function ServiceCard({ icon, title, desc, isLight, active = true, href = "/services" }: any) {
   return (
     <motion.div
       whileHover={{ y: -6, scale: 1.04 }}
@@ -1589,7 +889,6 @@ function ServiceCard({ icon, title, desc, isLight, active = true, href = "/servi
           : "shadow-lg"
       }`}
     >
-      {/* soft decorative glow behind the icon */}
       <div
         aria-hidden
         className="absolute top-2 md:top-4 left-1/2 -translate-x-1/2 size-14 md:size-24 rounded-full pointer-events-none blur-2xl"
@@ -1621,9 +920,9 @@ function ServiceCard({ icon, title, desc, isLight, active = true, href = "/servi
       />
     </motion.div>
   );
-}
+});
 
-function WhyCard({ badge, title, desc, isLight, active = true }) {
+const WhyCard = memo(function WhyCard({ badge, title, desc, isLight, active = true }: any) {
   return (
     <motion.div
       whileHover={{ y: -6, scale: 1.04 }}
@@ -1667,37 +966,43 @@ function WhyCard({ badge, title, desc, isLight, active = true }) {
       />
     </motion.div>
   );
-}
+});
 
 function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const [dims, setDims] = useState({ w: cardWidth, h: minHeight, spread: 0.62, compact: false });
-  const wrapRef = useRef(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const total = items.length;
 
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
+    
+    let timeoutId: number;
     function updateDims() {
-      const avail = el.clientWidth || window.innerWidth;
+      const avail = el!.clientWidth || window.innerWidth;
       if (avail < 860) {
-        // Compact (phone/tablet): a single, naturally-tall card — no forced
-        // pixel height. Forcing a guessed height here is what was clipping
-        // WhyCard's longer descriptions; letting content set its own height
-        // makes that impossible.
-        setDims({ w: Math.max(220, Math.min(cardWidth, avail * 0.86)), h: "auto", spread: 0.56, compact: true });
+        setDims({ w: Math.max(220, Math.min(cardWidth, avail * 0.86)), h: "auto" as any, spread: 0.56, compact: true });
       } else {
         setDims({ w: cardWidth, h: minHeight, spread: 0.62, compact: false });
       }
     }
-    updateDims();
-    const ro = new ResizeObserver(updateDims);
+
+    function debouncedUpdate() {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(updateDims, 150);
+    }
+
+    updateDims(); // Run immediately on mount
+    const ro = new ResizeObserver(debouncedUpdate);
     ro.observe(el);
-    window.addEventListener("resize", updateDims);
+    window.addEventListener("resize", debouncedUpdate);
+    
     return () => {
+      window.clearTimeout(timeoutId);
       ro.disconnect();
-      window.removeEventListener("resize", updateDims);
+      window.removeEventListener("resize", debouncedUpdate);
     };
   }, [cardWidth, minHeight]);
 
@@ -1706,32 +1011,48 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
     [total]
   );
 
+  // Pause the autoplay interval when the carousel is off-screen (e.g. user
+  // scrolled past it) in addition to the existing hover/focus pause — saves
+  // timers/re-renders firing for a carousel the user can't see.
+  const { ref: inViewRef, inView } = useInViewAnimation<HTMLDivElement>();
+  const setWrapRefs = useCallback((node: HTMLDivElement | null) => {
+    wrapRef.current = node;
+    inViewRef.current = node;
+  }, [inViewRef]);
+
   useEffect(() => {
-    if (paused || total <= 1) return;
+    if (paused || !inView || total <= 1) return;
     const timer = window.setInterval(() => {
       go(1);
     }, 3000);
     return () => window.clearInterval(timer);
-  }, [go, paused, total]);
+  }, [go, paused, inView, total]);
 
-  const arrowStyle = {
-    borderColor: isLight ? "rgba(39,51,56,0.5)" : "rgba(230,242,221,0.52)",
-    color: isLight ? "#273338" : "#e6f2dd",
-    background: isLight
-      ? "linear-gradient(135deg, rgba(230,242,221,0.68), rgba(255,255,255,0.24))"
-      : "linear-gradient(135deg, rgba(230,242,221,0.12), rgba(255,255,255,0.04))",
-    boxShadow: isLight
-      ? "0 14px 30px rgba(63,79,74,0.14), inset 0 1px 0 rgba(255,255,255,0.72)"
-      : "0 14px 30px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.14)",
-    backdropFilter: "blur(18px) saturate(160%)",
-    WebkitBackdropFilter: "blur(18px) saturate(160%)",
-  } as CSSProperties;
+  const arrowStyle = useMemo(
+    () =>
+      ({
+        borderColor: isLight ? "rgba(39,51,56,0.5)" : "rgba(230,242,221,0.52)",
+        color: isLight ? "#273338" : "#e6f2dd",
+        background: isLight
+          ? "linear-gradient(135deg, rgba(230,242,221,0.68), rgba(255,255,255,0.24))"
+          : "linear-gradient(135deg, rgba(230,242,221,0.12), rgba(255,255,255,0.04))",
+        boxShadow: isLight
+          ? "0 14px 30px rgba(63,79,74,0.14), inset 0 1px 0 rgba(255,255,255,0.72)"
+          : "0 14px 30px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.14)",
+        backdropFilter: "blur(18px) saturate(160%)",
+        WebkitBackdropFilter: "blur(18px) saturate(160%)",
+      }) as CSSProperties,
+    [isLight]
+  );
+
+  const goPrev = useCallback(() => go(-1), [go]);
+  const goNext = useCallback(() => go(1), [go]);
 
   const arrowButton = (dir, label, symbol) => (
     <motion.button
       type="button"
       aria-label={label}
-      onClick={() => go(dir)}
+      onClick={dir === -1 ? goPrev : goNext}
       className="grid h-11 w-11 place-items-center rounded-full border text-3xl leading-none transition-colors duration-300 touch-manipulation [-webkit-tap-highlight-color:transparent]"
       style={arrowStyle}
       whileHover={{ scale: 1.15 }}
@@ -1744,7 +1065,7 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
 
   return (
     <div
-      ref={wrapRef}
+      ref={setWrapRefs}
       tabIndex={0}
       role="group"
       aria-roledescription="carousel"
@@ -1802,9 +1123,6 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
             if (offset < -total / 2) offset += total;
             const abs = Math.abs(offset);
             const isActive = offset === 0;
-            // Only ever show the immediate left/right neighbor, regardless of
-            // total card count — keeps the group visually symmetric and
-            // centered no matter which card (or how many total) is active.
             const visible = abs <= 1;
             return (
               <motion.div
@@ -1861,31 +1179,39 @@ function CardCarousel({ items, isLight, cardWidth = 320, minHeight = 420 }) {
   );
 }
 
-function ScaleFrame({ children, width, height, mobileWidth = null, mobileHeight = null, mobileBreakpoint = 768, className = "" }) {
-  const frameRef = useRef(null);
+function ScaleFrame({ children, width, height, mobileWidth = null, mobileHeight = null, mobileBreakpoint = 768, className = "" }: any) {
+  const frameRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [dims, setDims] = useState({ w: width, h: height });
 
   useEffect(() => {
     const el = frameRef.current;
     if (!el) return;
+
+    let timeoutId: number;
     function updateScale() {
-      // Measure the real container (not window), so content scales to fit
-      // wherever it's actually rendered instead of overflowing the screen.
-      const availableWidth = el.parentElement ? el.parentElement.clientWidth : window.innerWidth;
+      const availableWidth = el!.parentElement ? el!.parentElement.clientWidth : window.innerWidth;
       const isMobile = availableWidth < mobileBreakpoint;
       const w = isMobile && mobileWidth ? mobileWidth : width;
       const h = isMobile && mobileHeight ? mobileHeight : height;
       setDims({ w, h });
       setScale(Math.min(availableWidth, w) / w);
     }
-    updateScale();
-    const ro = new ResizeObserver(updateScale);
+    
+    function debouncedUpdate() {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(updateScale, 150);
+    }
+
+    updateScale(); // Run immediately on mount
+    const ro = new ResizeObserver(debouncedUpdate);
     if (el.parentElement) ro.observe(el.parentElement);
-    window.addEventListener("resize", updateScale);
+    window.addEventListener("resize", debouncedUpdate);
+    
     return () => {
+      window.clearTimeout(timeoutId);
       ro.disconnect();
-      window.removeEventListener("resize", updateScale);
+      window.removeEventListener("resize", debouncedUpdate);
     };
   }, [width, height, mobileWidth, mobileHeight, mobileBreakpoint]);
 
@@ -1906,11 +1232,7 @@ function ScaleFrame({ children, width, height, mobileWidth = null, mobileHeight 
 }
 
 // ─── How Social Stack Works — responsive step cards ────────────────────────
-// Reuses the exact icon path data already imported (howSvgPaths / lHeroSvgPaths)
-// but positions everything with percentages instead of fixed pixels, so each
-// icon scales cleanly at any card size instead of needing separate mobile /
-// desktop markup.
-function StepIcon({ variant, paths, color }) {
+const StepIcon = memo(function StepIcon({ variant, paths, color }: any) {
   if (variant === "idea") {
     return (
       <div className="absolute" style={{ left: "21.18%", top: "15.29%", width: "54.12%", height: "65.88%" }}>
@@ -1970,7 +1292,6 @@ function StepIcon({ variant, paths, color }) {
       </div>
     );
   }
-  // launch
   return (
     <div className="absolute" style={{ left: "10.59%", top: "20%", width: "64.71%", height: "64.71%" }}>
       <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 55 55">
@@ -1980,27 +1301,21 @@ function StepIcon({ variant, paths, color }) {
       </svg>
     </div>
   );
-}
+});
 
-// Dashed connector with a small chevron + a subtle marching-dash animation to
-// hint at motion/progress between steps. Only shown on the 4-across desktop
-// row — the stacked mobile/tablet layouts rely on numbering + spacing instead.
 function StepConnector({ isLight }) {
+  const { ref, inView } = useInViewAnimation<HTMLDivElement>();
   const c = isLight ? "#6f7f3c" : "#b7dd67";
   return (
-    <div className="hidden lg:flex items-center justify-center px-1" aria-hidden="true">
+    <div ref={ref} className="hidden lg:flex items-center justify-center px-1" aria-hidden="true">
       <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
-        <path d="M1 8H21" stroke={c} strokeOpacity="0.85" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4" className="animate-[dashFlow_1.1s_linear_infinite]" />
+        <path d="M1 8H21" stroke={c} strokeOpacity="0.85" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 4" className={inView ? "animate-[dashFlow_1.1s_linear_infinite]" : ""} />
         <path d="M19 2L27 8L19 14" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>
   );
 }
 
-// The "STEP N" pill fills with color from the bottom up on hover — like
-// juice rising in a glass. It reacts to hovering anywhere on the parent
-// card (via Tailwind's `group`/`group-hover`, since HowStepCard's outer
-// wrapper carries the `group` class), not just the pill itself.
 function StepPill({ n, isLight }) {
   const border = isLight ? "border-[#6f7f3c]" : "border-[#b7dd67]";
   const textIdle = isLight ? "text-[#6f7f3c]" : "text-[#b7dd67]";
@@ -2011,24 +1326,17 @@ function StepPill({ n, isLight }) {
     <div
       className={`relative inline-flex items-center justify-center h-8 sm:h-10 px-3 sm:px-4 rounded-[18px] overflow-hidden border-2 whitespace-nowrap ${border}`}
     >
-      {/* rising "juice" fill — grows 0 → 100% height on hover, with a soft
-          highlight riding its own top edge to sell the liquid-surface look */}
       <span
         aria-hidden="true"
         className={`absolute inset-x-0 bottom-0 h-0 group-hover:h-full transition-[height] duration-[550ms] ease-[cubic-bezier(0.65,0,0.35,1)] overflow-hidden ${fillBg}`}
         style={{ boxShadow: "0 -2px 4px 0 rgba(255,255,255,0.35) inset" }}
       >
-        {/* glossy diagonal shine sweeping back and forth across the liquid;
-            clipped to the fill's own bounds since it's nested inside it */}
         <span
           aria-hidden="true"
           className="absolute inset-y-0 w-1/4 bg-gradient-to-r from-transparent via-white/60 to-transparent group-hover:animate-[shineSweep_1.6s_ease-in-out_0.15s_infinite]"
         />
       </span>
 
-      {/* a few tiny glitter specks that twinkle in, staggered, once the
-          liquid has mostly risen — positioned on the pill itself (not the
-          fill) so their placement stays stable regardless of fill height */}
       <span
         aria-hidden="true"
         className="absolute opacity-0 rounded-[1px] bg-white/90 group-hover:animate-[sparkleTwinkle_1.5s_ease-in-out_0.3s_infinite]"
@@ -2054,7 +1362,7 @@ function StepPill({ n, isLight }) {
   );
 }
 
-function HowStepCard({ n, variant, title, isLight, paths, index }) {
+const HowStepCard = memo(function HowStepCard({ n, variant, title, isLight, paths, index }: any) {
   const iconColor = isLight ? "#6F7F3C" : "#B7DD67";
   const ringClass = isLight ? "border-2 border-[rgba(111,127,60,0.9)]" : "border-2 border-[rgba(183,221,103,0.8)]";
   const titleClass = isLight
@@ -2084,7 +1392,7 @@ function HowStepCard({ n, variant, title, isLight, paths, index }) {
       <p className={`text-base sm:text-xl tracking-[-0.8px] ${titleClass}`}>{title}</p>
     </motion.div>
   );
-}
+});
 
 function HowStepsSection({ isLight }) {
   const paths = isLight ? lHeroSvgPaths : howSvgPaths;
@@ -2102,11 +1410,6 @@ function HowStepsSection({ isLight }) {
 }
 
 // ─── CTA — "Ready to build" (mobile-aware wrapper) ─────────────────────────
-// Desktop/tablet (md+) keeps the original pixel-precise Figma layout exactly
-// as-is via ScaleFrame. Mobile gets its own purpose-built layout: still a
-// horizontal row (heading | divider | copy+button) like the original intent,
-// just sized with real responsive units instead of being uniformly
-// scaled down from a 1266px-wide canvas — which is what was crushing it.
 function CtaMobile({ isLight }) {
   return (
     <motion.div
@@ -2221,28 +1524,28 @@ function DarkPageContent() {
           minHeight={380}
           items={[
             <ServiceCard
-              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame28} />}
+              icon={<img alt="" loading="lazy" decoding="async" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame28} />}
               title="Web development"
               desc="Fast, scalable websites build for growth"
               isLight={false}
               href="/services#web-development"
             />,
             <ServiceCard
-              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame29} />}
+              icon={<img alt="" loading="lazy" decoding="async" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame29} />}
               title="Ads and Branding"
               desc="Identity that stands out, campaigns that convert"
               isLight={false}
               href="/services#ads-branding"
             />,
             <ServiceCard
-              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame30} />}
+              icon={<img alt="" loading="lazy" decoding="async" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame30} />}
               title="UI UX Design"
               desc="Interfaces that are intuitive and beautiful"
               isLight={false}
               href="/services#ui-ux-design"
             />,
             <ServiceCard
-              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame31} />}
+              icon={<img alt="" loading="lazy" decoding="async" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={whatWeDoImgFrame31} />}
               title="SMM"
               desc="Content that gets people talking about your brand"
               isLight={false}
@@ -2364,28 +1667,28 @@ function LightPageContent() {
           minHeight={380}
           items={[
             <ServiceCard
-              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame28} />}
+              icon={<img alt="" loading="lazy" decoding="async" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame28} />}
               title="Web development"
               desc="Fast, scalable websites build for growth"
               isLight={true}
               href="/services#web-development"
             />,
             <ServiceCard
-              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame29} />}
+              icon={<img alt="" loading="lazy" decoding="async" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame29} />}
               title="Ads and Branding"
               desc="Identity that stands out, campaigns that convert"
               isLight={true}
               href="/services#ads-branding"
             />,
             <ServiceCard
-              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame30} />}
+              icon={<img alt="" loading="lazy" decoding="async" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame30} />}
               title="UI UX Design"
               desc="Interfaces that are intuitive and beautiful"
               isLight={true}
               href="/services#ui-ux-design"
             />,
             <ServiceCard
-              icon={<img alt="" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame31} />}
+              icon={<img alt="" loading="lazy" decoding="async" className="h-10 md:h-[100px] w-auto object-contain pointer-events-none" src={lHeroImgFrame31} />}
               title="SMM"
               desc="Content that gets people talking about your brand"
               isLight={true}
@@ -2560,6 +1863,9 @@ export default function HomePage() {
         .hero-logo-assemble-line-2 {
           animation: heroLogoLineTwo 4.8s cubic-bezier(0.2, 0.9, 0.24, 1) infinite;
         }
+        .hero-logo-assemble-line-paused {
+          animation-play-state: paused;
+        }
         .hero-logo-dot {
           fill: var(--hero-logo-base);
           opacity: 0.72;
@@ -2572,6 +1878,9 @@ export default function HomePage() {
         }
         .hero-logo-dot-2 {
           animation: heroLogoDotTwo 4.8s ease-in-out infinite;
+        }
+        .hero-logo-dot-paused {
+          animation-play-state: paused;
         }
         .home-slice {
           --size-letter: clamp(14px, 1.7vw, 20px);

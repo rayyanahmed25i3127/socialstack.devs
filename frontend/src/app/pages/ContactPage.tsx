@@ -59,8 +59,34 @@ function useLowMotionMode() {
   return lowMotion;
 }
 
+// Tracks whether an element is currently on-screen so we can pause
+// continuous/infinite animations while they're not visible. This does NOT
+// affect entrance animations (those already run once on mount) — it only
+// gates the "keeps looping forever" decorative animations, so perceived
+// look is identical whenever the element is actually in view.
+function useInView<T extends HTMLElement>(options?: IntersectionObserverInit) {
+  const ref = useRef<T | null>(null);
+  const [inView, setInView] = useState(true); // default true so first paint (above-the-fold) is unaffected
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { root: null, rootMargin: "200px 0px", threshold: 0, ...options },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { ref, inView };
+}
+
 // Floating orb decorations
-const Orb = memo(function Orb({ style, lowMotion }: { style: CSSProperties; lowMotion: boolean }) {
+const Orb = memo(function Orb({ style, lowMotion, active }: { style: CSSProperties; lowMotion: boolean; active: boolean }) {
   if (lowMotion) {
     return <div className="absolute rounded-full pointer-events-none" style={style} />;
   }
@@ -69,8 +95,8 @@ const Orb = memo(function Orb({ style, lowMotion }: { style: CSSProperties; lowM
     <motion.div
       className="absolute rounded-full pointer-events-none"
       style={style}
-      animate={{ y: [0, -18, 0], scale: [1, 1.04, 1] }}
-      transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+      animate={active ? { y: [0, -18, 0], scale: [1, 1.04, 1] } : { y: 0, scale: 1 }}
+      transition={active ? { duration: 7, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }}
     />
   );
 });
@@ -102,7 +128,15 @@ const SocialIcon = memo(function SocialIcon({
       } as CSSProperties}
       aria-label={alt}
     >
-      <img src={src} alt="" loading="lazy" decoding="async" className="relative z-10 h-8 w-8 object-contain transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105" />
+      <img
+        src={src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        width={32}
+        height={32}
+        className="relative z-10 h-8 w-8 object-contain transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105"
+      />
       <span
         className="absolute bottom-0 left-0 flex h-7 w-full items-center justify-center text-[10px] font-light tracking-[0.08em]"
         style={{
@@ -130,6 +164,51 @@ function ContactFormStyles() {
       .contact-social-stack:focus-within .contact-social-glass {
         margin-inline: 0.35rem;
         transform: rotate(0deg) translateY(-2px);
+      }
+      @keyframes contact-spin-cw { to { transform: rotate(360deg); } }
+      @keyframes contact-spin-cw-half { to { transform: rotate(180deg); } }
+      @keyframes contact-shimmer-x {
+        from { transform: translateX(-120%); }
+        to { transform: translateX(120%); }
+      }
+      @keyframes contact-bg-pan {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+      .contact-loop-spin {
+        animation: contact-spin-cw 3.8s linear infinite;
+        animation-play-state: paused;
+      }
+      .contact-loop-spin.is-playing {
+        animation-play-state: running;
+      }
+      .contact-loop-spin-offset {
+        animation: contact-spin-cw-half 4.6s linear infinite;
+        animation-play-state: paused;
+      }
+      .contact-loop-spin-offset.is-playing {
+        animation-play-state: running;
+      }
+      .contact-loop-spin-slow {
+        animation: contact-spin-cw 8.5s linear infinite;
+        animation-play-state: paused;
+      }
+      .contact-loop-spin-slow.is-playing {
+        animation-play-state: running;
+      }
+      .contact-loop-shimmer {
+        animation: contact-shimmer-x 2.8s ease-in-out infinite;
+        animation-play-state: paused;
+      }
+      .contact-loop-shimmer.is-playing {
+        animation-play-state: running;
+      }
+      .contact-loop-heading {
+        animation: contact-bg-pan 5.2s ease-in-out infinite;
+        animation-play-state: paused;
+      }
+      .contact-loop-heading.is-playing {
+        animation-play-state: running;
       }
       @media (prefers-reduced-motion: reduce) {
         .contact-page-shell * {
@@ -395,6 +474,14 @@ export default function ContactPage() {
       : "radial-gradient(circle, rgba(82,104,98,0.06) 0%, transparent 70%)",
   }), [dark]);
 
+  // Visibility gates for continuous/infinite decorative animations.
+  // Purely a perf optimization: pauses off-screen looping animations and
+  // resumes them (at the same visual state/appearance) when back in view.
+  // Does not affect entrance animations or any on-screen appearance.
+  const { ref: badgeRef, inView: badgeInView } = useInView<HTMLDivElement>();
+  const { ref: formGlowRef, inView: formInView } = useInView<HTMLDivElement>();
+  const { ref: orbsRef, inView: orbsInView } = useInView<HTMLDivElement>({ rootMargin: "400px 0px" });
+
   // Parallax tilt on the form card
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
@@ -489,14 +576,18 @@ export default function ContactPage() {
     >
       <ContactFormStyles />
       {/* Ambient orbs */}
-      <Orb
-        lowMotion={lowMotion}
-        style={topOrbStyle}
-      />
-      <Orb
-        lowMotion={lowMotion}
-        style={bottomOrbStyle}
-      />
+      <div ref={orbsRef} className="contents">
+        <Orb
+          lowMotion={lowMotion}
+          active={orbsInView}
+          style={topOrbStyle}
+        />
+        <Orb
+          lowMotion={lowMotion}
+          active={orbsInView}
+          style={bottomOrbStyle}
+        />
+      </div>
 
       <Header theme={theme} onThemeChange={setTheme} />
 
@@ -505,6 +596,7 @@ export default function ContactPage() {
 
         {/* Badge */}
         <motion.div
+          ref={badgeRef}
           className="self-start ml-4 sm:ml-6 lg:ml-12 mt-6 mb-8"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -515,21 +607,17 @@ export default function ContactPage() {
             whileHover={{ scale: 1.05, x: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <motion.span
-              className="absolute inset-[-80%] rounded-full opacity-90"
+            <span
+              className={`absolute inset-[-80%] rounded-full opacity-90 ${!lowMotion ? "contact-loop-spin" : ""} ${!lowMotion && badgeInView ? "is-playing" : ""}`}
               style={{
                 background: `conic-gradient(from 0deg, transparent 0deg, transparent 64deg, ${badgeGlow[0]} 82deg, transparent 104deg, transparent 360deg)`,
               }}
-              animate={lowMotion ? { rotate: 0 } : { rotate: 360 }}
-              transition={lowMotion ? { duration: 0 } : { duration: 3.8, repeat: Infinity, ease: "linear" }}
             />
-            <motion.span
-              className="absolute inset-[-80%] rounded-full opacity-75"
+            <span
+              className={`absolute inset-[-80%] rounded-full opacity-75 ${!lowMotion ? "contact-loop-spin-offset" : ""} ${!lowMotion && badgeInView ? "is-playing" : ""}`}
               style={{
                 background: `conic-gradient(from 180deg, transparent 0deg, transparent 64deg, ${badgeGlow[1]} 82deg, transparent 104deg, transparent 360deg)`,
               }}
-              animate={lowMotion ? { rotate: 180 } : { rotate: 360 }}
-              transition={lowMotion ? { duration: 0 } : { duration: 4.6, repeat: Infinity, ease: "linear" }}
             />
             <span
               className="relative z-10 inline-flex rounded-full px-6 py-2.5 border transition-all duration-300"
@@ -585,13 +673,12 @@ export default function ContactPage() {
               : "0 34px 80px rgba(63,79,74,0.24), 0 0 28px rgba(47,79,55,0.1)",
           }}
         >
-          <motion.span
-            className="absolute inset-[-55%] z-0 rounded-full opacity-80"
+          <span
+            ref={formGlowRef}
+            className={`absolute inset-[-55%] z-0 rounded-full opacity-80 ${!lowMotion ? "contact-loop-spin-slow" : ""} ${!lowMotion && formInView ? "is-playing" : ""}`}
             style={{
               background: `conic-gradient(from 0deg, transparent 0deg, transparent 70deg, ${formGlow} 112deg, transparent 154deg, transparent 360deg)`,
             }}
-            animate={lowMotion ? { rotate: 0 } : { rotate: 360 }}
-            transition={lowMotion ? { duration: 0 } : { duration: 8.5, repeat: Infinity, ease: "linear" }}
           />
           <div
             className="contact-form-inner relative z-10 flex flex-col gap-6 rounded-[32px] px-6 py-10 sm:px-10 lg:px-16"
@@ -608,7 +695,7 @@ export default function ContactPage() {
             }}
           >
             <motion.h2
-              className="font-['Outfit',sans-serif] font-semibold text-[28px] sm:text-[32px] lg:text-[38px] text-center"
+              className={`font-['Outfit',sans-serif] font-semibold text-[28px] sm:text-[32px] lg:text-[38px] text-center ${!lowMotion ? "contact-loop-heading" : ""} ${!lowMotion && formInView ? "is-playing" : ""}`}
               style={{
                 backgroundImage: dark
                   ? "linear-gradient(90deg, #e6f2dd 0%, #b7dd67 34%, #6f7f3c 56%, #2f4f37 76%, #e6f2dd 100%)"
@@ -618,17 +705,9 @@ export default function ContactPage() {
                 backgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}
-              initial={{ opacity: 0, y: 24, backgroundPosition: "0% 50%" }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                backgroundPosition: lowMotion ? "50% 50%" : ["0% 50%", "100% 50%", "0% 50%"],
-              }}
-              transition={{
-                opacity: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-                y: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-                backgroundPosition: lowMotion ? { duration: 0 } : { duration: 5.2, repeat: Infinity, ease: "easeInOut" },
-              }}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             >
               Get in touch
             </motion.h2>
@@ -758,14 +837,15 @@ export default function ContactPage() {
                     initial={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
                   >
-                    <motion.span
-                      className="absolute inset-0 -z-10 opacity-60"
-                      style={{
-                        background: "linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.42) 45%, transparent 70%)",
-                      }}
-                      animate={lowMotion ? { x: "0%" } : { x: ["-120%", "120%"] }}
-                      transition={lowMotion ? { duration: 0 } : { duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-                    />
+                    <span className="absolute inset-0 -z-10 opacity-60 overflow-hidden">
+                      <span
+                        className={`absolute inset-0 ${!lowMotion ? "contact-loop-shimmer" : ""} ${!lowMotion && formInView ? "is-playing" : ""}`}
+                        style={{
+                          background: "linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.42) 45%, transparent 70%)",
+                          transform: lowMotion ? "translateX(0%)" : "translateX(-120%)",
+                        }}
+                      />
+                    </span>
                     {submitting ? (
                       <motion.div
                         className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#273338] border-t-transparent"
