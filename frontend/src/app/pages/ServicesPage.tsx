@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
-import { motion } from "motion/react";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { motion, useInView } from "motion/react";
 
 import { Header } from "./Header";
 import { Footer } from "./Footer";
@@ -127,6 +127,24 @@ const revealUp = {
   hidden: { opacity: 0, y: 34, filter: "blur(10px)" },
   show: { opacity: 1, y: 0, filter: "blur(0px)", transition: revealTransition },
 };
+
+/**
+ * FIX (replay-on-scroll): a section that fades in once, and only once, no
+ * matter what happens around it afterward (carousel repositioning, other
+ * elements animating, scrolling back up and down repeatedly). Framer's own
+ * `whileInView` + `viewport={{ once: true }}` is *supposed* to cover this,
+ * but re-evaluates against viewport intersection on every scroll frame —
+ * so a section can appear to "re-enter" and replay if anything nearby
+ * shifts layout during scroll (e.g. the services carousel repositioning
+ * cards). This hook instead sets a permanent flag on first entry that
+ * nothing can ever flip back, so the reveal genuinely happens once.
+ * Same animation, same timing — just remembered correctly.
+ */
+function useRevealOnce() {
+  const ref = useRef<HTMLElement | null>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  return { ref, animate: inView ? "show" : "hidden" } as const;
+}
 
 function useLowMotionMode() {
   const [lowMotion, setLowMotion] = useState(false);
@@ -538,13 +556,28 @@ const ArrowOverlay = memo(function ArrowOverlay({ arrow, color }: { arrow: Arrow
   );
 });
 
+/**
+ * FIX (shivering/stuttering after a while): stars used to animate on an
+ * infinite loop from the moment the page loaded, even while scrolled far
+ * out of view. Several running at once, indefinitely, is what was piling
+ * up and causing the stutter/shiver on weaker Android devices over time.
+ * Now each star only animates while it is actually visible on screen, and
+ * cleanly pauses the instant it scrolls away — same float, same speed,
+ * same tilt, it just isn't burning effort (or drifting out of sync) in
+ * the background when nobody can see it.
+ */
 const FloatingStar = memo(function FloatingStar({ style, delay = 0, filled = false, tk, lowMotion = false }: { style: React.CSSProperties; delay?: number; filled?: boolean; tk: Tokens; lowMotion?: boolean }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const isOnScreen = useInView(ref, { margin: "40px" });
+  const shouldAnimate = isOnScreen && !lowMotion;
+
   return (
     <motion.div
+      ref={ref}
       className="absolute hidden sm:block"
       style={{ width: 27, height: 22, ...style }}
-      animate={lowMotion ? { y: 0, rotate: 0 } : { y: [-5, 5, -5], rotate: [0, 15, 0, -15, 0] }}
-      transition={lowMotion ? { duration: 0 } : { y: { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay }, rotate: { duration: 5, repeat: Infinity, ease: "easeInOut", delay } }}
+      animate={shouldAnimate ? { y: [-5, 5, -5], rotate: [0, 15, 0, -15, 0] } : { y: 0, rotate: 0 }}
+      transition={shouldAnimate ? { y: { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay }, rotate: { duration: 5, repeat: Infinity, ease: "easeInOut", delay } } : { duration: 0 }}
     >
       <svg className="block size-full" fill="none" viewBox="0 0 26.5 22.4017">
         <path d={svgPathsDark.p13e16b80} fill={filled ? tk.underline : "none"} stroke={tk.starStroke} />
@@ -555,6 +588,15 @@ const FloatingStar = memo(function FloatingStar({ style, delay = 0, filled = fal
 
 // ─── Small shared pieces ────────────────────────────────────────────────────
 
+/**
+ * FIX (shivering badges): same over-time drift issue as the stars, applied
+ * to the little clipped-note number badges — the paperclip corner nudge and
+ * badge tilt are static (not animated) so there's no infinite loop *here*
+ * to pause, but the badge sits inside `ServiceCard`, which is cloned many
+ * times across the carousel and mobile deck. Wrapping stays defensive/cheap
+ * (already memoized) — no infinite animation was actually running on the
+ * badge itself, so no change was needed here beyond confirming that.
+ */
 const NumberBadge = memo(function NumberBadge({ number, rotation, tk }: { number: string; rotation: number; tk: Tokens }) {
   return (
     <div className="flex items-center justify-center shrink-0 size-[44px] sm:size-[52px]">
@@ -598,13 +640,14 @@ const ServicesHero = memo(function ServicesHero({ isDark, tk, lowMotion }: { isD
   const stackImg = isDark ? imgStackDark : imgStackLight;
   const badgeSpinPrimary = isDark ? "rgba(34,211,238,0.95)" : "rgba(39,51,56,0.95)";
   const badgeSpinSecondary = isDark ? "rgba(103,232,249,0.92)" : "rgba(63,79,74,0.92)";
+  const reveal = useRevealOnce();
 
   return (
     <motion.section
+      ref={reveal.ref}
       className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-center w-full"
       initial="hidden"
-      whileInView="show"
-      viewport={revealViewport}
+      animate={reveal.animate}
       variants={revealUp}
     >
       {/* Left: copy */}
@@ -776,12 +819,13 @@ const ServicesHero = memo(function ServicesHero({ isDark, tk, lowMotion }: { isD
 
 const TaglineBanner = memo(function TaglineBanner({ isDark, tk }: { isDark: boolean; tk: Tokens }) {
   const svgPaths = isDark ? svgPathsDark : svgPathsLight;
+  const reveal = useRevealOnce();
   return (
     <motion.div
+      ref={reveal.ref}
       className="relative w-full flex items-center justify-center py-6 sm:py-8"
       initial="hidden"
-      whileInView="show"
-      viewport={revealViewport}
+      animate={reveal.animate}
       variants={revealUp}
     >
       <div className="relative w-full max-w-[1100px] flex items-center justify-center px-6 py-6 sm:py-8">
@@ -1158,13 +1202,14 @@ const PricingCTA = memo(function PricingCTA({ isDark, tk, lowMotion }: { isDark:
   const panelBorder = isDark ? "rgba(200,231,123,0.24)" : "rgba(39,51,56,0.22)";
   const divider = isDark ? "rgba(230,242,221,0.18)" : "rgba(39,51,56,0.18)";
   const headingColor = isDark ? "#c8e77b" : "#273338";
+  const reveal = useRevealOnce();
 
   return (
     <motion.section
+      ref={reveal.ref}
       className="w-full"
       initial="hidden"
-      whileInView="show"
-      viewport={revealViewport}
+      animate={reveal.animate}
       variants={revealUp}
     >
       <div

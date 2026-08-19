@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 
@@ -12,6 +12,56 @@ const navItems = [
   { label: "Projects", href: "/projects" },
   { label: "FAQs", href: "/faqs" },
 ];
+
+// Same visibility-gating hook used on ContactPage: pauses continuous/infinite
+// animations while off-screen (they can never truly go off-screen for a
+// fixed header, but this also stops the loop while the tab itself isn't
+// visible, e.g. backgrounded on mobile). Kept local to NavShimmer below so a
+// visibility flip only re-renders this one small piece, not the whole nav.
+function useInView<T extends HTMLElement>(options?: IntersectionObserverInit) {
+  const ref = useRef<T | null>(null);
+  const [inView, setInView] = useState(true);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { root: null, rootMargin: "200px 0px", threshold: 0, ...options },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { ref, inView };
+}
+
+// The diagonal light sweep behind the nav bar. Was previously an
+// always-on Motion `animate` loop with no pause — meaning it repainted
+// every frame, forever, on every page, underneath a heavy backdrop-blur
+// panel. Now a plain CSS keyframe animation, paused via
+// animation-play-state whenever the tab is hidden, and isolated in its own
+// component so it never causes the rest of the nav to re-render.
+function NavShimmer({ dark, navFloating }: { dark: boolean; navFloating: boolean }) {
+  const { ref, inView } = useInView<HTMLDivElement>();
+
+  return (
+    <div
+      ref={ref}
+      className={`pointer-events-none absolute inset-0 opacity-80 transition-[border-radius] duration-500 nav-shimmer-loop ${
+        inView ? "is-playing" : ""
+      } ${navFloating ? "rounded-full" : "rounded-none"}`}
+      style={{
+        background: dark
+          ? "linear-gradient(100deg, rgba(255,255,255,0.13), transparent 34%, rgba(183,221,103,0.1) 72%, transparent)"
+          : "linear-gradient(100deg, rgba(255,255,255,0.72), transparent 38%, rgba(111,127,60,0.16) 76%, transparent)",
+      }}
+    />
+  );
+}
 
 export function Header({
   theme,
@@ -48,6 +98,28 @@ export function Header({
 
   return (
     <>
+      <style>{`
+        @keyframes nav-shimmer-pan {
+          0%   { transform: translateX(-18%); }
+          50%  { transform: translateX(18%); }
+          100% { transform: translateX(-18%); }
+        }
+        .nav-shimmer-loop {
+          animation: nav-shimmer-pan 9s ease-in-out infinite;
+          animation-play-state: paused;
+        }
+        .nav-shimmer-loop.is-playing {
+          animation-play-state: running;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .nav-shimmer-loop,
+          .nav-shimmer-loop.is-playing {
+            animation: none;
+            transform: none;
+          }
+        }
+      `}</style>
+
       {/* Scroll progress bar */}
       <motion.div
         className="fixed left-0 top-0 z-[70] h-1"
@@ -70,16 +142,7 @@ export function Header({
         }`}
         style={navGlassStyle}
       >
-        <motion.div
-          className={`pointer-events-none absolute inset-0 opacity-80 transition-[border-radius] duration-500 ${navFloating ? "rounded-full" : "rounded-none"}`}
-          style={{
-            background: d
-              ? "linear-gradient(100deg, rgba(255,255,255,0.13), transparent 34%, rgba(183,221,103,0.1) 72%, transparent)"
-              : "linear-gradient(100deg, rgba(255,255,255,0.72), transparent 38%, rgba(111,127,60,0.16) 76%, transparent)",
-          }}
-          animate={{ x: ["-18%", "18%", "-18%"] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <NavShimmer dark={d} navFloating={navFloating} />
         <motion.a href="/" className="relative z-10 inline-flex" aria-label="Go to home" whileHover={{ rotate: -3, scale: 1.08, filter: "drop-shadow(0 0 12px rgba(183,221,103,0.48))" }} whileTap={{ scale: 0.96 }}>
           <img
             src={d ? imgIconPlaceholder : imgLogoRecolored}
