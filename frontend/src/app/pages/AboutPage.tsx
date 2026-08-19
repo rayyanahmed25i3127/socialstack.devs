@@ -587,6 +587,34 @@ const AnimatedButtonStyles = memo(function AnimatedButtonStyles() {
         }
         .about-loop-nav-shimmer.is-playing { animation-play-state: running; }
 
+        /* ─── NEW: mobile-only text size overrides for the team flip-cards.
+           These target the two card-back text elements by class instead of
+           inline fontSize, which lets us apply a real breakpoint (not just
+           a vw-based clamp that silently floors out on phones). Desktop/
+           tablet (>640px) keep the original clamp() values untouched ────── */
+        .ss-card-greeting {
+          font-size: clamp(2.6rem, 9vw, 4.8rem);
+        }
+        .ss-card-greeting.ss-card-greeting--shrunk {
+          font-size: clamp(1.5rem, 4.4vw, 2rem);
+        }
+        .ss-card-bio {
+          font-size: clamp(1.5rem, 4.4vw, 2rem);
+        }
+
+        @media (max-width: 640px) {
+          .ss-card-greeting {
+            font-size: 2rem; /* was flat 2.6rem (41.6px) on phones — now 32px */
+          }
+          .ss-card-greeting.ss-card-greeting--shrunk {
+            font-size: 1.2rem; /* was flat 1.5rem (24px) on phones — now 19.2px */
+          }
+          .ss-card-bio {
+            font-size: 1.2rem; /* was flat 1.5rem (24px) on phones — now 19.2px */
+            line-height: 1.42;
+          }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .about-page-shell *,
           .about-page-shell *::before,
@@ -1113,8 +1141,14 @@ function TeamFlipStack({
                     }}
                   >
                     <div className="relative h-full overflow-hidden rounded-[25px] px-7 py-8 sm:px-8 sm:py-9">
+                      {/* ─── UPDATED: fontSize now driven by the .ss-card-greeting
+                          class (+ --shrunk modifier) instead of inline clamp()
+                          values, so a real max-width:640px media query can
+                          override it on phones. Position/x/y/opacity animation
+                          is unchanged — only the text-size mechanism moved
+                          from inline style to CSS class ─────────────────────── */}
                       <motion.p
-                        className={`absolute font-['Inter:Black',sans-serif] font-black leading-[1.28] ${dark ? "text-[#e6f2dd]" : "text-[#253236]"}`}
+                        className={`absolute font-['Inter:Black',sans-serif] font-black leading-[1.28] ss-card-greeting ${cardStage === 2 ? "ss-card-greeting--shrunk" : ""} ${dark ? "text-[#e6f2dd]" : "text-[#253236]"}`}
                         initial={false}
                         animate={
                           cardStage === 1
@@ -1123,22 +1157,24 @@ function TeamFlipStack({
                                 top: "50%",
                                 x: "-50%",
                                 y: "-50%",
-                                fontSize: "clamp(2.6rem, 9vw, 4.8rem)",
                               }
                             : {
                                 left: "clamp(1.75rem, 5vw, 2rem)",
                                 top: "clamp(2rem, 5.5vw, 2.25rem)",
                                 x: "0%",
                                 y: "0%",
-                                fontSize: "clamp(1.5rem, 4.4vw, 2rem)",
                               }
                         }
                         transition={{ duration: reduced ? 0.35 : 0.72, ease: easeOutExpo }}
                       >
                         {member.greeting}
                       </motion.p>
+                      {/* ─── UPDATED: fontSize now driven by .ss-card-bio class
+                          instead of inline text-[clamp(...)] Tailwind arbitrary
+                          value, so the same max-width:640px override applies
+                          here too. Fade/blur/y animation is unchanged ──────── */}
                       <motion.p
-                        className={`max-w-full font-['Inter:Black',sans-serif] font-black text-[clamp(1.5rem,4.4vw,2rem)] leading-[1.28] tracking-[0.01em] ${dark ? "text-[#e6f2dd]/88" : "text-[#253236]/88"}`}
+                        className={`max-w-full font-['Inter:Black',sans-serif] font-black leading-[1.28] ss-card-bio ${dark ? "text-[#e6f2dd]/88" : "text-[#253236]/88"}`}
                         initial={false}
                         animate={{
                           opacity: cardStage === 2 ? 1 : 0,
