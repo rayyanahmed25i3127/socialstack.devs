@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useMemo, useRef, type CSSProperties } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
@@ -347,6 +348,11 @@ export default function ProjectsPage() {
       transition={{ duration: 0.4 }}
       className="min-h-screen flex flex-col"
     >
+      <Helmet>
+        <title>Our Work | Web & App Development Projects | Social Stack</title>
+        <meta name="description" content="See recent web development, app development, and branding projects delivered by Social Stack for clients around the world." />
+      </Helmet>
+
       {SLICE_BUTTON_STYLES}
       <Header theme={theme} onThemeChange={setTheme} />
 

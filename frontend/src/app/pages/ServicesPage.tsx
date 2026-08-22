@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion, useInView } from "motion/react";
 
@@ -1284,6 +1285,10 @@ export default function ServicesPage() {
 
   return (
     <div className="services-page-shell min-h-screen w-full overflow-x-hidden" style={{ backgroundColor: tk.pageBg, transition: "background-color 0.4s ease" }}>
+      <Helmet>
+        <title>Our Services | Web Development, App Development & Digital Ads | Social Stack</title>
+        <meta name="description" content="Explore Social Stack's services: custom web development, mobile app development, digital advertising, and branding — built for startups and growing businesses." />
+      </Helmet>
       <ServiceCardHoverStyles />
       <Header theme={theme} onThemeChange={setTheme} />
 

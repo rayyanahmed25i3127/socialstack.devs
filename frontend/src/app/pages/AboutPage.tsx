@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Sun, Moon, ChevronLeft, ChevronRight, ExternalLink, Github } from "lucide-react";
 import { motion, AnimatePresence, useMotionValueEvent, useScroll, useTransform } from "motion/react";
@@ -1350,6 +1351,10 @@ export default function AboutPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: lowMotion ? 0.25 : 0.55 }}
     >
+      <Helmet>
+        <title>About Us | Social Stack — Remote IT Consulting Agency</title>
+        <meta name="description" content="Learn about Social Stack, a remote IT consulting and web/app development agency helping businesses build and grow their digital presence." />
+      </Helmet>
       <AnimatedButtonStyles />
       <motion.div
         className="fixed left-0 top-0 z-[70] h-1"

@@ -1,3 +1,5 @@
+import { Helmet } from "react-helmet-async";
+
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -389,6 +391,11 @@ export default function FaqPage() {
 
   return (
     <main className={`min-h-screen flex flex-col transition-colors duration-300 ${isLight ? "bg-[#e6f2dd] text-[#273338]" : "bg-[#222d31] text-white"}`}>
+      <Helmet>
+        <title>FAQs | Social Stack — Web Development & IT Consulting</title>
+        <meta name="description" content="Answers to common questions about working with Social Stack on web development, app development, branding, and digital advertising projects." />
+      </Helmet>
+
       <style>{`
         @keyframes doodlePulse { 0% { transform: scale(1.2); } 25% { transform: scale(1); } 100% { transform: scale(1); } }
         @keyframes doodleFill { 0% { stroke-dashoffset: 1; } 45%, 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
