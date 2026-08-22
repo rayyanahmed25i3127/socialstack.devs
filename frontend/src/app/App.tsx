@@ -1,5 +1,5 @@
+import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-//import Preloader from "./components/Preloader";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ServicesPage from "./pages/ServicesPage";
@@ -9,7 +9,7 @@ import FaqPage from "./pages/FaqPage";
 
 export default function App() {
   return (
-    // <Preloader logoLineOne="SOCIAL" logoLineTwo="STACK">
+    <HelmetProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -20,6 +20,6 @@ export default function App() {
           <Route path="/faqs" element={<FaqPage />} />
         </Routes>
       </BrowserRouter>
-    // </Preloader>
+    </HelmetProvider>
   );
 }
