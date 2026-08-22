@@ -1,3 +1,5 @@
+import { Helmet } from "react-helmet-async";
+
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { Send } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -574,6 +576,10 @@ export default function ContactPage() {
       animate={{ backgroundColor: dark ? "#273338" : "#e6f2dd" }}
       transition={{ duration: lowMotion ? 0.2 : 0.5 }}
     >
+      <Helmet>
+        <title>Contact Us | Social Stack — Web & App Development Agency</title>
+        <meta name="description" content="Get in touch with Social Stack to discuss your web development, app development, or branding project. Remote team, global clients." />
+      </Helmet>
       <ContactFormStyles />
       {/* Ambient orbs */}
       <div ref={orbsRef} className="contents">
