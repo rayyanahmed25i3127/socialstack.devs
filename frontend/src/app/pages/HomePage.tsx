@@ -1,3 +1,6 @@
+
+import { Helmet } from "react-helmet-async";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HomePage - Modified to remove hero icons, unify theme spacing, and add animations
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1774,6 +1777,10 @@ export default function HomePage() {
 
   return (
     <main className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${isLight ? "bg-[#e6f2dd]" : "bg-[#222d31]"}`}>
+      <Helmet>
+        <title>Social Stack | Web Development, App Development & Branding Agency</title>
+        <meta name="description" content="Social Stack is a remote IT consulting agency offering web development, app development, digital ads, and branding for businesses worldwide." />
+      </Helmet>
       <style>{`
         @keyframes doodlePulse { 0% { transform: scale(1.2); } 25% { transform: scale(1); } 100% { transform: scale(1); } }
         @keyframes doodleCenterPulse { 0% { transform: translateX(-50%) scale(1.2); } 25% { transform: translateX(-50%) scale(1); } 100% { transform: translateX(-50%) scale(1); } }
