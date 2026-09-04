@@ -270,7 +270,7 @@ const SERVICES: ServiceItem[] = [
     number: "1",
     title: "Web Development",
     tagline: "Build once. Grow longer.",
-    description: "Fast, scalable websites built for real businesses.",
+    description: "Custom website development for startups and small businesses — fast, scalable, and built to grow with you.",
     bullets: [
       "Responsive layouts for desktop, tablet, and mobile",
       "Deployment, optimisation, and ongoing support",
@@ -336,7 +336,7 @@ const SERVICES: ServiceItem[] = [
     number: "4",
     title: "Ads and Branding",
     tagline: "Identity that sticks.",
-    description: "Build a recognizable brand that customers remember.",
+    description: "Branding and digital ads for small businesses — build a brand customers remember and trust.",
     bullets: [
       "Memorable brand identities with clear direction",
       "Creative ads designed for better results",
@@ -358,7 +358,7 @@ const SERVICES: ServiceItem[] = [
     number: "5",
     title: "App Development",
     tagline: "Worth the wait.",
-    description: "Custom mobile apps built for performance and long-term growth.",
+    description: "App development for startups and businesses — native and cross-platform apps built for performance.",
     bullets: [
       "Native and cross-platform application development",
       "User-focused experiences built for performance",
@@ -790,9 +790,8 @@ const ServicesHero = memo(function ServicesHero({ isDark, tk, lowMotion }: { isD
         </div>
 
         <p className="font-['Manrope',sans-serif] font-extrabold text-[16px] sm:text-[18px] lg:text-[20px] leading-relaxed max-w-[480px]" style={{ color: tk.subtitleText, transition: "color 0.4s ease" }}>
-          We turn ideas into content, content into brands, and brands into experiences.
-        </p>
-
+  We turn ideas into content, content into brands, and brands into experiences. We're a remote web development, app development, and branding agency helping startups and growing businesses build their digital presence.
+</p>
         <p
           className="font-['Patrick_Hand',sans-serif] text-[22px] sm:text-[28px] lg:text-[32px] leading-tight"
           style={{ color: tk.accentText, transform: "rotate(-1deg)", transformOrigin: "left center" }}
@@ -1255,9 +1254,9 @@ const PricingCTA = memo(function PricingCTA({ isDark, tk, lowMotion }: { isDark:
               Each Stack is different.
             </p>
 
-            <p className="max-w-[580px] font-['Manrope',sans-serif] text-[15px] font-medium leading-relaxed sm:text-[17px]" style={{ color: tk.descriptionText }}>
-              Every business has different goals, timelines and requirements. We'll recommend the right services and give you a clear quote before we build anything.
-            </p>
+           <p className="max-w-[580px] font-['Manrope',sans-serif] text-[15px] font-medium leading-relaxed sm:text-[17px]" style={{ color: tk.descriptionText }}>
+  Whether you're a startup building your first website or an established business ready for a redesign, we'll recommend the right services and give you a clear quote before we build anything.
+</p>
 
             <a
               href="/contact"
